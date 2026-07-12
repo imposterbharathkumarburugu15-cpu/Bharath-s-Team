@@ -282,7 +282,7 @@ export function Dashboard() {
              <div>
                <div className="flex items-center gap-2 mb-2">
                  <Mic className="w-4 h-4 text-cyber-blue" />
-                 <h3 className="text-sm font-bold tracking-widest text-white uppercase italic">Sentinel <span className="text-cyber-blue">Voice</span></h3>
+                 <h3 className="text-sm font-bold tracking-widest text-white uppercase italic">NeuroShield <span className="text-cyber-blue">Voice</span></h3>
                </div>
                <p className="text-[10px] text-cyber-muted font-mono leading-relaxed max-w-[200px]">Real-time deepfake & scam call detection with voice print analysis.</p>
              </div>
@@ -302,7 +302,7 @@ export function Dashboard() {
              <div>
                <div className="flex items-center gap-2 mb-2">
                  <Waves className="w-4 h-4 text-cyber-green" />
-                 <h3 className="text-sm font-bold tracking-widest text-white uppercase italic">Sentinel <span className="text-cyber-green">Wave</span></h3>
+                 <h3 className="text-sm font-bold tracking-widest text-white uppercase italic">NeuroShield <span className="text-cyber-green">Wave</span></h3>
                </div>
                <p className="text-[10px] text-cyber-muted font-mono leading-relaxed max-w-[200px]">Advanced network topology map & packet isolation system.</p>
              </div>

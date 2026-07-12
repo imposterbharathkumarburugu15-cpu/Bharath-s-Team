@@ -60,7 +60,7 @@ export function Layout({
       <div className="bg-grid" />
       
       {/* Sidebar */}
-      <aside className="w-[240px] h-full flex-shrink-0 border-r border-cyber-blue/20 bg-black/40 backdrop-blur-xl z-20 flex flex-col pt-6 pb-6 pl-5 pr-5 box-border shadow-[10px_0_30px_rgba(0,0,0,0.5)]">
+      <aside className="w-[280px] h-full flex-shrink-0 border-r border-cyber-blue/20 bg-black/40 backdrop-blur-xl z-20 flex flex-col pt-6 pb-6 pl-5 pr-5 box-border shadow-[10px_0_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-4 mb-10 px-1 relative">
           <div className="absolute -left-5 w-1 h-12 bg-cyber-blue shadow-[0_0_15px_var(--color-cyber-blue-glow)] rounded-r" />
           <div className="relative w-10 h-10 flex items-center justify-center group shrink-0">
@@ -74,7 +74,7 @@ export function Layout({
             <div className="absolute inset-0 rounded-full shadow-[0_0_20px_var(--color-cyber-blue-glow)] opacity-80 mix-blend-screen" />
           </div>
           <div className="leading-none flex flex-col justify-center">
-            <div className="font-extrabold text-xl tracking-[0.2em] text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] font-sans">SENTINEL</div>
+            <div className="font-extrabold text-lg tracking-widest text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] font-sans">NEUROSHIELD</div>
             <div className="text-[8px] text-cyber-blue tracking-[0.3em] font-mono mt-1 opacity-100 uppercase drop-shadow-[0_0_5px_var(--color-cyber-blue-glow)] whitespace-nowrap">AI Gateway</div>
           </div>
         </div>
@@ -233,7 +233,7 @@ export function Layout({
             <div className="p-2.5 px-4 border-b border-cyber-border flex items-center justify-between gap-2.5 bg-cyber-blue/10 font-semibold text-[11px] tracking-wide rounded-t-[7px]">
               <div className="flex items-center gap-2">
                 <Bot className="w-3.5 h-3.5 text-cyber-blue" />
-                SENTINEL AI COPILOT
+                NEUROSHIELD AI COPILOT
               </div>
               <button onClick={() => setShowCopilot(false)} className="text-cyber-muted hover:text-white transition-colors">
                 <X className="w-3.5 h-3.5" />

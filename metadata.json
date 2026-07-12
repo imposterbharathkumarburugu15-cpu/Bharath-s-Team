@@ -1,5 +1,5 @@
 {
-  "name": "SENTINEL360 AI Phishing & Scam Defense Platform",
+  "name": "NeuroShield AI Phishing & Scam Defense Platform",
   "description": "Futuristic cybersecurity SaaS platform for detecting phishing threats across multiple channels using AI.",
   "requestFramePermissions": [
     "microphone"

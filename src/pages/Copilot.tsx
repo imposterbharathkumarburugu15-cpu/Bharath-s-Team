@@ -58,7 +58,7 @@ export function Copilot() {
             <Bot className="w-8 h-8 text-cyber-blue relative z-10" />
             <div className="absolute inset-0 bg-cyber-blue/30 blur-md rounded-full animate-pulse" />
           </div>
-          SENTINEL {t('copilot').toUpperCase()}
+          NEUROSHIELD {t('copilot').toUpperCase()}
         </h1>
         <div className="flex items-center gap-2 border border-cyber-blue/30 bg-cyber-blue/10 px-3 py-1.5 rounded-full">
            <Cpu className="w-4 h-4 text-cyber-blue animate-pulse" />
@@ -75,7 +75,7 @@ export function Copilot() {
                <Bot className="w-16 h-16 text-cyber-blue/30 mb-2" />
                <h3 className="text-lg text-white font-semibold uppercase tracking-widest">Global Intelligence Active</h3>
                <p className="max-w-md text-sm">
-                 I am Sentinel Copilot, your AI cyber-investigator. Ask me to analyze an IP, dissect a phishing campaign, or explain system logs.
+                 I am NeuroShield Copilot, your AI cyber-investigator. Ask me to analyze an IP, dissect a phishing campaign, or explain system logs.
                </p>
                <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
                  {['Analyze a suspicious email', 'What is an attack graph?', 'Explain XSS vulnerability'].map(query => (
@@ -154,7 +154,7 @@ export function Copilot() {
           <div className="relative flex items-end gap-2 max-w-4xl mx-auto">
             <textarea
               className="w-full bg-white/5 border border-white/10 focus:border-cyber-blue/50 rounded-lg px-4 py-3 text-sm text-white placeholder-cyber-muted resize-none focus:outline-none focus:ring-1 focus:ring-cyber-blue/50 transition-all min-h-[50px] max-h-[150px] custom-scrollbar"
-              placeholder="Query the Sentinel Intelligence array..."
+              placeholder="Query the NeuroShield Intelligence array..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}

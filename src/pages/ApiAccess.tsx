@@ -195,8 +195,8 @@ export function ApiAccess() {
                 <span className="text-cyber-blue">Auth: Bearer</span>
               </div>
               <div className="p-4 font-mono text-xs overflow-x-auto text-green-400">
-                curl -X POST https://api.sentinel.cyber/v1/scan \<br/>
-                &nbsp;&nbsp;-H "Authorization: Bearer $SENTINEL_API_KEY" \<br/>
+                curl -X POST https://api.neuroshield.cyber/v1/scan \<br/>
+                &nbsp;&nbsp;-H "Authorization: Bearer $NEUROSHIELD_API_KEY" \<br/>
                 &nbsp;&nbsp;-H "Content-Type: application/json" \<br/>
                 &nbsp;&nbsp;-d '&#123;"payload": "URL_OR_TEXT_HERE"&#125;'
               </div>

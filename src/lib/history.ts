@@ -7,7 +7,7 @@ export interface ScanHistoryItem extends ScanResult {
 
 export const getScanHistory = (): ScanHistoryItem[] => {
   try {
-    const raw = localStorage.getItem('sentinel_scan_history');
+    const raw = localStorage.getItem('neuroshield_scan_history');
     if (raw) return JSON.parse(raw);
   } catch (e) {}
   return [];
@@ -22,6 +22,6 @@ export const addScanToHistory = (scan: ScanResult) => {
       timestamp: new Date().toISOString()
     };
     const newHistory = [item, ...history].slice(0, 100); 
-    localStorage.setItem('sentinel_scan_history', JSON.stringify(newHistory));
+    localStorage.setItem('neuroshield_scan_history', JSON.stringify(newHistory));
   } catch (e) {}
 };

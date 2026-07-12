@@ -15,8 +15,8 @@ const translations: Translations = {
   dashboard: { en: 'Dashboard', hi: 'डैशबोर्ड', te: 'డ్యాష్‌బోర్డ్' },
   scanner: { en: 'Live Scanner', hi: 'लाइव स्कैनर', te: 'లైవ్ స్కానర్' },
   phishing: { en: 'Inbox Shield', hi: 'इनबॉक्स शील्ड', te: 'ఇన్‌బాక్స్ షీల్డ్' },
-  voice: { en: 'Sentinel Voice', hi: 'सेंटिनल वॉइस', te: 'సెంటినెల్ వాయిస్' },
-  wave: { en: 'Sentinel Wave', hi: 'सेंटिनल वेव', te: 'సెంటినెల్ వేవ్' },
+  voice: { en: 'NeuroShield Voice', hi: 'सेंटिनल वॉइस', te: 'సెంటినెల్ వాయిస్' },
+  wave: { en: 'NeuroShield Wave', hi: 'सेंटिनल वेव', te: 'సెంటినెల్ వేవ్' },
   graph: { en: 'Attack Graph', hi: 'अटैक ग्राफ', te: 'ఎటాక్ గ్రాఫ్' },
   behavior: { en: 'User Behavior', hi: 'उपयोगकर्ता व्यवहार', te: 'వినియోగదారు ప్రవర్తన' },
   alerts: { en: 'Alerts & IR', hi: 'अलर्टस', te: 'హెచ్చరికలు' },
@@ -135,7 +135,7 @@ const translations: Translations = {
     te: 'మీ ఫైల్‌లు ఏన్‌క్రిప్ట్ చేయబడ్డాయి! 48 గంటల్లోగా చెల్లించండి...'
   },
 
-  scanner_disclaimer: { en: 'Sentinel AI may produce inaccurate results. Verify critical threat intelligence.', hi: 'Sentinel AI गलत परिणाम दे सकता है। महत्वपूर्ण खतरे की जानकारी की पुष्टि करें।', te: 'సెంటినెల్ AI సరికాని ఫలితాలను అందించవచ్చు. కీలకమైన ఇంటెలిజెన్స్‌ను ధృవీకరించండి.' },
+  scanner_disclaimer: { en: 'NeuroShield AI may produce inaccurate results. Verify critical threat intelligence.', hi: 'Sentinel AI गलत परिणाम दे सकता है। महत्वपूर्ण खतरे की जानकारी की पुष्टि करें।', te: 'సెంటినెల్ AI సరికాని ఫలితాలను అందించవచ్చు. కీలకమైన ఇంటెలిజెన్స్‌ను ధృవీకరించండి.' },
   paste_phishing_message: { en: 'Paste potential phishing message...', hi: 'संभावित फ़िशिंग संदेश पेस्ट करें...', te: 'సంభావ్య ఫిషింగ్ సందేశాన్ని అతికించండి...' },
   submit_payload: { en: 'Submit payload for AI analysis...', hi: 'एआई विश्लेषण के लिए पेलोड सबमिट करें...', te: 'AI విశ్లేషణ కోసం పేలోడ్‌ను సమర్పించండి...' },
   processing_data: { en: 'PROCESSING HEX DATA CACHE', hi: 'हेक्स डेटा कैश संसाधित कर रहा है', te: 'హెక్స్ డేటా కాష్‌ను ప్రాసెస్ చేస్తోంది' },

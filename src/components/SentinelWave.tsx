@@ -187,7 +187,7 @@ export function SentinelWave({ source, target, payloadDescription, compact = fal
               <div className="bg-black/40 backdrop-blur-md border border-cyber-border/50 px-4 py-2 rounded-lg relative overflow-hidden">
                 <motion.div animate={{ x: ['-100%', '100%'] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} className="absolute top-0 bottom-0 left-0 w-8 bg-white/10 blur-md mix-blend-overlay skew-x-12" />
                 <h1 className="text-white font-bold text-lg tracking-widest font-sans flex items-center gap-2">
-                  <GlitchText text="SENTINEL" /><span className="text-cyber-blue">WAVE</span>
+                  <GlitchText text="NEUROSHIELD" /><span className="text-cyber-blue">WAVE</span>
                   <motion.div animate={{ opacity: [1, 0] }} transition={{ duration: 1, repeat: Infinity }} className="w-2 h-4 bg-cyber-blue ml-2" />
                 </h1>
                 <p className="text-cyber-muted text-[10px] uppercase font-bold tracking-widest">Advanced Threat Telemetry</p>

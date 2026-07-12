@@ -83,7 +83,7 @@ ALL RESPONSES AND STRINGS (EXCEPT ENUM VALUES) MUST BE IN ${targetLang}.`,
   });
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-3.5-flash",
     contents: { parts },
     config: {
       temperature: 0.2,
@@ -223,7 +223,7 @@ export async function analyzeAudio(
   const targetLang = languageMap[language] || 'English';
 
   parts.push({
-    text: `You are SENTINEL VOICE, an AI deepfake and scam detection engine. Analyze the provided audio.
+    text: `You are NEUROSHIELD VOICE, an AI deepfake and scam detection engine. Analyze the provided audio.
 1. Determine if it's likely a deepfake/synthetic voice, AI generated, or a common scam.
 2. Provide an authenticity score from 0 to 100 (where 100 is authentic human voice, and 0 is definitely synthetic/scam).
 3. Transcribe the audio as an array of strings (e.g. ["Caller: Hello", "User: Hi"]). Feel free to use "Speaker 1" format.
@@ -234,7 +234,7 @@ ALL TEXT FIELDS EXPLANATION MUST BE IN ${targetLang}.`,
   });
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.5-flash",
     contents: { parts },
     config: {
       temperature: 0.1,
@@ -276,14 +276,14 @@ export async function chatWithCopilot(
   };
   const targetLang = languageMap[language] || 'English';
 
-  const systemPrompt = `You are SENTINEL COPILOT, an advanced enterprise cybersecurity AI assistant.
+  const systemPrompt = `You are NEUROSHIELD COPILOT, an advanced enterprise cybersecurity AI assistant.
 Your goal is to help users investigate threats, understand security architecture, investigate logs, and provide mitigation strategies.
 Keep your responses concise, highly technical but accessible, and structured with markdown. Use a cutting-edge, "cyber" tone.
 IMPORTANT: Respond entirely in ${targetLang}.`;
 
   const contents = [
     { role: 'user', parts: [{ text: systemPrompt }] },
-    { role: 'model', parts: [{ text: 'Acknowledged. Sentinel Copilot sequence initiated.' }] }
+    { role: 'model', parts: [{ text: 'Acknowledged. NeuroShield Copilot sequence initiated.' }] }
   ];
 
   for (const msg of history) {
@@ -293,7 +293,7 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
   contents.push({ role: 'user', parts: [{ text: newMessage }] });
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-3.5-flash",
     contents,
     config: {
       temperature: 0.3,

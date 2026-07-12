@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Search, RefreshCw, LogIn, Bell, Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useGoogleLogin } from '@react-oauth/google';
 import { addScanToHistory } from '@/lib/history';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function EmailPhishing() {
   const { t } = useLanguage();
@@ -58,6 +58,9 @@ export default function EmailPhishing() {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await gRes.json();
+      if (!gRes.ok) {
+        throw new Error(JSON.stringify(data));
+      }
       
       const detailedEmails = await Promise.all(
         (data.messages || []).map(async (msg: any) => {
@@ -65,7 +68,8 @@ export default function EmailPhishing() {
             headers: { Authorization: `Bearer ${token}` }
           });
           const detail = await detailRes.json();
-          const headers = detail.payload.headers;
+          if (!detailRes.ok) throw new Error(JSON.stringify(detail));
+          const headers = detail.payload?.headers || [];
           const subject = headers.find((h: any) => h.name === 'Subject')?.value || 'No Subject';
           const sender = headers.find((h: any) => h.name === 'From')?.value || 'Unknown Sender';
           const dateStr = headers.find((h: any) => h.name === 'Date')?.value || '';

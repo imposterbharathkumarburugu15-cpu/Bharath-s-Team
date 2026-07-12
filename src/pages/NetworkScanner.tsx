@@ -162,7 +162,7 @@ export default function SentinelWaveModule() {
         <div className="absolute top-6 left-6 z-10 flex gap-4">
           <div className="bg-black/50 border border-white/10 px-4 py-2 rounded-lg backdrop-blur-md">
             <h2 className="text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00f5ff] uppercase">
-              Sentinel Wave
+              NeuroShield Wave
             </h2>
             <p className="text-[10px] text-[#00f5ff] font-mono tracking-[0.2em] mt-1 drop-shadow-[0_0_5px_#00f5ff]">TOPOLOGY VISUALIZER</p>
           </div>

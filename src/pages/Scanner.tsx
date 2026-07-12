@@ -346,7 +346,7 @@ export function LiveScanner() {
         riskScore: 92,
         signals: ['🧠 AI MANIPULATION PATTERN DETECTED', '⚠ URGENCY DETECTED', 'SENSITIVE DATA FOUND'],
         source: 'Unknown External Node',
-        target: 'SENTINEL AI ENGINE',
+        target: 'NEUROSHIELD AI ENGINE',
         payloadDescription: 'Instruction Override Attempt',
         threatName: 'Prompt Injection / System Hijack',
         aiExplanation: 'The payload contains explicit instruction override patterns designed to bypass system restrictions and reveal internal context or secrets.',
@@ -747,7 +747,7 @@ export function LiveScanner() {
                   <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5 text-[10px] font-mono text-[#8a99af] text-left uppercase tracking-widest">
                      <div>
                         <span className="block opacity-50 mb-1">Target Engine</span>
-                        <span className="text-[#00f5ff] font-bold">SENTINEL-CORE-V2</span>
+                        <span className="text-[#00f5ff] font-bold">NEUROSHIELD-CORE-V2</span>
                      </div>
                      <div className="text-center">
                         <span className="block opacity-50 mb-1">Status</span>
