@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Layout } from './components/Layout';
 import { LiveScanner } from './pages/Scanner';
@@ -13,6 +13,52 @@ import { Copilot } from './pages/Copilot';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  useEffect(() => {
+    // Sync with location hash
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace(/^#\/?/, '').trim();
+      if (hash === 'attack-graph' || hash === 'graph') {
+        setActiveTab('graph');
+      } else if (hash === 'scanner') {
+        setActiveTab('scanner');
+      } else if (hash === 'phishing') {
+        setActiveTab('phishing');
+      } else if (hash === 'alerts') {
+        setActiveTab('alerts');
+      } else if (hash === 'dashboard') {
+        setActiveTab('dashboard');
+      } else if (hash === 'copilot') {
+        setActiveTab('copilot');
+      } else if (hash === 'voice') {
+        setActiveTab('voice');
+      } else if (hash === 'wave') {
+        setActiveTab('wave');
+      } else if (hash === 'api') {
+        setActiveTab('api');
+      }
+    };
+
+    const handleCustomNavigate = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        setActiveTab(customEvent.detail);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('neuroshield:navigate', handleCustomNavigate);
+
+    // Initial check
+    if (window.location.hash) {
+      handleHashChange();
+    }
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('neuroshield:navigate', handleCustomNavigate);
+    };
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {

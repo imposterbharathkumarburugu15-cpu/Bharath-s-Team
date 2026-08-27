@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Shield, AlertTriangle, Link2, X, AlertCircle, Activity } from 'lucide-react';
+import { Shield, AlertTriangle, Link2, X, AlertCircle, Activity, Mail, Terminal, Sparkles, Cpu, Layers } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { ScanResult } from '@/services/geminiService';
 import { cn } from '@/lib/utils';
 import { SentinelWave } from '@/components/SentinelWave';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { EmailForensicsPanel } from '@/components/EmailForensicsPanel';
+import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
 
 interface TextScannerResultProps {
   scanResult: ScanResult;
+  inputText?: string;
   onReset: () => void;
 }
 
@@ -92,9 +95,47 @@ const ScrambleText = ({ original, masked, type, delayParams }: { original: strin
   );
 };
 
-export function TextScannerResult({ scanResult, onReset }: TextScannerResultProps) {
+export function TextScannerResult({ scanResult, inputText = '', onReset }: TextScannerResultProps) {
   const { t } = useLanguage();
   const isHighRisk = scanResult.riskScore > 50;
+
+  // View state: 'neural' vs 'forensics'
+  const isEmailOrHeaders = scanResult.detectedType === 'EMAIL' || 
+    !!scanResult.forensicDossier || 
+    inputText.includes('Received:') || 
+    inputText.includes('Authentication-Results:') || 
+    inputText.includes('From:') ||
+    inputText.includes('SPF:');
+
+  const [activeTab, setActiveTab] = useState<'neural' | 'forensics'>(
+    scanResult.forensicDossier ? 'forensics' : 'neural'
+  );
+  const [dynamicDossier, setDynamicDossier] = useState<ForensicDossier | null>(
+    scanResult.forensicDossier || null
+  );
+  const [isGeneratingForensics, setIsGeneratingForensics] = useState(false);
+
+  useEffect(() => {
+    if (scanResult.forensicDossier) {
+      setDynamicDossier(scanResult.forensicDossier);
+    }
+  }, [scanResult.forensicDossier]);
+
+  const handleSwitchToForensics = async () => {
+    setActiveTab('forensics');
+    if (!dynamicDossier) {
+      setIsGeneratingForensics(true);
+      try {
+        const textToAnalyze = inputText || scanResult.payloadDescription || scanResult.aiExplanation || '';
+        const dossier = await executeEmailForensics(textToAnalyze, '');
+        setDynamicDossier(dossier);
+      } catch (err) {
+        console.error('Failed to generate forensics dynamically:', err);
+      } finally {
+        setIsGeneratingForensics(false);
+      }
+    }
+  };
 
   const vectorData = scanResult.textMetrics ? [
     { subject: 'Urgency', A: scanResult.textMetrics.urgency, fullMark: 100 },
@@ -105,23 +146,90 @@ export function TextScannerResult({ scanResult, onReset }: TextScannerResultProp
   ] : [];
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full text-white">
-      {/* Header Area */}
-      <div className="mb-6 flex-shrink-0 flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Shield className="w-6 h-6 text-cyber-green" /> {t('threat_analysis')}
-          </h2>
+    <div className="flex-1 flex flex-col w-full h-full text-white overflow-y-auto custom-scrollbar">
+      {/* Header Area with Multi-Modal View Switcher */}
+      <div className="mb-6 flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0a0d1a]/60 border border-white/5 p-4 rounded-2xl backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-cyber-green/10 border border-cyber-green/30 flex items-center justify-center">
+            <Shield className="w-5 h-5 text-cyber-green" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              {t('threat_analysis')}
+            </h2>
+            <span className="text-xs text-cyber-muted font-mono">
+              Target: <span className="text-white">{scanResult.target || 'Live Payload'}</span> • Type: <span className="text-cyber-blue">{scanResult.detectedType}</span>
+            </span>
+          </div>
         </div>
-        <button 
-          onClick={onReset}
-          className="p-2 bg-[#0a0d1a]/50 text-cyber-muted hover:text-white rounded-full border border-white/5 hover:bg-white/10 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          {/* View Switcher Tabs */}
+          <div className="flex items-center bg-[#05080f] p-1 rounded-xl border border-white/10">
+            <button
+              onClick={() => setActiveTab('neural')}
+              className={cn(
+                "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
+                activeTab === 'neural'
+                  ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              )}
+            >
+              <Cpu className="w-3.5 h-3.5" />
+              <span>NEURAL PROFILE</span>
+            </button>
+            <button
+              onClick={handleSwitchToForensics}
+              className={cn(
+                "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
+                activeTab === 'forensics'
+                  ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              )}
+            >
+              <Terminal className="w-3.5 h-3.5 text-cyber-blue" />
+              <span>EMAIL FORENSICS</span>
+              {isEmailOrHeaders && (
+                <span className="w-2 h-2 rounded-full bg-cyber-blue animate-pulse" />
+              )}
+            </button>
+          </div>
+
+          <button 
+            onClick={onReset}
+            className="p-2 bg-[#0a0d1a]/50 text-cyber-muted hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+            title="Close / New Scan"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+      {/* RENDER ACTIVE TAB */}
+      {activeTab === 'forensics' ? (
+        <div className="flex-1 pb-6">
+          {isGeneratingForensics ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-[#0a0f1c]/50 rounded-2xl border border-white/5">
+              <Sparkles className="w-8 h-8 text-cyber-blue animate-spin mb-4" />
+              <p className="text-sm font-mono text-white">Reconstructing RFC 5322 Email Relay & SPF/DKIM/DMARC matrix...</p>
+            </div>
+          ) : dynamicDossier ? (
+            <EmailForensicsPanel dossier={dynamicDossier} />
+          ) : (
+            <div className="p-8 text-center bg-[#0a0f1c]/50 rounded-2xl border border-white/5">
+              <Mail className="w-8 h-8 text-gray-500 mx-auto mb-3" />
+              <p className="text-sm text-gray-400 font-mono mb-4">No email headers found in this scan payload.</p>
+              <button
+                onClick={() => handleSwitchToForensics()}
+                className="px-4 py-2 bg-cyber-blue text-black font-mono text-xs font-bold rounded-xl"
+              >
+                Force Forensic Parser Run
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 pb-6">
         
         {/* Left Column: Metrics & Explanation */}
         <div className="lg:col-span-5 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
@@ -339,6 +447,7 @@ export function TextScannerResult({ scanResult, onReset }: TextScannerResultProp
         </div>
 
       </div>
+      )}
     </div>
   );
 }

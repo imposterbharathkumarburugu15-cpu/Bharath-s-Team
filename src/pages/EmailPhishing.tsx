@@ -1,66 +1,304 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Mail, Search, RefreshCw, LogIn, Bell, Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Mail, Search, RefreshCw, LogIn, Bell, Shield, ShieldCheck, ShieldAlert, 
+  AlertTriangle, FileText, Terminal, ArrowRight, Copy, Check, Download, 
+  ExternalLink, Network, Globe, Server, Clock, Lock, AlertCircle, Sparkles, UploadCloud, Layers
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { addScanToHistory } from '@/lib/history';
-import { useGoogleLogin } from '@react-oauth/google';
+import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
+import { googleSignIn, googleLogout, initAuth, getAccessToken } from '@/services/googleAuth';
+import type { User } from 'firebase/auth';
+
+// Sample Presets for instantaneous hackathon testing
+const TEST_SCENARIOS = [
+  {
+    id: 'msft_bec',
+    title: 'Microsoft 365 Account Suspension (BEC Phish)',
+    tag: 'CRITICAL THREAT',
+    tagColor: 'bg-red-500/10 text-red-400 border-red-500/20',
+    rawHeaders: `From: "Microsoft Security" <security@m1crosoft-support.com>
+To: employee@company.com
+Reply-To: microsoft.verify.account@gmail.com
+Return-Path: <bounce@mail.m1crosoft-support.com>
+Subject: URGENT: Your Microsoft 365 account will be suspended
+Message-ID: <20260827.18293@mail.m1crosoft-support.com>
+Date: Thu, 27 Aug 2026 10:45:21 +0000
+
+Received: from mail.m1crosoft-support.com (185.220.101.45)
+    by mx.company.com with ESMTPS;
+    Thu, 27 Aug 2026 10:45:18 +0000
+
+Received: from unknown-host (10.20.30.15)
+    by mail.m1crosoft-support.com;
+    Thu, 27 Aug 2026 10:45:10 +0000
+
+Authentication-Results: mx.company.com;
+    spf=fail smtp.mailfrom=m1crosoft-support.com;
+    dkim=none;
+    dmarc=fail header.from=m1crosoft-support.com
+
+Content-Type: text/html`,
+    body: `URGENT ACTION REQUIRED
+
+Your Microsoft 365 account has been flagged for suspicious activity.
+
+Your account will be permanently suspended within 30 minutes.
+
+To prevent suspension, verify your account immediately:
+
+https://microsoft-security-verification.example.com/login
+
+Failure to verify your account will result in permanent loss of access.
+
+Regards,
+Microsoft Security Team`
+  },
+  {
+    id: 'paypal_invoice',
+    title: 'PayPal Fake Invoice & Payment Diversion',
+    tag: 'HIGH RISK',
+    tagColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    rawHeaders: `From: "PayPal Billing Department" <service@paypa1-update.com>
+To: accounting@enterprise.corp
+Reply-To: invoice.dispute.desk@gmail.com
+Return-Path: <bounce@paypa1-update.com>
+Subject: INVOICE #89218: Immediate settlement required
+Message-ID: <20260827.09112@paypa1-update.com>
+Date: Wed, 26 Aug 2026 14:10:00 +0000
+
+Received: from relay02.paypa1-update.com (194.26.29.110)
+    by mx.enterprise.corp with ESMTP;
+    Wed, 26 Aug 2026 14:09:55 +0000
+
+Authentication-Results: mx.enterprise.corp;
+    spf=fail smtp.mailfrom=paypa1-update.com;
+    dkim=fail;
+    dmarc=fail header.from=paypa1-update.com`,
+    body: `Dear Customer,
+
+You have a pending invoice of $1,490.00 for Bitcoin purchase on your PayPal account.
+
+If you did not authorize this transaction, click here immediately to dispute:
+http://paypal-resolution-center.example.com/dispute
+
+Failure to respond within 2 hours will initiate automatic debit.`
+  },
+  {
+    id: 'google_legit',
+    title: 'Verified Google Workspace Notification (Legitimate)',
+    tag: 'BENIGN / PASS',
+    tagColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    rawHeaders: `From: "Google Workspace" <workspace-noreply@google.com>
+To: admin@company.com
+Reply-To: workspace-noreply@google.com
+Return-Path: <workspace-noreply@google.com>
+Subject: New Security Advisory: Admin Console Policy Update
+Message-ID: <CABs9_2819.google.com>
+Date: Tue, 25 Aug 2026 08:30:00 +0000
+
+Received: from mail-wm1-x32e.google.com (209.85.128.175)
+    by mx.company.com with ESMTPS;
+    Tue, 25 Aug 2026 08:29:58 +0000
+
+Authentication-Results: mx.company.com;
+    spf=pass smtp.mailfrom=google.com;
+    dkim=pass header.i=@google.com;
+    dmarc=pass header.from=google.com`,
+    body: `Hello Administrator,
+
+This is a routine notification regarding policy updates to your Google Workspace tenant.
+You can review the updated compliance settings inside your official admin dashboard at https://admin.google.com
+
+No urgent action is required.`
+  }
+];
 
 export default function EmailPhishing() {
   const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<'forensics' | 'inbox'>('forensics');
+  const [selectedScenario, setSelectedScenario] = useState<string>('msft_bec');
+  const [rawHeaderText, setRawHeaderText] = useState<string>(TEST_SCENARIOS[0].rawHeaders);
+  const [bodyText, setBodyText] = useState<string>(TEST_SCENARIOS[0].body);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [dossier, setDossier] = useState<ForensicDossier | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [reportCopied, setReportCopied] = useState<boolean>(false);
+
+  // Live Gmail States
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoadingEmails, setIsLoadingEmails] = useState(false);
+  const [emails, setEmails] = useState<any[]>([]);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  const mockEmails = [
-    {
-      id: 1,
-      sender: 'updates@unstop.events',
-      subject: 'Last few hours to submit your Match 50 prediction | Unstop Prediction League',
-      time: 'Thu, 7 May 2026 09:35:44 +0000',
-      body: 'Unstop Prediction League Hi BURUGU BHARATH KUMAR, This is a quick reminder that 2 rounds of the Unstop Prediction League are currently live. You can attempt the rounds here: https://unstop.com/quiz/',
-      riskScore: 20,
-      signals: ['External sender domain'],
-    },
-    {
-      id: 2,
-      sender: 'noreply@unstop.news',
-      subject: 'If IndiGo gave you one choice... what would you pick?',
-      time: 'Thu, 07 May 2026 14:46:41 +0530',
-      body: 'Hi Burugu, At IndiGo, we\'re always working to make student travel smarter. Since you engaged with our recent campaign, we\'d love to understand your preferences to create offers and experiences',
-      riskScore: 20,
-      signals: ['External sender domain'],
-    },
-    {
-      id: 3,
-      sender: 'security@paypal-verification-secure.com',
-      subject: 'URGENT: Your account has been suspended',
-      time: 'Thu, 07 May 2026 08:12:00 +0000',
-      body: 'Dear Customer, We noticed suspicious activity on your account. Please click the link below immediately to verify your identity, otherwise your account will be permanently locked.',
-      riskScore: 98,
-      signals: ['URGENT LANGUAGE', 'SPOOFED SENDER DOMAIN', 'MALICIOUS LINK EMBEDDED'],
+  // Automatically analyze initial scenario on load & init Google Auth listener
+  useEffect(() => {
+    handleRunForensics(TEST_SCENARIOS[0].rawHeaders, TEST_SCENARIOS[0].body);
+
+    const unsubscribe = initAuth(
+      (user, token) => {
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        fetchRealEmails(token);
+      },
+      () => {
+        setCurrentUser(null);
+        setIsAuthenticated(false);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
+
+  const handleScenarioChange = (scenarioId: string) => {
+    const sc = TEST_SCENARIOS.find(s => s.id === scenarioId);
+    if (sc) {
+      setSelectedScenario(scenarioId);
+      setRawHeaderText(sc.rawHeaders);
+      setBodyText(sc.body);
+      handleRunForensics(sc.rawHeaders, sc.body);
     }
-  ];
+  };
 
-  const [emails, setEmails] = useState<any[]>(mockEmails);
+  const handleRunForensics = async (headers: string, body: string) => {
+    setIsAnalyzing(true);
+    try {
+      const result = await executeEmailForensics(headers, body);
+      setDossier(result);
 
-  const login = useGoogleLogin({
-    scope: 'https://www.googleapis.com/auth/gmail.readonly',
-    onSuccess: async (tokenResponse) => {
-      setIsAuthenticated(true);
-      fetchRealEmails(tokenResponse.access_token);
-    },
-    onError: error => console.error('Login Failed:', error)
-  });
+      // Save active attack graph in localStorage for AttackGraph.tsx synchronization
+      if (result.attackGraph) {
+        localStorage.setItem('neuroshield_active_attack_graph', JSON.stringify(result.attackGraph));
+      }
+
+      // Add to global security telemetry history
+      addScanToHistory({
+        detectedType: 'EMAIL',
+        riskScore: result.classification.riskScore,
+        signals: result.contentAnalysis.signals.map(s => s.description),
+        source: result.senderIdentity.fromAddress || result.originIP.ip,
+        target: result.headerFields.to || 'Enterprise Inbox',
+        payloadDescription: `Subject: ${result.headerFields.subject} | SPF: ${result.authentication.spf.status} | DMARC: ${result.authentication.dmarc.status}`,
+        threatName: `${result.classification.threatType} (${result.classification.subtype})`
+      });
+    } catch (err) {
+      console.error('Forensics execution error:', err);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        if (text) {
+          setRawHeaderText(text);
+          setBodyText('');
+          handleRunForensics(text, '');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const copyToClipboard = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const downloadJsonDossier = () => {
+    if (!dossier) return;
+    const blob = new Blob([JSON.stringify(dossier, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `neuroshield-forensic-dossier-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadMarkdownReport = () => {
+    if (!dossier) return;
+    const blob = new Blob([dossier.socReportMarkdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SOC-Incident-Report-${Date.now()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleGoogleLogin = async () => {
+    setAuthError(null);
+    setIsLoadingEmails(true);
+    try {
+      const result = await googleSignIn();
+      if (result) {
+        setCurrentUser(result.user);
+        setIsAuthenticated(true);
+        await fetchRealEmails(result.accessToken);
+      }
+    } catch (error: any) {
+      console.warn('OAuth Sign-in notice:', error);
+      const errMsg = error?.message || 'OAuth popup cancelled or origin unverified.';
+      setAuthError(errMsg);
+    } finally {
+      setIsLoadingEmails(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await googleLogout();
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setEmails([]);
+  };
+
+  const loadSampleInbox = () => {
+    setAuthError(null);
+    setIsAuthenticated(true);
+    setEmails([
+      {
+        id: 'msg-sample-01',
+        sender: 'Executive Desk <ceo.management@global-corp.info>',
+        subject: 'URGENT: Confidential Acquisition Wire Instruction',
+        time: 'Today, 10:14 AM',
+        body: 'Please process the confidential vendor settlement wire prior to EOD audit window closing.',
+        rawHeaders: TEST_SCENARIOS[0].rawHeaders
+      },
+      {
+        id: 'msg-sample-02',
+        sender: 'Billing Resolution <invoice.dispute.desk@gmail.com>',
+        subject: 'Past Due Final Demand: Invoice #INV-88910',
+        time: 'Yesterday, 4:45 PM',
+        body: 'Your subscription is suspended. Re-verify payment billing immediately via the link attached.',
+        rawHeaders: TEST_SCENARIOS[1].rawHeaders
+      },
+      {
+        id: 'msg-sample-03',
+        sender: 'IT Operations <service-notification@outlook.com>',
+        subject: 'Security Alert: Password Expiring in 2 Hours',
+        time: '2 days ago',
+        body: 'Your single-sign-on credentials are scheduled for revocation. Update credentials now.',
+        rawHeaders: TEST_SCENARIOS[2].rawHeaders
+      }
+    ]);
+  };
 
   const fetchRealEmails = async (token: string) => {
     setIsLoadingEmails(true);
+    setAuthError(null);
     try {
       const gRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await gRes.json();
-      if (!gRes.ok) {
-        throw new Error(JSON.stringify(data));
-      }
+      if (!gRes.ok) throw new Error(data?.error?.message || JSON.stringify(data));
       
       const detailedEmails = await Promise.all(
         (data.messages || []).map(async (msg: any) => {
@@ -68,190 +306,694 @@ export default function EmailPhishing() {
             headers: { Authorization: `Bearer ${token}` }
           });
           const detail = await detailRes.json();
-          if (!detailRes.ok) throw new Error(JSON.stringify(detail));
+          if (!detailRes.ok) throw new Error(detail?.error?.message || JSON.stringify(detail));
           const headers = detail.payload?.headers || [];
           const subject = headers.find((h: any) => h.name === 'Subject')?.value || 'No Subject';
           const sender = headers.find((h: any) => h.name === 'From')?.value || 'Unknown Sender';
           const dateStr = headers.find((h: any) => h.name === 'Date')?.value || '';
           
-          let body = detail.snippet || '';
-          const lowerBody = body.toLowerCase();
-          const lowerSub = subject.toLowerCase();
-          let riskScore = 20;
-          const signals = [];
+          // Reconstruct raw headers string
+          const rawHeaderArr = headers.map((h: any) => `${h.name}: ${h.value}`).join('\n');
+          const body = detail.snippet || '';
 
-          if (lowerSub.includes('urgent') || lowerBody.includes('urgent') || lowerSub.includes('action required')) {
-             riskScore += 40;
-             signals.push('Urgent language detected');
-          }
-          if (lowerBody.includes('password') || lowerBody.includes('verify') || lowerBody.includes('login')) {
-             riskScore += 30;
-             signals.push('Credential request');
-          }
-          if (lowerBody.includes('http') && !lowerBody.includes('https')) {
-             riskScore += 20;
-             signals.push('Insecure HTTP link');
-          }
-
-          if (sender.includes('@gmail.com')) {
-             signals.push('External sender domain');
-          }
-
-          let safeRisk = Math.min(riskScore + Math.floor(Math.random() * 5), 100);
-          if (signals.length === 0) signals.push('External sender domain');
-          
           return {
-             id: msg.id,
-             sender,
-             subject,
-             time: dateStr,
-             body,
-             riskScore: safeRisk,
-             signals,
+            id: msg.id,
+            sender,
+            subject,
+            time: dateStr,
+            body,
+            rawHeaders: rawHeaderArr
           };
         })
       );
       
       if (detailedEmails.length > 0) {
         setEmails(detailedEmails);
-        detailedEmails.forEach(email => {
-          addScanToHistory({
-            detectedType: 'EMAIL',
-            riskScore: email.riskScore,
-            signals: email.signals,
-            source: email.sender,
-            target: 'Connected Inbox',
-            payloadDescription: `Subject: ${email.subject}`,
-            threatName: email.riskScore > 50 ? 'Suspicious Email' : 'Monitored Email'
-          });
-        });
       }
-    } catch(err) {
-      console.error(err);
+    } catch(err: any) {
+      console.warn('Notice fetching Gmail:', err);
+      setAuthError(err?.message || 'Error fetching Gmail messages.');
     } finally {
       setIsLoadingEmails(false);
     }
   };
 
+  const inspectGmailMessage = (email: any) => {
+    setRawHeaderText(email.rawHeaders);
+    setBodyText(email.body);
+    setActiveTab('forensics');
+    handleRunForensics(email.rawHeaders, email.body);
+  };
+
   return (
-    <div className="flex-1 w-full h-full bg-[#03060a] overflow-y-auto custom-scrollbar p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="flex-1 w-full h-full bg-[#03060a] overflow-y-auto custom-scrollbar p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Top Header area (mimicking the screenshot) */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#0a0f1c] border border-white/5 p-4 rounded-full shadow-lg">
-          <div className="flex bg-[#05080f] border border-white/5 rounded-full px-4 py-2 flex-1 w-full md:max-w-md items-center">
-            <Search className="w-4 h-4 text-cyber-muted mr-3" />
-            <input 
-              type="text" 
-              placeholder="Search IPs, domains, hashes, users..." 
-              className="bg-transparent border-none outline-none text-white text-sm w-full placeholder:text-cyber-muted"
-            />
+        {/* Navigation & Header Status */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-[#0a0f1c] border border-white/5 p-4 rounded-2xl shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center">
+              <Mail className="w-5 h-5 text-cyber-blue" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-2 font-mono">
+                EMAIL THREAT FORENSICS & ORIGIN TRACEABILITY
+              </h1>
+              <p className="text-xs text-cyber-muted">RFC 5322 Protocol Verification, Relay Reconstruction & Attribution Engine</p>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#00ff66]/30 bg-[#00ff66]/10 text-[#00ff66] text-xs font-bold tracking-wider">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#00ff66] animate-pulse" />
-              SYSTEM SECURE
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#00f5ff]/30 bg-[#00f5ff]/10 text-[#00f5ff] text-xs font-bold tracking-wider">
-               <ShieldCheck className="w-3.5 h-3.5" />
-               AI MODELS ACTIVE
-            </div>
-            <div className="relative cursor-pointer hover:bg-white/5 p-2 rounded-full transition-colors">
-              <Bell className="w-5 h-5 text-gray-400" />
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-[#0a0f1c] rounded-full"></span>
-            </div>
+
+          {/* Mode Switcher Tabs */}
+          <div className="flex items-center bg-[#05080f] p-1 rounded-xl border border-white/5">
+            <button
+              onClick={() => setActiveTab('forensics')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
+                activeTab === 'forensics'
+                  ? 'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Terminal className="w-3.5 h-3.5" />
+              FORENSIC LAB & .EML
+            </button>
+            <button
+              onClick={() => setActiveTab('inbox')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
+                activeTab === 'inbox'
+                  ? 'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5" />
+              GMAIL INBOX SCANNER
+            </button>
           </div>
         </div>
 
-        {/* Connect Gmail Banner */}
-        {!isAuthenticated && (
-          <div className="bg-cyber-blue/5 border border-cyber-blue/30 rounded-2xl p-4 flex justify-between items-center">
-             <div className="flex items-center gap-3">
-               <Mail className="w-5 h-5 text-cyber-blue" />
-               <div>
-                  <h3 className="text-white font-bold text-sm tracking-wide">Connect your inbox</h3>
-                  <p className="text-cyber-muted text-xs">Scan your real emails for threats without leaving the application.</p>
-               </div>
-             </div>
-             <button 
-               onClick={() => login()} 
-               disabled={isLoadingEmails}
-               className="text-[10px] sm:text-xs font-bold uppercase tracking-widest bg-cyber-blue/20 hover:bg-cyber-blue/30 text-cyber-blue border border-cyber-blue/50 px-4 py-2 rounded transition-colors flex items-center gap-2"
-             >
-               {isLoadingEmails ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-               Connect Gmail
-             </button>
-          </div>
-        )}
-
-        {/* Email List */}
-        <div className="space-y-4 pb-20">
-          {emails.map((email) => {
-            const isHighRisk = email.riskScore > 50;
-            return (
-              <motion.div 
-                key={email.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group"
-              >
-                <div className="flex flex-col gap-1 mb-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">{email.subject}</h3>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
-                        isHighRisk 
-                          ? 'bg-[#ff2a55]/10 text-[#ff2a55] border-[#ff2a55]/20' 
-                          : 'bg-[#00ff66]/10 text-[#00ff66] border-[#00ff66]/20'
-                        }`}
-                      >
-                        {isHighRisk ? 'HIGH RISK' : 'LOW RISK'}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-cyber-muted font-mono whitespace-nowrap ml-4 mt-1">{email.time}</span>
-                  </div>
-                  
-                  <div className="text-sm text-gray-400">
-                    From: <span className="text-gray-300 font-medium">{email.sender}</span>
-                  </div>
-                </div>
-
-                <div className="text-[13px] text-gray-400/90 leading-relaxed max-w-4xl mb-6">
-                  {email.body}
-                </div>
-
-                <div className="bg-[#05080f] border border-white/5 rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      {isHighRisk ? (
-                        <ShieldAlert className="w-4 h-4 text-[#ff2a55]" />
-                      ) : (
-                        <Shield className="w-4 h-4 text-[#ff2a55]" />
-                      )}
-                      <span className="text-xs font-bold text-white tracking-widest uppercase">Detection Reasons</span>
-                    </div>
-                    <ul className="list-inside space-y-1">
-                      {email.signals.map((sig: string, idx: number) => (
-                        <li key={idx} className="text-xs text-gray-400 flex items-center gap-2">
-                           <div className="w-1 h-1 rounded-full bg-gray-500" />
-                           {sig}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div className="text-left sm:text-right flex flex-col items-start sm:items-end w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-white/5">
-                     <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-500 mb-1">Threat Score</span>
-                     <div className={`text-4xl sm:text-5xl font-black tabular-nums tracking-tighter ${isHighRisk ? 'text-[#ff2a55]' : 'text-[#00ff66]'}`}>
-                       {email.riskScore}<span className="text-xl sm:text-2xl text-gray-600">/100</span>
-                     </div>
-                  </div>
+        {activeTab === 'forensics' ? (
+          <div className="space-y-6">
+            {/* Simulation Presets & Raw Header Input Drawer */}
+            <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-5 shadow-xl">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-white/5">
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-cyber-blue block mb-1">
+                    TEST BENCH & INCIDENT RECONSTRUCTION
+                  </span>
+                  <h3 className="text-sm font-bold text-white">Select Threat Scenario or Ingest Custom Headers</h3>
                 </div>
                 
+                {/* Scenario Badges */}
+                <div className="flex flex-wrap gap-2">
+                  {TEST_SCENARIOS.map(sc => (
+                    <button
+                      key={sc.id}
+                      onClick={() => handleScenarioChange(sc.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all border ${
+                        selectedScenario === sc.id
+                          ? 'bg-white/10 text-white border-cyber-blue shadow-md'
+                          : 'bg-black/30 text-gray-400 border-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      {sc.title.split(' (')[0]}
+                    </button>
+                  ))}
+                  
+                  {/* .EML Upload Button */}
+                  <label className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center gap-1.5 transition-colors">
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>Upload .EML</span>
+                    <input type="file" accept=".eml,.txt" onChange={handleFileUpload} className="hidden" />
+                  </label>
+                </div>
+              </div>
+
+              {/* Raw Header / Body Inputs Accordion */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
+                      RFC 5322 Raw Message Headers
+                    </label>
+                    <span className="text-[10px] text-gray-500 font-mono">Unfolded & Multi-Hop Capable</span>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={rawHeaderText}
+                    onChange={(e) => setRawHeaderText(e.target.value)}
+                    placeholder="Paste email headers (From:, Received:, Authentication-Results:)..."
+                    className="w-full bg-[#05080f] border border-white/10 rounded-xl p-3 font-mono text-xs text-gray-300 focus:outline-none focus:border-cyber-blue/50 custom-scrollbar resize-none"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
+                      Email Body & Embedded Content
+                    </label>
+                    <span className="text-[10px] text-gray-500 font-mono">NLP & URL Harvester Input</span>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={bodyText}
+                    onChange={(e) => setBodyText(e.target.value)}
+                    placeholder="Paste email body or leave blank if combined above..."
+                    className="w-full bg-[#05080f] border border-white/10 rounded-xl p-3 font-mono text-xs text-gray-300 focus:outline-none focus:border-cyber-blue/50 custom-scrollbar resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => handleRunForensics(rawHeaderText, bodyText)}
+                  disabled={isAnalyzing}
+                  className="px-5 py-2.5 rounded-xl font-mono text-xs font-bold uppercase tracking-widest bg-cyber-blue text-black hover:bg-cyber-blue/90 shadow-lg flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  {isAnalyzing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  Execute Deep Forensics Pipeline
+                </button>
+              </div>
+            </div>
+
+            {/* FORENSIC DOSSIER OUTPUT */}
+            {dossier && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                {/* 1. Threat Verdict & KPI Banner */}
+                <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                  <div className={`absolute top-0 left-0 h-1.5 w-full ${
+                    dossier.classification.verdict === 'MALICIOUS' ? 'bg-red-500' :
+                    dossier.classification.verdict === 'SUSPICIOUS' ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`} />
+
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold tracking-widest uppercase border ${
+                          dossier.classification.verdict === 'MALICIOUS' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
+                          dossier.classification.verdict === 'SUSPICIOUS' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
+                          'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        }`}>
+                          {dossier.classification.verdict} — {dossier.classification.threatType}
+                        </span>
+                        <span className="text-xs text-gray-400 font-mono">Confidence: {dossier.classification.confidence}%</span>
+                      </div>
+                      <h2 className="text-xl font-bold text-white tracking-tight">{dossier.headerFields.subject}</h2>
+                      <p className="text-xs text-gray-400 font-mono">Subtype: {dossier.classification.subtype}</p>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-gray-500 block">THREAT RISK SCORE</span>
+                        <div className={`text-4xl font-black font-mono tracking-tighter ${
+                          dossier.classification.riskScore > 60 ? 'text-red-500' :
+                          dossier.classification.riskScore > 30 ? 'text-amber-400' : 'text-emerald-400'
+                        }`}>
+                          {dossier.classification.riskScore}<span className="text-xl text-gray-600">/100</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={downloadJsonDossier}
+                          className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-white/5 hover:bg-white/10 text-white border border-white/10 flex items-center gap-1.5 transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5 text-cyber-blue" />
+                          <span>Export JSON</span>
+                        </button>
+                        <button
+                          onClick={downloadMarkdownReport}
+                          className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center gap-1.5 transition-colors"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>SOC Report (.md)</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Protocol Authentication Matrix (SPF / DKIM / DMARC) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* SPF */}
+                  <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-5 shadow-lg">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-xs font-mono font-bold tracking-widest uppercase text-gray-400">SPF VALIDATION</span>
+                      <span className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase border ${
+                        dossier.authentication.spf.status === 'PASS' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        dossier.authentication.spf.status === 'FAIL' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                        'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                      }`}>
+                        {dossier.authentication.spf.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-300 leading-relaxed mb-3">{dossier.authentication.spf.evidence}</p>
+                    <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
+                      Envelope: <span className="text-gray-300">{dossier.authentication.spf.envelopeSenderDomain || 'N/A'}</span>
+                    </div>
+                  </div>
+
+                  {/* DKIM */}
+                  <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-5 shadow-lg">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-xs font-mono font-bold tracking-widest uppercase text-gray-400">DKIM CRYPTO SIGNATURE</span>
+                      <span className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase border ${
+                        dossier.authentication.dkim.status === 'PASS' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        dossier.authentication.dkim.status === 'FAIL' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                        'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                      }`}>
+                        {dossier.authentication.dkim.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-300 leading-relaxed mb-3">{dossier.authentication.dkim.evidence}</p>
+                    <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
+                      Signing Domain: <span className="text-gray-300">{dossier.authentication.dkim.signingDomain || 'None'}</span>
+                    </div>
+                  </div>
+
+                  {/* DMARC */}
+                  <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-5 shadow-lg">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-xs font-mono font-bold tracking-widest uppercase text-gray-400">DMARC POLICY ALIGNMENT</span>
+                      <span className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase border ${
+                        dossier.authentication.dmarc.status === 'PASS' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        dossier.authentication.dmarc.status === 'FAIL' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                        'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                      }`}>
+                        {dossier.authentication.dmarc.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-300 leading-relaxed mb-3">{dossier.authentication.dmarc.evidence}</p>
+                    <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
+                      Header From: <span className="text-gray-300">{dossier.authentication.dmarc.headerFromDomain || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Sender Identity & Discrepancies Matrix */}
+                <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-6 shadow-xl space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-cyber-blue" />
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                        SENDER IDENTITY & HEADER DISCREPANCY AUDIT
+                      </h3>
+                    </div>
+                    <span className="text-xs font-mono text-gray-400">
+                      {dossier.senderIdentity.inconsistencies.length} Inconsistencies Detected
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-[#05080f] p-4 rounded-xl border border-white/5 text-xs font-mono">
+                    <div>
+                      <span className="text-gray-500 block text-[10px]">HEADER FROM:</span>
+                      <span className="text-white font-medium break-all">{dossier.senderIdentity.fromAddress}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block text-[10px]">RETURN-PATH (ENVELOPE):</span>
+                      <span className="text-white font-medium break-all">{dossier.senderIdentity.returnPathAddress || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block text-[10px]">REPLY-TO:</span>
+                      <span className="text-white font-medium break-all">{dossier.senderIdentity.replyToAddress || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block text-[10px]">MESSAGE-ID:</span>
+                      <span className="text-white font-medium break-all">{dossier.headerFields.messageId || 'N/A'}</span>
+                    </div>
+                  </div>
+
+                  {dossier.senderIdentity.inconsistencies.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      {dossier.senderIdentity.inconsistencies.map((inc, i) => (
+                        <div key={i} className="bg-red-500/5 border border-red-500/20 rounded-xl p-3 flex items-start gap-3">
+                          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                          <div className="space-y-1 text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-red-400">{inc.title}</span>
+                              <span className="text-[10px] font-mono px-2 py-0.2 bg-red-500/20 text-red-300 rounded">
+                                {inc.severity}
+                              </span>
+                            </div>
+                            <p className="text-gray-300">{inc.description}</p>
+                            <p className="text-gray-400 text-[11px] italic font-mono">{inc.significance}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Hop-by-Hop Relay Path Reconstruction & Origin IP Card */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Relay Path Chronology */}
+                  <div className="lg:col-span-2 bg-[#0a0f1c] border border-white/5 rounded-2xl p-6 shadow-xl space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-cyber-blue" />
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                          RELAY PATH RECONSTRUCTION ({dossier.relayReconstruction.hopCount} HOPS)
+                        </h3>
+                      </div>
+                      <span className="text-xs font-mono text-gray-400">
+                        Transit: ~{dossier.relayReconstruction.totalTransitTimeSeconds}s
+                      </span>
+                    </div>
+
+                    <div className="relative pl-6 space-y-6 border-l-2 border-white/10 my-2">
+                      {dossier.relayReconstruction.chronologicalHops.map((hop, idx) => (
+                        <div key={idx} className="relative group">
+                          <div className="absolute -left-[31px] top-0.5 w-4 h-4 rounded-full bg-[#0a0f1c] border-2 border-cyber-blue flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyber-blue" />
+                          </div>
+
+                          <div className="bg-[#05080f] border border-white/5 rounded-xl p-3.5 space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-mono font-bold text-cyber-blue">
+                                HOP {hop.hopNumber}: {hop.sourceHostname}
+                              </span>
+                              <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                                hop.ipType === 'Public IPv4' ? 'bg-cyber-blue/10 text-cyber-blue border-cyber-blue/30' :
+                                'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                              }`}>
+                                {hop.ipType}
+                              </span>
+                            </div>
+
+                            <div className="text-xs font-mono text-gray-300 flex flex-wrap gap-x-4 gap-y-1">
+                              <div>IP: <span className="text-white font-bold">{hop.sourceIP}</span></div>
+                              <div>➔ Destination: <span className="text-gray-400">{hop.destinationHostname}</span></div>
+                              <div>Protocol: <span className="text-gray-400">{hop.protocol}</span></div>
+                            </div>
+
+                            <div className="flex justify-between items-center text-[10px] font-mono text-gray-500 pt-1 border-t border-white/5">
+                              <span>Time: {hop.timestamp || 'N/A'}</span>
+                              {hop.delayToNextHopSeconds !== undefined && (
+                                <span>Transit Delay: +{hop.delayToNextHopSeconds}s</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Origin IP & Intelligence */}
+                  <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Globe className="w-4 h-4 text-cyber-blue" />
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                          ORIGIN IP & GEOLOCATION
+                        </h3>
+                      </div>
+
+                      <div className="space-y-3 bg-[#05080f] p-4 rounded-xl border border-white/5 font-mono text-xs">
+                        <div>
+                          <span className="text-[10px] text-gray-500 block">EARLIEST RELIABLE PUBLIC IP:</span>
+                          <span className="text-base text-cyber-blue font-bold">{dossier.originIP.ip}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-gray-500 block">IP CLASSIFICATION:</span>
+                          <span className="text-white">{dossier.originIP.ipType}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-gray-500 block">COUNTRY / LOCATION:</span>
+                          <span className="text-white">{dossier.originIP.country}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-gray-500 block">CITY / REGION:</span>
+                          <span className="text-white">{dossier.originIP.city}, {dossier.originIP.region}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-gray-500 block">ISP / ASN:</span>
+                          <span className="text-white">{dossier.originIP.isp} ({dossier.originIP.asn})</span>
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-gray-400 italic mt-3 leading-relaxed">
+                        Forensic Caveat: Identifies the sending mail server gateway; does not prove physical identity of the human operator.
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (dossier.attackGraph) {
+                            localStorage.setItem('neuroshield_active_attack_graph', JSON.stringify(dossier.attackGraph));
+                          }
+                          window.dispatchEvent(new CustomEvent('neuroshield:navigate', { detail: 'graph' }));
+                          window.location.hash = '#/attack-graph';
+                        }}
+                        className="w-full py-2.5 rounded-xl font-mono text-xs font-bold uppercase tracking-wider bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-[0_0_15px_rgba(0,245,255,0.2)] cursor-pointer"
+                      >
+                        <Network className="w-3.5 h-3.5" />
+                        <span>Inspect in Attack Graph</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. Indicators of Compromise (IOC) Matrix */}
+                <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-6 shadow-xl space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-cyber-blue" />
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                        EXTRACTED INDICATORS OF COMPROMISE (IOCs)
+                      </h3>
+                    </div>
+                    <span className="text-xs font-mono text-gray-400">Ready for SIEM/EDR Ingestion</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {/* IP Addresses */}
+                    <div className="bg-[#05080f] p-3.5 rounded-xl border border-white/5 space-y-2">
+                      <span className="text-[10px] font-mono text-gray-400 font-bold uppercase block">IP ADDRESSES</span>
+                      <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                        {dossier.iocs.ipAddresses.map((ipObj, i) => (
+                          <div key={i} className="flex justify-between items-center text-xs font-mono bg-black/40 p-1.5 rounded border border-white/5">
+                            <span className="text-white truncate">{ipObj.ip}</span>
+                            <button
+                              onClick={() => copyToClipboard(ipObj.ip, `ip-${i}`)}
+                              className="text-gray-400 hover:text-white p-1"
+                            >
+                              {copiedKey === `ip-${i}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Domains */}
+                    <div className="bg-[#05080f] p-3.5 rounded-xl border border-white/5 space-y-2">
+                      <span className="text-[10px] font-mono text-gray-400 font-bold uppercase block">DOMAINS</span>
+                      <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                        {dossier.iocs.domains.map((dom, i) => (
+                          <div key={i} className="flex justify-between items-center text-xs font-mono bg-black/40 p-1.5 rounded border border-white/5">
+                            <span className="text-white truncate" title={dom.domain}>{dom.domain}</span>
+                            <button
+                              onClick={() => copyToClipboard(dom.domain, `dom-${i}`)}
+                              className="text-gray-400 hover:text-white p-1"
+                            >
+                              {copiedKey === `dom-${i}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* URLs */}
+                    <div className="bg-[#05080f] p-3.5 rounded-xl border border-white/5 space-y-2">
+                      <span className="text-[10px] font-mono text-gray-400 font-bold uppercase block">PHISHING URLS</span>
+                      <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                        {dossier.iocs.urls.length > 0 ? (
+                          dossier.iocs.urls.map((u, i) => (
+                            <div key={i} className="flex justify-between items-center text-xs font-mono bg-black/40 p-1.5 rounded border border-white/5">
+                              <span className="text-red-400 truncate" title={u}>{u}</span>
+                              <button
+                                onClick={() => copyToClipboard(u, `url-${i}`)}
+                                className="text-gray-400 hover:text-white p-1"
+                              >
+                                {copiedKey === `url-${i}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-xs text-gray-500 italic p-1">No embedded URLs</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Email Accounts */}
+                    <div className="bg-[#05080f] p-3.5 rounded-xl border border-white/5 space-y-2">
+                      <span className="text-[10px] font-mono text-gray-400 font-bold uppercase block">IDENTIFIED EMAILS</span>
+                      <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                        {dossier.iocs.emailAddresses.map((em, i) => (
+                          <div key={i} className="flex justify-between items-center text-xs font-mono bg-black/40 p-1.5 rounded border border-white/5">
+                            <span className="text-white truncate" title={em.email}>{em.email}</span>
+                            <button
+                              onClick={() => copyToClipboard(em.email, `em-${i}`)}
+                              className="text-gray-400 hover:text-white p-1"
+                            >
+                              {copiedKey === `em-${i}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. Top Prioritized Forensic Findings */}
+                <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-6 shadow-xl space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShieldCheck className="w-4 h-4 text-cyber-blue" />
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                      TOP 5 PRIORITIZED FORENSIC FINDINGS
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    {dossier.topFindings.map((f, i) => (
+                      <div key={i} className="flex items-start gap-3 bg-[#05080f] p-3 rounded-xl border border-white/5">
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase shrink-0 mt-0.5 ${
+                          f.severity === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                          f.severity === 'HIGH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                          'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30'
+                        }`}>
+                          {f.severity}
+                        </span>
+                        <p className="text-xs text-gray-300 leading-relaxed font-sans">{f.finding}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </motion.div>
-            );
-          })}
-        </div>
+            )}
+          </div>
+        ) : (
+          /* GMAIL LIVE INBOX VIEW */
+          <div className="space-y-6">
+            {!isAuthenticated ? (
+              <div className="space-y-4">
+                <div className="bg-cyber-blue/5 border border-cyber-blue/30 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center shrink-0">
+                      <Mail className="w-6 h-6 text-cyber-blue" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-bold text-base tracking-wide">Connect Real Gmail Account</h3>
+                      <p className="text-cyber-muted text-xs">Scan and analyze live inbox messages for phishing and protocol spoofing in real time.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <button 
+                      onClick={() => loadSampleInbox()}
+                      className="flex-1 md:flex-none font-mono text-xs font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                    >
+                      <Terminal className="w-3.5 h-3.5" /> Sample Inbox
+                    </button>
+                    <button 
+                      onClick={() => handleGoogleLogin()} 
+                      disabled={isLoadingEmails}
+                      className="flex-1 md:flex-none font-mono text-xs font-bold uppercase tracking-widest bg-cyber-blue text-black hover:bg-cyber-blue/90 px-6 py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+                    >
+                      {isLoadingEmails ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+                      Connect Gmail
+                    </button>
+                  </div>
+                </div>
+
+                {authError && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="text-xs space-y-1">
+                      <p className="font-bold text-amber-300">Notice: {authError}</p>
+                      <p className="text-gray-400 leading-relaxed">
+                        If running inside a sandboxed iframe or if popup was blocked, you can also use the Sample Inbox mode to test all phishing triage and forensic graph features immediately.
+                      </p>
+                      <div className="pt-2">
+                        <button
+                          onClick={() => loadSampleInbox()}
+                          className="px-3 py-1.5 rounded-lg bg-cyber-blue/20 hover:bg-cyber-blue/30 text-cyber-blue border border-cyber-blue/40 font-mono font-bold text-[11px]"
+                        >
+                          Load Simulated Inbox for Testing
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#0a0f1c] p-4 rounded-xl border border-white/5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-xs font-mono font-bold text-emerald-400">
+                      GMAIL API CONNECTED
+                    </span>
+                    {currentUser?.email && (
+                      <span className="text-[11px] font-mono text-gray-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                        {currentUser.email}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={async () => {
+                        const token = getAccessToken();
+                        if (token) {
+                          await fetchRealEmails(token);
+                        } else {
+                          await handleGoogleLogin();
+                        }
+                      }}
+                      className="text-xs font-mono text-cyber-blue hover:underline flex items-center gap-1.5"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Refresh Inbox
+                    </button>
+                    <button
+                      onClick={() => handleLogout()}
+                      className="text-xs font-mono text-red-400 hover:text-red-300 hover:underline"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {emails.map((email) => (
+                    <div
+                      key={email.id}
+                      className="bg-[#0a0f1c] border border-white/5 rounded-xl p-5 hover:border-cyber-blue/30 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                    >
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-white">{email.subject}</h4>
+                          <span className="text-[10px] font-mono text-gray-500">{email.time}</span>
+                        </div>
+                        <p className="text-xs text-gray-400 font-mono">From: {email.sender}</p>
+                        <p className="text-xs text-gray-500 line-clamp-1">{email.body}</p>
+                      </div>
+
+                      <button
+                        onClick={() => inspectGmailMessage(email)}
+                        className="px-4 py-2 rounded-lg text-xs font-mono font-bold bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center gap-1.5 transition-colors whitespace-nowrap"
+                      >
+                        <Terminal className="w-3.5 h-3.5" />
+                        <span>Run Forensics</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
       <style>{`
@@ -263,6 +1005,3 @@ export default function EmailPhishing() {
     </div>
   );
 }
-
-
-

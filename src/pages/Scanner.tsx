@@ -7,6 +7,7 @@ import { addScanToHistory } from '@/lib/history';
 import { UrlScannerResult } from '@/components/UrlScannerResult';
 import { TextScannerResult } from '@/components/TextScannerResult';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
 
 type ScanStatus = 'idle' | 'scanning' | 'complete';
 
@@ -36,16 +37,16 @@ export function LiveScanner() {
     return () => clearInterval(interval);
   }, [status, placeholders.length]);
 
-  // Mock scan progress
+  // Responsive scan progress animation
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (status === 'scanning') {
       interval = setInterval(() => {
         setScanProgress(p => {
-          if (p >= 90) return 90;
-          return p + (Math.random() * 15);
+          if (p >= 88) return 88;
+          return p + (Math.random() * 22 + 8);
         });
-      }, 300);
+      }, 70);
     }
     return () => clearInterval(interval);
   }, [status]);
@@ -59,6 +60,18 @@ export function LiveScanner() {
       } else {
         setPreviewUrl(null);
       }
+
+      // If text or eml file, extract text into input
+      if (file.name.endsWith('.eml') || file.name.endsWith('.txt') || file.type.includes('text') || file.type.includes('message')) {
+        const textReader = new FileReader();
+        textReader.onload = (event) => {
+          const content = event.target?.result as string;
+          if (content) {
+            setInputText(content);
+          }
+        };
+        textReader.readAsText(file);
+      }
     }
   };
 
@@ -66,6 +79,48 @@ export function LiveScanner() {
     setAttachedFile(null);
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Helper to enrich ScanResult with deep RFC 5322 Forensics
+  const enrichWithEmailForensics = async (res: ScanResult, textToAnalyze: string) => {
+    const hasEmailHeaders = textToAnalyze.includes('Received:') || 
+      textToAnalyze.includes('Authentication-Results:') || 
+      textToAnalyze.includes('From:') || 
+      textToAnalyze.includes('Subject:') || 
+      textToAnalyze.includes('Return-Path:') ||
+      textToAnalyze.includes('Message-ID:') ||
+      res.detectedType === 'EMAIL';
+
+    if (hasEmailHeaders) {
+      try {
+        const dossier = await executeEmailForensics(textToAnalyze, '');
+        res.forensicDossier = dossier;
+        res.detectedType = 'EMAIL';
+        res.riskScore = Math.max(res.riskScore || 0, dossier.classification.riskScore);
+        
+        // Add specific forensic signals
+        const forensicSignals = [
+          `Forensic Verdict: ${dossier.classification.verdict} (${dossier.classification.threatType})`,
+          `SPF: ${dossier.authentication.spf.status} | DKIM: ${dossier.authentication.dkim.status} | DMARC: ${dossier.authentication.dmarc.status}`,
+          ...dossier.senderIdentity.inconsistencies.map(inc => `Header Anomaly: ${inc.title}`),
+          `Origin IP: ${dossier.originIP.ip} (${dossier.originIP.country || 'Public'})`
+        ];
+
+        res.signals = Array.from(new Set([...(res.signals || []), ...forensicSignals]));
+
+        // Sync Attack Graph to localStorage for cross-module intelligence
+        if (dossier.attackGraph) {
+          try {
+            localStorage.setItem('neuroshield_active_attack_graph', JSON.stringify(dossier.attackGraph));
+          } catch (e) {
+            console.error('Failed to sync attack graph to localStorage:', e);
+          }
+        }
+      } catch (err) {
+        console.error('Forensics execution error in scanner:', err);
+      }
+    }
+    return res;
   };
 
   const handleScan = async () => {
@@ -259,7 +314,7 @@ export function LiveScanner() {
           mimeType = attachedFile.type;
           
           try {
-            const res = await analyzeThreat(sanitizedText, language, base64Data, mimeType);
+            let res = await analyzeThreat(sanitizedText, language, base64Data, mimeType);
             if (detectedMasks.length > 0) {
               res.maskedData = [...(res.maskedData || []), ...detectedMasks];
             }
@@ -271,12 +326,15 @@ export function LiveScanner() {
             res.signals = Array.from(new Set([...(res.signals || []), ...dynamicSignals]));
             res.riskScore = Math.min(100, (res.riskScore || 0) + dynamicRiskScore);
 
+            // Enrich with RFC 5322 Forensics if email payload
+            res = await enrichWithEmailForensics(res, inputText);
+
             const finalRes = applyMasksToResult(res, detectedMasks);
             addScanToHistory(finalRes);
             setScanResult(finalRes);
           } catch(err) {
             console.error(err);
-            const dummy = getDummyResult();
+            let dummy = getDummyResult();
             if (detectedMasks.length > 0) {
               dummy.maskedData = detectedMasks;
             }
@@ -288,6 +346,9 @@ export function LiveScanner() {
             dummy.signals = Array.from(new Set([...(dummy.signals || []), ...dynamicSignals]));
             dummy.riskScore = Math.min(100, (dummy.riskScore || 0) + dynamicRiskScore);
 
+            // Enrich dummy with forensics
+            dummy = await enrichWithEmailForensics(dummy, inputText);
+
             const finalDummy = applyMasksToResult(dummy, detectedMasks);
             addScanToHistory(finalDummy);
             setScanResult(finalDummy);
@@ -296,7 +357,7 @@ export function LiveScanner() {
         };
         reader.readAsDataURL(attachedFile);
       } else {
-        const res = await analyzeThreat(sanitizedText, language);
+        let res = await analyzeThreat(sanitizedText, language);
         if (detectedMasks.length > 0) {
           res.maskedData = [...(res.maskedData || []), ...detectedMasks];
         }
@@ -308,6 +369,9 @@ export function LiveScanner() {
         res.signals = Array.from(new Set([...(res.signals || []), ...dynamicSignals]));
         res.riskScore = Math.min(100, (res.riskScore || 0) + dynamicRiskScore);
 
+        // Enrich with RFC 5322 Forensics if email payload
+        res = await enrichWithEmailForensics(res, inputText);
+
         const finalRes = applyMasksToResult(res, detectedMasks);
         addScanToHistory(finalRes);
         setScanResult(finalRes);
@@ -315,7 +379,7 @@ export function LiveScanner() {
       }
     } catch (error) {
       console.error(error);
-      const dummy = getDummyResult();
+      let dummy = getDummyResult();
       if (detectedMasks.length > 0) {
         dummy.maskedData = detectedMasks;
       }
@@ -327,6 +391,8 @@ export function LiveScanner() {
       dummy.signals = Array.from(new Set([...(dummy.signals || []), ...dynamicSignals]));
       dummy.riskScore = Math.min(100, (dummy.riskScore || 0) + dynamicRiskScore);
 
+      dummy = await enrichWithEmailForensics(dummy, inputText);
+
       setScanResult(applyMasksToResult(dummy, detectedMasks));
       completeScan();
     }
@@ -336,7 +402,7 @@ export function LiveScanner() {
     setScanProgress(100);
     setTimeout(() => {
       setStatus('complete');
-    }, 300);
+    }, 120);
   };
 
   const getDummyResult = (): ScanResult => {
@@ -490,6 +556,7 @@ export function LiveScanner() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-8 max-w-4xl mx-auto relative z-10">
                 {[
+                  { icon: Mail, label: t('quick_action_email_headers_label'), text: t('quick_action_email_headers_text') },
                   { icon: Mail, label: t('quick_action_phishing_label'), text: t('quick_action_phishing_text') },
                   { icon: Link2, label: t('quick_action_url_label'), text: t('quick_action_url_text') },
                   { icon: Code, label: t('quick_action_code_label'), text: t('quick_action_code_text') },
@@ -497,7 +564,6 @@ export function LiveScanner() {
                   { icon: Cpu, label: t('quick_action_prompt_label'), text: t('quick_action_prompt_text') },
                   { icon: Database, label: t('quick_action_sql_label'), text: t('quick_action_sql_text') },
                   { icon: Terminal, label: t('quick_action_xss_label'), text: t('quick_action_xss_text') },
-                  { icon: Lock, label: t('quick_action_ransom_label'), text: t('quick_action_ransom_text') },
                 ].map((suggestion, idx) => (
                   <motion.button
                     key={idx}
@@ -774,7 +840,7 @@ export function LiveScanner() {
               {scanResult.detectedType === 'URL' ? (
                 <UrlScannerResult scanResult={scanResult} inputText={inputText} onReset={handleReset} />
               ) : (
-                <TextScannerResult scanResult={scanResult} onReset={handleReset} />
+                <TextScannerResult scanResult={scanResult} inputText={inputText} onReset={handleReset} />
               )}
             </motion.div>
           )}

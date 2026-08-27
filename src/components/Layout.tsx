@@ -36,6 +36,8 @@ const navItems: NavItem[] = [
   { name: 'dashboard', id: 'dashboard', icon: LayoutDashboard },
   { name: 'scanner', id: 'scanner', icon: ShieldAlert },
   { name: 'phishing', id: 'phishing', icon: Mail },
+  { name: 'graph', id: 'graph', icon: Network },
+  { name: 'alerts', id: 'alerts', icon: Bell },
   { name: 'voice', id: 'voice', icon: Mic },
   { name: 'wave', id: 'wave', icon: Waves },
   { name: 'copilot', id: 'copilot', icon: Bot },
