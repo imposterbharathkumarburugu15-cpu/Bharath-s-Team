@@ -10,6 +10,7 @@ import SentinelVoice from './pages/SentinelVoice';
 import SentinelWaveModule from './pages/NetworkScanner';
 import { ApiAccess } from './pages/ApiAccess';
 import { Copilot } from './pages/Copilot';
+import { Settings } from './pages/Settings';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -36,6 +37,8 @@ function App() {
         setActiveTab('wave');
       } else if (hash === 'api') {
         setActiveTab('api');
+      } else if (hash === 'settings') {
+        setActiveTab('settings');
       }
     };
 
@@ -80,6 +83,8 @@ function App() {
         return <AttackGraph />;
       case 'api':
         return <ApiAccess />;
+      case 'settings':
+        return <Settings />;
       default:
         return (
           <div className="flex items-center justify-center h-full">
