@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { addScanToHistory } from '@/lib/history';
 import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
 import { googleSignIn, googleLogout, initAuth, getAccessToken } from '@/services/googleAuth';
+import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import type { User } from 'firebase/auth';
 
 // Sample Presets for instantaneous hackathon testing
@@ -117,7 +118,7 @@ No urgent action is required.`
 
 export default function EmailPhishing() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'forensics' | 'inbox'>('forensics');
+  const [activeTab, setActiveTab] = useState<'forensics' | 'inbox' | 'dns-lookup'>('forensics');
   const [selectedScenario, setSelectedScenario] = useState<string>('msft_bec');
   const [rawHeaderText, setRawHeaderText] = useState<string>(TEST_SCENARIOS[0].rawHeaders);
   const [bodyText, setBodyText] = useState<string>(TEST_SCENARIOS[0].body);
@@ -125,6 +126,7 @@ export default function EmailPhishing() {
   const [dossier, setDossier] = useState<ForensicDossier | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [reportCopied, setReportCopied] = useState<boolean>(false);
+  const [lookupDomain, setLookupDomain] = useState<string>('google.com');
 
   // Live Gmail States
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -364,7 +366,7 @@ export default function EmailPhishing() {
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="flex items-center bg-[#05080f] p-1 rounded-xl border border-white/5">
+          <div className="flex flex-wrap items-center bg-[#05080f] p-1 rounded-xl border border-white/5 gap-1">
             <button
               onClick={() => setActiveTab('forensics')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
@@ -387,10 +389,25 @@ export default function EmailPhishing() {
               <Mail className="w-3.5 h-3.5" />
               GMAIL INBOX SCANNER
             </button>
+            <button
+              onClick={() => setActiveTab('dns-lookup')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
+                activeTab === 'dns-lookup'
+                  ? 'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              SPF/DKIM/DMARC LOOKUP
+            </button>
           </div>
         </div>
 
-        {activeTab === 'forensics' ? (
+        {activeTab === 'dns-lookup' && (
+          <DomainAuthLookup initialDomain={lookupDomain} />
+        )}
+
+        {activeTab === 'forensics' && (
           <div className="space-y-6">
             {/* Simulation Presets & Raw Header Input Drawer */}
             <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-5 shadow-xl">
@@ -536,7 +553,35 @@ export default function EmailPhishing() {
                 </div>
 
                 {/* 2. Protocol Authentication Matrix (SPF / DKIM / DMARC) */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#0a0f1c] border border-white/5 p-4 rounded-xl">
+                    <div className="flex items-center gap-2.5">
+                      <Globe className="w-4 h-4 text-cyber-blue shrink-0" />
+                      <div>
+                        <span className="text-xs font-mono font-bold text-white uppercase tracking-wider block">
+                          RFC AUTHENTICATION PROTOCOL STATUS
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                          Sender Domain: <strong className="text-cyber-blue font-mono">{dossier.senderIdentity.fromDomain || 'Unknown'}</strong>
+                        </span>
+                      </div>
+                    </div>
+                    {dossier.senderIdentity.fromDomain && (
+                      <button
+                        onClick={() => {
+                          setLookupDomain(dossier.senderIdentity.fromDomain || 'google.com');
+                          setActiveTab('dns-lookup');
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 text-xs font-mono font-bold flex items-center gap-1.5 transition-all whitespace-nowrap"
+                      >
+                        <Globe className="w-3.5 h-3.5" />
+                        <span>Query Live DNS Records</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* SPF */}
                   <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-5 shadow-lg">
                     <div className="flex justify-between items-center mb-3">
@@ -590,6 +635,7 @@ export default function EmailPhishing() {
                       Header From: <span className="text-gray-300">{dossier.authentication.dmarc.headerFromDomain || 'N/A'}</span>
                     </div>
                   </div>
+                </div>
                 </div>
 
                 {/* 3. Sender Identity & Discrepancies Matrix */}
@@ -875,7 +921,9 @@ export default function EmailPhishing() {
               </motion.div>
             )}
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'inbox' && (
           /* GMAIL LIVE INBOX VIEW */
           <div className="space-y-6">
             {!isAuthenticated ? (

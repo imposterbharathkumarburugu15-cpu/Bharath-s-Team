@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import Markdown from 'react-markdown';
 import { 
   Mail, Shield, ShieldCheck, ShieldAlert, AlertTriangle, FileText, 
   Terminal, ArrowRight, Copy, Check, Download, ExternalLink, Network, 
-  Globe, Server, Clock, Lock, AlertCircle, Sparkles, Layers, Hash
+  Globe, Server, Clock, Lock, AlertCircle, Sparkles, Layers, Hash, X
 } from 'lucide-react';
 import { ForensicDossier } from '@/services/forensicsEngine';
+import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 
 interface EmailForensicsPanelProps {
   dossier: ForensicDossier;
@@ -14,11 +16,23 @@ interface EmailForensicsPanelProps {
 
 export function EmailForensicsPanel({ dossier, compact = false }: EmailForensicsPanelProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [showDnsLookup, setShowDnsLookup] = useState<boolean>(false);
+  const [showSocPreview, setShowSocPreview] = useState<boolean>(false);
+  const [copiedSocReport, setCopiedSocReport] = useState<boolean>(false);
+  const targetDomain = dossier.senderIdentity.fromDomain || dossier.authentication.dmarc.headerFromDomain || 'google.com';
 
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const copySocReport = () => {
+    if (dossier.socReportMarkdown) {
+      navigator.clipboard.writeText(dossier.socReportMarkdown);
+      setCopiedSocReport(true);
+      setTimeout(() => setCopiedSocReport(false), 2000);
+    }
   };
 
   const downloadJsonDossier = () => {
@@ -81,7 +95,14 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={() => setShowSocPreview(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-mono bg-cyber-blue/15 hover:bg-cyber-blue/25 text-cyber-blue border border-cyber-blue/40 flex items-center gap-1.5 transition-colors cursor-pointer shadow-[0_0_15px_rgba(0,245,255,0.15)]"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Preview SOC Report</span>
+              </button>
               <button
                 onClick={downloadJsonDossier}
                 className="px-3 py-1.5 rounded-lg text-xs font-mono bg-white/5 hover:bg-white/10 text-white border border-white/10 flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -91,10 +112,10 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
               </button>
               <button
                 onClick={downloadMarkdownReport}
-                className="px-3 py-1.5 rounded-lg text-xs font-mono bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-xs font-mono bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <FileText className="w-3.5 h-3.5" />
-                <span>SOC Report (.md)</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Download .md</span>
               </button>
             </div>
           </div>
@@ -102,7 +123,36 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
       </div>
 
       {/* 2. Protocol Authentication Matrix (SPF / DKIM / DMARC) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#0a0f1c]/90 border border-white/10 p-4 rounded-xl backdrop-blur-sm">
+          <div className="flex items-center gap-2.5">
+            <Globe className="w-4 h-4 text-cyber-blue shrink-0" />
+            <div>
+              <span className="text-xs font-mono font-bold text-white uppercase tracking-wider block">
+                RFC AUTHENTICATION PROTOCOL STATUS
+              </span>
+              <span className="text-[11px] text-gray-400">
+                Sender Domain: <strong className="text-cyber-blue font-mono">{targetDomain}</strong>
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowDnsLookup(!showDnsLookup)}
+            className="px-3.5 py-1.5 rounded-lg bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 text-xs font-mono font-bold flex items-center gap-1.5 transition-all whitespace-nowrap"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>{showDnsLookup ? 'Hide Live DNS Inspection' : 'Validate Domain DNS Records'}</span>
+            <ArrowRight className={`w-3 h-3 transition-transform ${showDnsLookup ? 'rotate-90' : ''}`} />
+          </button>
+        </div>
+
+        {showDnsLookup && (
+          <div className="pt-1 pb-3">
+            <DomainAuthLookup initialDomain={targetDomain} compact />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* SPF */}
         <div className="bg-[#0a0f1c]/80 border border-white/10 rounded-2xl p-5 shadow-lg backdrop-blur-sm">
           <div className="flex justify-between items-center mb-3">
@@ -156,6 +206,7 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
             Header From: <span className="text-gray-300">{dossier.authentication.dmarc.headerFromDomain || 'N/A'}</span>
           </div>
         </div>
+      </div>
       </div>
 
       {/* 3. Sender Identity & Discrepancies Matrix */}
@@ -440,6 +491,102 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
           ))}
         </div>
       </div>
+
+      {/* SOC Incident Report Preview Modal */}
+      <AnimatePresence>
+        {showSocPreview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-[#0a0f1c] border border-cyber-blue/30 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(0,245,255,0.15)] overflow-hidden"
+            >
+              {/* Header */}
+              <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#05080f]">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-cyber-blue" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white font-mono uppercase tracking-wider">
+                      SOC Incident Response Report (Tier-2)
+                    </h3>
+                    <p className="text-xs text-cyber-muted font-mono">
+                      Automated Forensic Summary & RFC Compliance Audit
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={copySocReport}
+                    className="px-3 py-1.5 rounded-lg text-xs font-mono bg-white/5 hover:bg-white/10 text-white border border-white/10 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {copiedSocReport ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-cyber-blue" />
+                        <span>Copy Markdown</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={downloadMarkdownReport}
+                    className="px-3 py-1.5 rounded-lg text-xs font-mono bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download (.md)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowSocPreview(false)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors ml-1 cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Formatted Markdown Content */}
+              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar font-mono text-sm leading-relaxed text-gray-200">
+                <div className="markdown-body prose prose-invert max-w-none 
+                  prose-headings:text-cyber-blue prose-headings:font-mono prose-headings:tracking-wider prose-headings:border-b prose-headings:border-white/10 prose-headings:pb-2
+                  prose-h1:text-xl prose-h2:text-lg prose-h3:text-base
+                  prose-strong:text-white prose-strong:font-bold
+                  prose-p:text-gray-300 prose-p:leading-relaxed
+                  prose-li:text-gray-300
+                  prose-hr:border-white/10
+                  prose-code:text-cyber-blue prose-code:bg-black/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:border prose-code:border-white/10
+                  space-y-4"
+                >
+                  <Markdown>{dossier.socReportMarkdown}</Markdown>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-white/10 bg-[#05080f] flex justify-between items-center text-xs font-mono text-gray-500">
+                <span>NeuroShield Real-time RFC Forensics & Threat Synthesis</span>
+                <button
+                  type="button"
+                  onClick={() => setShowSocPreview(false)}
+                  className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

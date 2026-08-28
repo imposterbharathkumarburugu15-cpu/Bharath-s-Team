@@ -8,12 +8,15 @@ import { UrlScannerResult } from '@/components/UrlScannerResult';
 import { TextScannerResult } from '@/components/TextScannerResult';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
+import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 
 type ScanStatus = 'idle' | 'scanning' | 'complete';
+type ScannerMode = 'payload' | 'dns-lookup';
 
 export function LiveScanner() {
   const { t, language } = useLanguage();
   const [status, setStatus] = useState<ScanStatus>('idle');
+  const [scannerMode, setScannerMode] = useState<ScannerMode>('payload');
   const [inputText, setInputText] = useState('');
   const [scanProgress, setScanProgress] = useState(0);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
@@ -523,12 +526,12 @@ export function LiveScanner() {
                 <motion.div animate={{ scale: [0.95, 1.05, 0.95], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="absolute w-[300px] h-[300px] rounded-full border-[1px] border-cyber-red/20 shadow-[0_0_100px_var(--color-cyber-red)]" />
               </div>
 
-              <div className="flex flex-col items-center mb-10 w-full mt-auto relative z-10">
+              <div className="flex flex-col items-center mb-6 w-full mt-auto relative z-10">
                 <motion.div 
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: [1, 1.05, 1], opacity: [1, 1, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-24 h-24 bg-black/40 border border-cyber-blue/50 rounded-3xl flex items-center justify-center shadow-[0_0_40px_rgba(0,245,255,0.4)] mb-8 relative backdrop-blur-xl overflow-hidden group"
+                  className="w-24 h-24 bg-black/40 border border-cyber-blue/50 rounded-3xl flex items-center justify-center shadow-[0_0_40px_rgba(0,245,255,0.4)] mb-6 relative backdrop-blur-xl overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_var(--color-cyber-blue)_0%,_transparent_60%)] opacity-20" />
                   <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')] mix-blend-overlay" />
@@ -545,17 +548,52 @@ export function LiveScanner() {
                   {t('scanner_title')}
                 </h1>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-6">
                   <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#00f5ff]"></span>
                   <p className="text-[#00f5ff] text-xs md:text-sm tracking-[0.4em] text-center font-bold uppercase drop-shadow-[0_0_5px_rgba(0,245,255,0.5)]">
-                    Advanced Deep Payload Analysis
+                    Advanced Deep Payload & Threat Analysis
                   </p>
                   <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#00f5ff]"></span>
                 </div>
+
+                {/* Mode Selector Tabs */}
+                <div className="inline-flex p-1 bg-[#05080f]/90 border border-white/10 rounded-2xl backdrop-blur-md shadow-2xl">
+                  <button
+                    onClick={() => setScannerMode('payload')}
+                    className={cn(
+                      "px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer",
+                      scannerMode === 'payload'
+                        ? "bg-cyber-blue text-black shadow-[0_0_20px_rgba(0,245,255,0.4)]"
+                        : "text-gray-400 hover:text-white"
+                    )}
+                  >
+                    <Cpu className="w-4 h-4" />
+                    <span>PAYLOAD & TEXT SCANNER</span>
+                  </button>
+                  <button
+                    onClick={() => setScannerMode('dns-lookup')}
+                    className={cn(
+                      "px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer",
+                      scannerMode === 'dns-lookup'
+                        ? "bg-cyber-blue text-black shadow-[0_0_20px_rgba(0,245,255,0.4)]"
+                        : "text-gray-400 hover:text-white"
+                    )}
+                  >
+                    <Globe className="w-4 h-4" />
+                    <span>DOMAIN AUTH LOOKUP (SPF/DKIM/DMARC)</span>
+                  </button>
+                </div>
               </div>
 
+              {scannerMode === 'dns-lookup' ? (
+                <div className="w-full max-w-4xl mx-auto z-20 pb-8">
+                  <DomainAuthLookup initialDomain="google.com" />
+                </div>
+              ) : (
+                <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-8 max-w-4xl mx-auto relative z-10">
                 {[
+                  { icon: Globe, label: "DOMAIN AUTH (SPF/DKIM)", text: "Check SPF, DKIM, DMARC, BIMI and MX records for any domain", action: () => setScannerMode('dns-lookup') },
                   { icon: Mail, label: t('quick_action_email_headers_label'), text: t('quick_action_email_headers_text') },
                   { icon: Mail, label: t('quick_action_phishing_label'), text: t('quick_action_phishing_text') },
                   { icon: Link2, label: t('quick_action_url_label'), text: t('quick_action_url_text') },
@@ -563,15 +601,20 @@ export function LiveScanner() {
                   { icon: Globe, label: t('quick_action_network_label'), text: t('quick_action_network_text') },
                   { icon: Cpu, label: t('quick_action_prompt_label'), text: t('quick_action_prompt_text') },
                   { icon: Database, label: t('quick_action_sql_label'), text: t('quick_action_sql_text') },
-                  { icon: Terminal, label: t('quick_action_xss_label'), text: t('quick_action_xss_text') },
                 ].map((suggestion, idx) => (
                   <motion.button
                     key={idx}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 + idx * 0.1 }}
-                    onClick={() => setInputText(suggestion.text)}
-                    className="bg-black/40 backdrop-blur-md border border-white/10 hover:border-[#00f5ff] rounded-xl p-4 flex flex-col items-start gap-3 text-left transition-all hover:bg-[#00f5ff]/5 hover:shadow-[inset_0_0_20px_rgba(0,245,255,0.1),_0_0_15px_rgba(0,245,255,0.2)] group relative overflow-hidden"
+                    onClick={() => {
+                      if (suggestion.action) {
+                        suggestion.action();
+                      } else {
+                        setInputText(suggestion.text);
+                      }
+                    }}
+                    className="bg-black/40 backdrop-blur-md border border-white/10 hover:border-[#00f5ff] rounded-xl p-4 flex flex-col items-start gap-3 text-left transition-all hover:bg-[#00f5ff]/5 hover:shadow-[inset_0_0_20px_rgba(0,245,255,0.1),_0_0_15px_rgba(0,245,255,0.2)] group relative overflow-hidden cursor-pointer"
                   >
                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 group-hover:via-[#00f5ff]/50 to-transparent" />
                     <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00f5ff]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -696,6 +739,8 @@ export function LiveScanner() {
               <div className="text-[10px] text-cyber-muted mt-6 tracking-[0.3em] uppercase mb-4 text-center font-bold">
                 {t('scanner_disclaimer')}
               </div>
+              </>
+              )}
             </motion.div>
           )}
 

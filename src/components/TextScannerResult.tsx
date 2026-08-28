@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Shield, AlertTriangle, Link2, X, AlertCircle, Activity, Mail, Terminal, Sparkles, Cpu, Layers } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Shield, AlertTriangle, Link2, X, AlertCircle, Activity, Mail, Terminal, Sparkles, Cpu, Layers, Globe, FileText, Copy, Check, Download } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import Markdown from 'react-markdown';
 import { ScanResult } from '@/services/geminiService';
 import { cn } from '@/lib/utils';
 import { SentinelWave } from '@/components/SentinelWave';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EmailForensicsPanel } from '@/components/EmailForensicsPanel';
 import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
+import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 
 interface TextScannerResultProps {
   scanResult: ScanResult;
@@ -107,13 +109,39 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
     inputText.includes('From:') ||
     inputText.includes('SPF:');
 
-  const [activeTab, setActiveTab] = useState<'neural' | 'forensics'>(
+  const [activeTab, setActiveTab] = useState<'neural' | 'forensics' | 'dns-auth'>(
     scanResult.forensicDossier ? 'forensics' : 'neural'
   );
   const [dynamicDossier, setDynamicDossier] = useState<ForensicDossier | null>(
     scanResult.forensicDossier || null
   );
   const [isGeneratingForensics, setIsGeneratingForensics] = useState(false);
+  const [showSocModal, setShowSocModal] = useState(false);
+  const [copiedReport, setCopiedReport] = useState(false);
+
+  const activeSocReport = scanResult.socReportMarkdown || dynamicDossier?.socReportMarkdown || '';
+
+  const copySocReport = () => {
+    if (activeSocReport) {
+      navigator.clipboard.writeText(activeSocReport);
+      setCopiedReport(true);
+      setTimeout(() => setCopiedReport(false), 2000);
+    }
+  };
+
+  const downloadSocReport = () => {
+    if (activeSocReport) {
+      const blob = new Blob([activeSocReport], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SOC-Incident-Report-${Date.now()}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const domainGuess = dynamicDossier?.senderIdentity?.fromDomain || (scanResult.target?.includes('.') ? scanResult.target.replace(/^(?:https?:\/\/)?(?:www\.)?/i, '').split('/')[0] : 'google.com');
 
   useEffect(() => {
     if (scanResult.forensicDossier) {
@@ -165,7 +193,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
           {/* View Switcher Tabs */}
-          <div className="flex items-center bg-[#05080f] p-1 rounded-xl border border-white/10">
+          <div className="flex flex-wrap items-center bg-[#05080f] p-1 rounded-xl border border-white/10 gap-1">
             <button
               onClick={() => setActiveTab('neural')}
               className={cn(
@@ -193,6 +221,18 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                 <span className="w-2 h-2 rounded-full bg-cyber-blue animate-pulse" />
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('dns-auth')}
+              className={cn(
+                "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
+                activeTab === 'dns-auth'
+                  ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              )}
+            >
+              <Globe className="w-3.5 h-3.5 text-cyber-blue" />
+              <span>SPF/DKIM/DMARC LOOKUP</span>
+            </button>
           </div>
 
           <button 
@@ -206,7 +246,11 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
       </div>
 
       {/* RENDER ACTIVE TAB */}
-      {activeTab === 'forensics' ? (
+      {activeTab === 'dns-auth' ? (
+        <div className="flex-1 pb-6">
+          <DomainAuthLookup initialDomain={domainGuess} />
+        </div>
+      ) : activeTab === 'forensics' ? (
         <div className="flex-1 pb-6">
           {isGeneratingForensics ? (
             <div className="flex flex-col items-center justify-center p-12 bg-[#0a0f1c]/50 rounded-2xl border border-white/5">
@@ -290,9 +334,25 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
 
           {/* AI Explanation */}
           <div className="flex flex-col gap-2">
-            <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase">{t('ai_explanation')}</div>
-            <div className="bg-[#ff2e5b]/5 border border-[#ff2e5b]/20 rounded-lg p-5 text-sm text-white/90 leading-relaxed rounded-tl-sm">
-              {scanResult.aiExplanation || scanResult.payloadDescription}
+            <div className="flex items-center justify-between">
+              <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase">{t('ai_explanation')}</div>
+              {activeSocReport && (
+                <button
+                  type="button"
+                  onClick={() => setShowSocModal(true)}
+                  className="text-[11px] font-mono font-bold text-cyber-blue hover:text-white flex items-center gap-1.5 px-2.5 py-1 rounded bg-cyber-blue/10 hover:bg-cyber-blue/20 border border-cyber-blue/30 transition-all cursor-pointer"
+                >
+                  <FileText className="w-3 h-3 text-cyber-blue" />
+                  <span>Full SOC Incident Report</span>
+                </button>
+              )}
+            </div>
+            <div className="bg-[#ff2e5b]/5 border border-[#ff2e5b]/20 rounded-xl p-4 text-sm text-white/95 leading-relaxed overflow-hidden shadow-inner">
+              <div className="markdown-body prose prose-invert prose-p:leading-relaxed prose-strong:text-cyber-blue prose-strong:font-bold prose-a:text-cyber-green text-xs sm:text-sm max-w-none space-y-2">
+                <Markdown>
+                  {scanResult.aiExplanation || scanResult.payloadDescription || 'Neural security heuristic analysis completed.'}
+                </Markdown>
+              </div>
             </div>
           </div>
 
@@ -448,6 +508,102 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
 
       </div>
       )}
+
+      {/* SOC Incident Report Modal */}
+      <AnimatePresence>
+        {showSocModal && activeSocReport && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-[#0a0f1c] border border-cyber-blue/30 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(0,245,255,0.15)] overflow-hidden"
+            >
+              {/* Header */}
+              <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#05080f]">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-cyber-blue" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white font-mono uppercase tracking-wider">
+                      SOC Incident Response Report (Tier-2)
+                    </h3>
+                    <p className="text-xs text-cyber-muted font-mono">
+                      Automated Forensic Summary & RFC Compliance Audit
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={copySocReport}
+                    className="px-3 py-1.5 rounded-lg text-xs font-mono bg-white/5 hover:bg-white/10 text-white border border-white/10 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {copiedReport ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-cyber-blue" />
+                        <span>Copy Markdown</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={downloadSocReport}
+                    className="px-3 py-1.5 rounded-lg text-xs font-mono bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download (.md)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowSocModal(false)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors ml-1 cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Formatted Markdown Content */}
+              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar font-mono text-sm leading-relaxed text-gray-200">
+                <div className="markdown-body prose prose-invert max-w-none 
+                  prose-headings:text-cyber-blue prose-headings:font-mono prose-headings:tracking-wider prose-headings:border-b prose-headings:border-white/10 prose-headings:pb-2
+                  prose-h1:text-xl prose-h2:text-lg prose-h3:text-base
+                  prose-strong:text-white prose-strong:font-bold
+                  prose-p:text-gray-300 prose-p:leading-relaxed
+                  prose-li:text-gray-300
+                  prose-hr:border-white/10
+                  prose-code:text-cyber-blue prose-code:bg-black/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:border prose-code:border-white/10
+                  space-y-4"
+                >
+                  <Markdown>{activeSocReport}</Markdown>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-white/10 bg-[#05080f] flex justify-between items-center text-xs font-mono text-gray-500">
+                <span>NeuroShield Real-time RFC Forensics & Threat Synthesis</span>
+                <button
+                  type="button"
+                  onClick={() => setShowSocModal(false)}
+                  className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

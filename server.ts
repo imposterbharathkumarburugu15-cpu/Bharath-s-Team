@@ -65,14 +65,14 @@ async function startServer() {
       parts.push({
         text: `Analyze the provided input (text and/or image) for potential phishing, scams, or malicious intent. 
 1. Auto-detect whether this represents an EMAIL, a CHAT message, a URL/Domain, CODE, a NETWORK_LOG, a QR code, a FILE or UNKNOWN.
-2. Provide a risk score from 0 to 100 (100 being most dangerous).
-3. List detection signals (short, bold phrases like "URGENT LANGUAGE DETECTED").
+2. Provide a risk score from 0 to 100 (100 being most dangerous). If the input is a benign website, legitimate web application, portfolio, staging deployment (e.g. Vercel, Netlify, GitHub Pages), or normal text with no malicious code, scams, or credential harvesting, assign a low/safe risk score (0-15) and note that the domain appears legitimate and safe.
+3. List detection signals (short, bold phrases like "CLEAN_REPUTATION" or "URGENT LANGUAGE DETECTED").
 4. Identify the likely source (attacker IP, sender email, or domain) and target (user or system).
-5. Describe the payload/attack vector briefly.
+5. Describe the payload/attack vector briefly. If benign, state "Legitimate web application" or "No threat detected".
 6. Identify any sensitive data exposed (e.g., credit cards, tokens, personal info) and provide a masked version. If none, return an empty array.
-7. Provide a short threat name (e.g., "Impersonation Scam").
-8. Provide a clear AI explanation of why this was flagged.
-9. Extract an array of suspicious keywords.
+7. Provide a short threat name (e.g., "Safe Web Deployment" if benign, or "Impersonation Scam" if malicious).
+8. Provide a clear AI explanation of the findings.
+9. Extract an array of suspicious keywords (empty if benign).
 10. Extract an array of detected links.
 
 ALL RESPONSES AND STRINGS (EXCEPT ENUM VALUES) MUST BE IN ${targetLang}.`,
@@ -206,12 +206,12 @@ ALL RESPONSES AND STRINGS (EXCEPT ENUM VALUES) MUST BE IN ${targetLang}.`,
       const targetLang = languageMap[language] || 'English';
 
       parts.push({
-        text: `You are NEUROSHIELD VOICE, an AI deepfake and scam detection engine. Analyze the provided audio.
-1. Determine if it's likely a deepfake/synthetic voice, AI generated, or a common scam.
-2. Provide an authenticity score from 0 to 100 (where 100 is authentic human voice, and 0 is definitely synthetic/scam).
-3. Transcribe the audio as an array of strings (e.g. ["Caller: Hello", "User: Hi"]). Feel free to use "Speaker 1" format.
-4. List detection signals (short phrases like "SYNTHETIC CADENCE DETECTED", "SCAM SCRIPT DETECTED").
-5. Provide a short explanation.
+        text: `You are NEUROSHIELD VOICE, an AI deepfake and scam detection engine. Analyze the provided audio accurately.
+1. Determine if it's likely a deepfake/synthetic voice, AI generated, or an authentic human recording.
+2. Provide an authenticity score from 0 to 100 (where 100 is authentic human voice, and 0 is definitely synthetic/deepfake).
+3. Transcribe ONLY what was actually spoken in the audio recording. If there is no speech, silent background, or indistinct noise, return ["No spoken dialogue detected / Ambient background audio."]. DO NOT hallucinate or generate fictional phone conversations.
+4. List detection signals (short phrases like "NATURAL_VOCAL_RESONANCE", "ORGANIC_BREATH_PATTERN" or "SYNTHETIC_CADENCE_DETECTED").
+5. Provide a short, factual explanation of the acoustic findings.
 
 ALL TEXT FIELDS EXPLANATION MUST BE IN ${targetLang}.`
       });
