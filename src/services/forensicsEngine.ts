@@ -760,13 +760,17 @@ export async function executeEmailForensics(
   };
 
   // Attempt async live GeoIP lookup if public IP is available and window exists
-  if (earliestReliablePublicIP && typeof window !== 'undefined') {
+  if (earliestReliablePublicIP && typeof window !== 'undefined' && typeof fetch === 'function') {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 1500) : null;
     try {
-      const geoPromise = fetch(`https://freeipapi.com/api/json/${earliestReliablePublicIP}`, { signal: AbortSignal.timeout(1500) });
-      const geoRes = await geoPromise;
+      const geoRes = await fetch(`https://freeipapi.com/api/json/${earliestReliablePublicIP}`, { 
+        signal: controller?.signal 
+      });
+      if (timeoutId) clearTimeout(timeoutId);
       if (geoRes.ok) {
         const geoData = await geoRes.json();
-        if (geoData.countryName) {
+        if (geoData && geoData.countryName) {
           originIntel.country = geoData.countryName;
           originIntel.city = geoData.cityName || originIntel.city;
           originIntel.region = geoData.regionName || originIntel.region;
@@ -776,6 +780,7 @@ export async function executeEmailForensics(
         }
       }
     } catch {
+      if (timeoutId) clearTimeout(timeoutId);
       // Graceful fallback to defaultIntel
     }
   }

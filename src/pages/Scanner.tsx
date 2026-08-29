@@ -672,8 +672,9 @@ export function LiveScanner() {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileChange}
+                    onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                     className="hidden"
-                    accept="image/*,application/pdf"
+                    accept=".eml,.msg,.txt,.log,.mbox,image/*,application/pdf,message/rfc822,text/plain,*"
                   />
                   
                   <textarea

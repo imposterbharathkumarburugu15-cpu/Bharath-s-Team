@@ -46,7 +46,7 @@ export async function analyzeThreat(
 ): Promise<ScanResult> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const res = await fetch("/api/scan", {
       method: "POST",
@@ -131,7 +131,7 @@ export async function analyzeAudio(
 ): Promise<AudioScanResult> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const res = await fetch("/api/audio", {
       method: "POST",
@@ -183,7 +183,7 @@ export async function chatWithCopilot(
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const res = await fetch("/api/copilot", {
       method: "POST",

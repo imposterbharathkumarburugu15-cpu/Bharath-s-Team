@@ -261,6 +261,7 @@ export default function SentinelVoice() {
                         type="file" 
                         ref={fileInputRef} 
                         onChange={onFileUpload} 
+                        onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                         accept="audio/*" 
                         className="hidden" 
                       />
