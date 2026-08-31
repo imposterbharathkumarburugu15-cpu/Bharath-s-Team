@@ -4,6 +4,8 @@
  * Supports Cloudflare & Google DoH with fallback heuristics & risk scoring.
  */
 
+import { resolveDomainAge, DomainAgeData } from './domainAgeService';
+
 export interface SpfMechanism {
   type: 'include' | 'ip4' | 'ip6' | 'a' | 'mx' | 'ptr' | 'exists' | 'redirect' | 'all' | 'unknown';
   value: string;
@@ -91,6 +93,7 @@ export interface DomainAuthHealthReport {
   dkim: DkimValidationResult;
   mx: MxValidationResult;
   bimi: BimiValidationResult;
+  domainAge?: DomainAgeData;
   webAppInfo?: WebAppHostingInfo;
   executiveSummary: string;
   actionItems: Array<{ priority: 'HIGH' | 'MEDIUM' | 'LOW'; title: string; remediation: string }>;
@@ -663,12 +666,13 @@ export async function validateDomainEmailAuth(domainInput: string, customSelecto
     throw new Error('Please enter a valid domain name (e.g. google.com, ai.studio, microsoft.com, or your-company.com)');
   }
 
-  // Query in parallel
-  const [spfAnswers, dmarcAnswers, mxAnswers, bimiAnswers] = await Promise.all([
+  // Query in parallel including live RDAP domain age & registration intelligence
+  const [spfAnswers, dmarcAnswers, mxAnswers, bimiAnswers, domainAgeData] = await Promise.all([
     queryDoH(cleanDomain, 'TXT'),
     queryDoH(`_dmarc.${cleanDomain}`, 'TXT'),
     queryDoH(cleanDomain, 'MX'),
-    queryDoH(`default._bimi.${cleanDomain}`, 'TXT')
+    queryDoH(`default._bimi.${cleanDomain}`, 'TXT'),
+    resolveDomainAge(cleanDomain).catch(() => undefined)
   ]);
 
   const spfTxts = spfAnswers.map(a => cleanTxtRecord(a.data));
@@ -856,6 +860,7 @@ export async function validateDomainEmailAuth(domainInput: string, customSelecto
     dkim: dkimResult,
     mx: mxResult,
     bimi: bimiResult,
+    domainAge: domainAgeData,
     webAppInfo,
     executiveSummary,
     actionItems

@@ -88,7 +88,7 @@ export async function analyzeThreat(
       aiExplanation: executiveExplanation,
       socReportMarkdown: dossier.socReportMarkdown,
       suspiciousKeywords: dossier.contentAnalysis.signals.map(s => s.description),
-      detectedLinks: dossier.iocs.urls,
+      detectedLinks: dossier.iocs.urls.map(u => u.url),
       forensicDossier: dossier,
       textMetrics: {
         urgency: dossier.contentAnalysis.urgencyLevel === 'HIGH' ? 85 : 30,
