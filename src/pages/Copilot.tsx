@@ -73,9 +73,9 @@ export function Copilot() {
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-center text-cyber-muted space-y-4">
                <Bot className="w-16 h-16 text-cyber-blue/30 mb-2" />
-               <h3 className="text-lg text-white font-semibold uppercase tracking-widest">Global Intelligence Active</h3>
+               <h3 className="text-lg text-white font-semibold uppercase tracking-widest">{t('copilot_global_intel')}</h3>
                <p className="max-w-md text-sm">
-                 I am NeuroShield Copilot, your AI cyber-investigator. Ask me to analyze an IP, dissect a phishing campaign, or explain system logs.
+                 {t('copilot_intro')}
                </p>
                <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
                  {['Analyze a suspicious email', 'What is an attack graph?', 'Explain XSS vulnerability'].map(query => (
@@ -142,7 +142,7 @@ export function Copilot() {
               </div>
               <div className="bg-black/40 text-[#b5c4d8] border border-cyber-blue/20 rounded-lg px-4 py-4 flex items-center gap-2">
                  <Loader2 className="w-4 h-4 animate-spin text-cyber-blue" />
-                 <span className="text-xs uppercase tracking-widest text-cyber-blue font-mono font-bold animate-pulse">Processing Analysis...</span>
+                 <span className="text-xs uppercase tracking-widest text-cyber-blue font-mono font-bold animate-pulse">{t('processing_analysis')}</span>
               </div>
             </motion.div>
           )}
@@ -154,7 +154,7 @@ export function Copilot() {
           <div className="relative flex items-end gap-2 max-w-4xl mx-auto">
             <textarea
               className="w-full bg-white/5 border border-white/10 focus:border-cyber-blue/50 rounded-lg px-4 py-3 text-sm text-white placeholder-cyber-muted resize-none focus:outline-none focus:ring-1 focus:ring-cyber-blue/50 transition-all min-h-[50px] max-h-[150px] custom-scrollbar"
-              placeholder="Query the NeuroShield Intelligence array..."
+              placeholder={t('query_placeholder')}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -171,7 +171,7 @@ export function Copilot() {
           </div>
           <div className="text-center mt-2 flex items-center justify-center gap-2 text-[10px] text-cyber-muted uppercase tracking-widest font-mono">
              <ShieldAlert className="w-3 h-3 text-cyber-red" />
-             AI queries are logged for system telemetry.
+             {t('copilot_footer')}
           </div>
         </div>
       </div>

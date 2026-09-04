@@ -94,7 +94,7 @@ export function Dashboard() {
       <motion.div variants={itemVariants} className="flex justify-between items-end">
         <div>
           <h2 className="text-[18px] font-semibold text-cyber-text tracking-tight mb-1">{t('dashboard').toUpperCase()}</h2>
-          <p className="text-[#8a99af] text-sm">Global threat overview and active anomaly detection.</p>
+          <p className="text-[#8a99af] text-sm">{t('global_threat_overview')}</p>
         </div>
       </motion.div>
 
@@ -141,11 +141,11 @@ export function Dashboard() {
           <div className="absolute top-0 left-0 w-2 h-full bg-[#f59e0b] shadow-[0_0_15px_rgba(245,158,11,0.6)]" />
           <CardContent className="p-6 pl-8 flex items-center justify-between">
             <div>
-              <p className="text-[10px] font-sans uppercase tracking-widest text-[#5e738c] mb-2">MALICIOUS DOMAINS</p>
+              <p className="text-[10px] font-sans uppercase tracking-widest text-[#5e738c] mb-2">{t('malicious_domains')}</p>
               <h3 className="text-3xl font-mono font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] group-hover:text-[#f59e0b] transition-colors">12,804</h3>
               <div className="flex items-center gap-1 text-[10px] text-cyber-muted mt-2 font-mono">
                 <Activity className="w-3 h-3 text-[#f59e0b]" />
-                <span>Active intelligence feed</span>
+                <span>{t('active_intel_feed')}</span>
               </div>
             </div>
           </CardContent>
@@ -156,11 +156,11 @@ export function Dashboard() {
           <div className="absolute top-0 left-0 w-2 h-full bg-[#a855f7] shadow-[0_0_15px_rgba(168,85,247,0.6)]" />
           <CardContent className="p-6 pl-8 flex items-center justify-between">
             <div>
-              <p className="text-[10px] font-sans uppercase tracking-widest text-[#5e738c] mb-2">AVG DETECTION TIME</p>
+              <p className="text-[10px] font-sans uppercase tracking-widest text-[#5e738c] mb-2">{t('avg_detection_time')}</p>
               <h3 className="text-3xl font-mono font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] group-hover:text-[#a855f7] transition-colors">420ms</h3>
               <div className="flex items-center gap-1 text-[10px] text-[#a855f7] mt-2 font-mono font-semibold tracking-widest">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#a855f7] animate-pulse" />
-                AI OPTIMIZED
+                {t('ai_optimized')}
               </div>
             </div>
           </CardContent>
@@ -176,7 +176,7 @@ export function Dashboard() {
             </svg>
           </div>
           <CardHeader>
-            <CardTitle className="text-sm tracking-widest text-[#5e738c] font-sans">ATTACK TIMELINE (24H)</CardTitle>
+            <CardTitle className="text-sm tracking-widest text-[#5e738c] font-sans">{t('attack_timeline')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] w-full transition-transform duration-500">
@@ -220,7 +220,7 @@ export function Dashboard() {
         {/* Risk Donut */}
         <Card className="col-span-1 relative overflow-hidden bg-cyber-panel/80 border-cyber-border/30 hover:border-cyber-blue/50 group transition-all duration-500 flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="text-sm tracking-widest text-[#5e738c] font-sans">RISK DISTRIBUTION</CardTitle>
+            <CardTitle className="text-sm tracking-widest text-[#5e738c] font-sans">{t('risk_distribution')}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center flex-1">
              <div className="h-[220px] w-full relative">
@@ -253,7 +253,7 @@ export function Dashboard() {
               </ResponsiveContainer>
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center">
                 <span className="text-3xl font-mono font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">75%</span>
-                <span className="text-[9px] text-[#00ff66] tracking-widest uppercase">SAFE</span>
+                <span className="text-[9px] text-[#00ff66] tracking-widest uppercase">{t('low_risk')}</span>
               </div>
              </div>
              <div className="flex space-x-4 mt-6 flex-wrap justify-center font-mono text-xs gap-y-2 w-full px-4">
@@ -284,9 +284,9 @@ export function Dashboard() {
                  <Mic className="w-4 h-4 text-cyber-blue" />
                  <h3 className="text-sm font-bold tracking-widest text-white uppercase italic">NeuroShield <span className="text-cyber-blue">Voice</span></h3>
                </div>
-               <p className="text-[10px] text-cyber-muted font-mono leading-relaxed max-w-[200px]">Real-time deepfake & scam call detection with voice print analysis.</p>
+               <p className="text-[10px] text-cyber-muted font-mono leading-relaxed max-w-[200px]">{t('voice_tagline')}</p>
              </div>
-             <div className="text-[9px] font-bold text-cyber-blue border border-cyber-blue/30 w-fit px-2 py-0.5 rounded bg-cyber-blue/5">MODULE ACTIVE</div>
+             <div className="text-[9px] font-bold text-cyber-blue border border-cyber-blue/30 w-fit px-2 py-0.5 rounded bg-cyber-blue/5">{t('module_active')}</div>
            </CardContent>
         </Card>
 
@@ -304,9 +304,9 @@ export function Dashboard() {
                  <Waves className="w-4 h-4 text-cyber-green" />
                  <h3 className="text-sm font-bold tracking-widest text-white uppercase italic">NeuroShield <span className="text-cyber-green">Wave</span></h3>
                </div>
-               <p className="text-[10px] text-cyber-muted font-mono leading-relaxed max-w-[200px]">Advanced network topology map & packet isolation system.</p>
+               <p className="text-[10px] text-cyber-muted font-mono leading-relaxed max-w-[200px]">{t('topology_desc')}</p>
              </div>
-             <div className="text-[9px] font-bold text-cyber-green border border-cyber-green/30 w-fit px-2 py-0.5 rounded bg-cyber-green/5">THREAT GUARD ON</div>
+             <div className="text-[9px] font-bold text-cyber-green border border-cyber-green/30 w-fit px-2 py-0.5 rounded bg-cyber-green/5">{t('threat_guard_on')}</div>
            </CardContent>
         </Card>
       </motion.div>

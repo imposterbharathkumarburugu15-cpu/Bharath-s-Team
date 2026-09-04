@@ -16,10 +16,14 @@ import {
   Server,
   Zap,
   Info,
-  ExternalLink
+  ExternalLink,
+  Search,
+  CheckCircle2,
+  RefreshCw,
+  Clock
 } from 'lucide-react';
-import { OriginIPIntel, HeaderHop } from '../services/forensicsEngine';
-import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
+import { OriginIPIntel, HeaderHop, fetchLiveIPIntelligence } from '../services/forensicsEngine';
+import { GoogleMapsTacticalRadar } from './GoogleMapsTacticalRadar';
 
 interface Forensic3DGeoMapProps {
   originIP: OriginIPIntel;
@@ -56,31 +60,40 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
   targetLocation = { lat: 37.7749, lng: -122.4194, label: 'Target Mail Gateway' },
   isCompact = false
 }) => {
+  const [activeIntel, setActiveIntel] = useState<OriginIPIntel>(originIP);
+  const [searchTarget, setSearchTarget] = useState<string>('');
+  const [isResolving, setIsResolving] = useState<boolean>(false);
+  const [showSearch, setShowSearch] = useState<boolean>(false);
+
   const [viewMode, setViewMode] = useState<'3d-globe' | 'tactical-map' | 'transit-trail'>('3d-globe');
   const [isAutoRotating, setIsAutoRotating] = useState<boolean>(true);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [activeHopIndex, setActiveHopIndex] = useState<number>(0);
   const [isPlayingTrail, setIsPlayingTrail] = useState<boolean>(false);
-  const [mapLayer, setMapLayer] = useState<'dark-vector' | 'satellite'>('dark-vector');
   const [cursorCoords, setCursorCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  // Sync with prop when prop changes
+  useEffect(() => {
+    setActiveIntel(originIP);
+  }, [originIP]);
+
+  // Coordinates
+  const originLat = activeIntel.latitude ?? 37.7749;
+  const originLng = activeIntel.longitude ?? -122.4194;
+
   // 3D Globe Spherical Angles (in radians)
-  const rotationYRef = useRef<number>(((-originIP.longitude || 0) * Math.PI) / 180);
-  const rotationXRef = useRef<number>(((originIP.latitude || 30) * Math.PI) / 180 * 0.4);
-  const targetRotationYRef = useRef<number>(((-originIP.longitude || 0) * Math.PI) / 180);
-  const targetRotationXRef = useRef<number>(((originIP.latitude || 30) * Math.PI) / 180 * 0.4);
+  const rotationYRef = useRef<number>(((-originLng || 0) * Math.PI) / 180);
+  const rotationXRef = useRef<number>(((originLat || 30) * Math.PI) / 180 * 0.4);
+  const targetRotationYRef = useRef<number>(((-originLng || 0) * Math.PI) / 180);
+  const targetRotationXRef = useRef<number>(((originLat || 30) * Math.PI) / 180 * 0.4);
   const isDraggingRef = useRef<boolean>(false);
   const lastMousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const pulsePhaseRef = useRef<number>(0);
 
   const googleMapsApiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
-
-  const originLat = originIP.latitude ?? 50.1109;
-  const originLng = originIP.longitude ?? 8.6821;
 
   // Format Geohash & Coordinates Display
   const formattedCoords = useMemo(() => {
@@ -99,6 +112,30 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
     targetRotationYRef.current = ((-originLng * Math.PI) / 180) + Math.PI / 2;
     targetRotationXRef.current = (originLat * Math.PI) / 180 * 0.5;
   }, [originLat, originLng]);
+
+  // Trigger lock-on whenever coordinates change
+  useEffect(() => {
+    targetRotationYRef.current = ((-originLng * Math.PI) / 180) + Math.PI / 2;
+    targetRotationXRef.current = (originLat * Math.PI) / 180 * 0.5;
+  }, [originLat, originLng]);
+
+  // Handle Real-Time Live Geo Query
+  const handlePerformLiveQuery = async (targetToQuery?: string) => {
+    const query = (targetToQuery || searchTarget).trim();
+    if (!query) return;
+    setIsResolving(true);
+    try {
+      const result = await fetchLiveIPIntelligence(query);
+      setActiveIntel(result);
+      setIsAutoRotating(false);
+      targetRotationYRef.current = (((-(result.longitude || 0)) * Math.PI) / 180) + Math.PI / 2;
+      targetRotationXRef.current = ((result.latitude || 0) * Math.PI) / 180 * 0.5;
+    } catch (e) {
+      console.error('Failed to resolve live IP:', e);
+    } finally {
+      setIsResolving(false);
+    }
+  };
 
   // Handle Mouse/Touch Interaction for 3D Globe
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -147,8 +184,8 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
   const transitNodes = useMemo(() => {
     const nodes = [
       {
-        name: `Origin Mail Server (${originIP.city || 'Origin Node'})`,
-        ip: originIP.ip,
+        name: `Origin Node (${activeIntel.city || 'Origin'})`,
+        ip: activeIntel.ip,
         lat: originLat,
         lng: originLng,
         type: 'ORIGIN'
@@ -157,10 +194,9 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
 
     if (hops && hops.length > 0) {
       hops.forEach((h, idx) => {
-        // Distribute relay hops visually across path if coordinates not in header
         const fraction = (idx + 1) / (hops.length + 1);
-        const midLat = originLat + (targetLocation.lat - originLat) * fraction + (idx % 2 === 0 ? 5 : -5);
-        const midLng = originLng + (targetLocation.lng - originLng) * fraction;
+        const midLat = h.latitude ?? (originLat + (targetLocation.lat - originLat) * fraction + (idx % 2 === 0 ? 5 : -5));
+        const midLng = h.longitude ?? (originLng + (targetLocation.lng - originLng) * fraction);
         nodes.push({
           name: `Relay Hop #${h.hopNumber}: ${h.sourceHostname || h.sourceIP}`,
           ip: h.sourceIP,
@@ -172,7 +208,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
     }
 
     nodes.push({
-      name: `Target Mail Gateway (${targetLocation.label})`,
+      name: `Target Gateway (${targetLocation.label})`,
       ip: '104.244.42.1',
       lat: targetLocation.lat,
       lng: targetLocation.lng,
@@ -180,351 +216,247 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
     });
 
     return nodes;
-  }, [originIP, originLat, originLng, hops, targetLocation]);
+  }, [originLat, originLng, activeIntel, hops, targetLocation]);
 
-  // Trail Animation Player
+  // 3D Canvas Ray-Casting & Orthographic Spherical Projection Engine
   useEffect(() => {
-    let interval: any;
-    if (isPlayingTrail) {
-      interval = setInterval(() => {
-        setActiveHopIndex((prev) => {
-          if (prev >= transitNodes.length - 1) {
-            setIsPlayingTrail(false);
-            return 0;
-          }
-          return prev + 1;
-        });
-      }, 1500);
-    }
-    return () => clearInterval(interval);
-  }, [isPlayingTrail, transitNodes.length]);
+    if (viewMode !== '3d-globe') return;
 
-  // 3D Canvas Rendering Engine
-  useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || viewMode !== '3d-globe') return;
-
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let isRunning = true;
+    let pulsePhase = 0;
+
+    const project3D = (lat: number, lng: number, radius: number, rotX: number, rotY: number) => {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lng + 180) * (Math.PI / 180);
+
+      const x0 = -(radius * Math.sin(phi) * Math.cos(theta));
+      const z0 = radius * Math.sin(phi) * Math.sin(theta);
+      const y0 = radius * Math.cos(phi);
+
+      const x1 = x0 * Math.cos(rotY) + z0 * Math.sin(rotY);
+      const z1 = -x0 * Math.sin(rotY) + z0 * Math.cos(rotY);
+      const y1 = y0;
+
+      const y2 = y1 * Math.cos(rotX) - z1 * Math.sin(rotX);
+      const z2 = y1 * Math.sin(rotX) + z1 * Math.cos(rotX);
+      const x2 = x1;
+
+      return {
+        x: x2,
+        y: -y2,
+        z: z2,
+        visible: z2 > -radius * 0.15
+      };
+    };
 
     const render = () => {
       if (!isRunning) return;
 
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
       }
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      const width = rect.width;
+      const height = rect.height;
 
       ctx.clearRect(0, 0, width, height);
 
+      // Auto rotation dampening
+      if (isAutoRotating) {
+        targetRotationYRef.current += 0.003;
+      }
+      rotationYRef.current += (targetRotationYRef.current - rotationYRef.current) * 0.08;
+      rotationXRef.current += (targetRotationXRef.current - rotationXRef.current) * 0.08;
+
       const centerX = width / 2;
       const centerY = height / 2;
-      const radius = Math.min(width, height) * 0.38 * zoomLevel;
+      const baseRadius = Math.min(width, height) * 0.38;
+      const radius = baseRadius * zoomLevel;
 
-      // Update rotation
-      if (isAutoRotating) {
-        rotationYRef.current += 0.0035;
-        targetRotationYRef.current = rotationYRef.current;
-      } else {
-        rotationYRef.current += (targetRotationYRef.current - rotationYRef.current) * 0.08;
-        rotationXRef.current += (targetRotationXRef.current - rotationXRef.current) * 0.08;
-      }
+      pulsePhase = (pulsePhase + 0.04) % (Math.PI * 2);
 
-      const rotY = rotationYRef.current;
-      const rotX = rotationXRef.current;
-      pulsePhaseRef.current = (pulsePhaseRef.current + 0.04) % (Math.PI * 2);
-
-      // 1. Draw Outer Celestial Atmosphere Glow
-      const atmosGlow = ctx.createRadialGradient(centerX, centerY, radius * 0.85, centerX, centerY, radius * 1.35);
-      atmosGlow.addColorStop(0, 'rgba(0, 245, 255, 0.0)');
-      atmosGlow.addColorStop(0.7, 'rgba(0, 245, 255, 0.08)');
-      atmosGlow.addColorStop(0.9, 'rgba(0, 180, 255, 0.18)');
-      atmosGlow.addColorStop(1, 'rgba(0, 245, 255, 0.0)');
-      ctx.fillStyle = atmosGlow;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius * 1.35, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 2. Draw 3D Globe Base Sphere
-      const globeGrad = ctx.createRadialGradient(
-        centerX - radius * 0.35,
-        centerY - radius * 0.35,
-        radius * 0.1,
-        centerX,
-        centerY,
-        radius
-      );
-      globeGrad.addColorStop(0, '#0d192e');
-      globeGrad.addColorStop(0.6, '#060d1a');
-      globeGrad.addColorStop(1, '#02060d');
-
-      ctx.fillStyle = globeGrad;
+      // 1. Globe Ambient Background & Glow
+      const bgGrad = ctx.createRadialGradient(centerX, centerY, radius * 0.4, centerX, centerY, radius * 1.3);
+      bgGrad.addColorStop(0, 'rgba(10, 25, 50, 0.9)');
+      bgGrad.addColorStop(0.7, 'rgba(5, 12, 28, 0.95)');
+      bgGrad.addColorStop(1, 'rgba(2, 6, 15, 0.4)');
+      ctx.fillStyle = bgGrad;
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Globe Rim Accent
-      ctx.strokeStyle = 'rgba(0, 245, 255, 0.4)';
-      ctx.lineWidth = 1.5;
+      // Atmospheric Rim Glow
+      ctx.strokeStyle = 'rgba(0, 245, 255, 0.35)';
+      ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Helper function to project spherical coordinates (lat, lng) to 2D canvas (x, y, z)
-      const project = (lat: number, lng: number, alt: number = 0) => {
-        const phi = (lat * Math.PI) / 180;
-        const theta = (lng * Math.PI) / 180 + rotY;
-
-        // 3D Cartesian coordinates
-        let x = (radius + alt) * Math.cos(phi) * Math.sin(theta);
-        let y = -(radius + alt) * Math.sin(phi);
-        let z = (radius + alt) * Math.cos(phi) * Math.cos(theta);
-
-        // Apply X-axis rotation (Pitch)
-        const cosX = Math.cos(rotX);
-        const sinX = Math.sin(rotX);
-        const yRot = y * cosX - z * sinX;
-        const zRot = y * sinX + z * cosX;
-
-        return {
-          x: centerX + x,
-          y: centerY + yRot,
-          z: zRot,
-          isVisible: zRot > -radius * 0.15
-        };
-      };
-
-      // 3. Draw Latitude & Longitude Graticule Lines
-      ctx.lineWidth = 0.75;
+      // 2. Render Lat/Lng Cyber Grids
+      ctx.lineWidth = 0.5;
       for (let lat = -60; lat <= 60; lat += 30) {
+        ctx.strokeStyle = 'rgba(0, 245, 255, 0.12)';
         ctx.beginPath();
-        let started = false;
+        let first = true;
         for (let lng = -180; lng <= 180; lng += 10) {
-          const pt = project(lat, lng);
-          if (pt.z > 0) {
-            ctx.strokeStyle = `rgba(0, 245, 255, ${0.08 * (pt.z / radius)})`;
-            if (!started) {
-              ctx.moveTo(pt.x, pt.y);
-              started = true;
+          const pt = project3D(lat, lng, radius, rotationXRef.current, rotationYRef.current);
+          if (pt.visible) {
+            if (first) {
+              ctx.moveTo(centerX + pt.x, centerY + pt.y);
+              first = false;
             } else {
-              ctx.lineTo(pt.x, pt.y);
+              ctx.lineTo(centerX + pt.x, centerY + pt.y);
             }
           } else {
-            started = false;
+            first = true;
           }
         }
         ctx.stroke();
       }
 
-      // Meridians
       for (let lng = -180; lng < 180; lng += 45) {
+        ctx.strokeStyle = 'rgba(0, 245, 255, 0.12)';
         ctx.beginPath();
-        let started = false;
-        for (let lat = -80; lat <= 80; lat += 10) {
-          const pt = project(lat, lng);
-          if (pt.z > 0) {
-            ctx.strokeStyle = `rgba(0, 245, 255, ${0.08 * (pt.z / radius)})`;
-            if (!started) {
-              ctx.moveTo(pt.x, pt.y);
-              started = true;
+        let first = true;
+        for (let lat = -85; lat <= 85; lat += 5) {
+          const pt = project3D(lat, lng, radius, rotationXRef.current, rotationYRef.current);
+          if (pt.visible) {
+            if (first) {
+              ctx.moveTo(centerX + pt.x, centerY + pt.y);
+              first = false;
             } else {
-              ctx.lineTo(pt.x, pt.y);
+              ctx.lineTo(centerX + pt.x, centerY + pt.y);
             }
           } else {
-            started = false;
+            first = true;
           }
         }
         ctx.stroke();
       }
 
-      // 4. Draw Continents with Cyber Glow Matrix
-      CONTINENT_POLYGONS.forEach((polygon) => {
-        // Draw polygon outline
-        ctx.beginPath();
-        let started = false;
-        for (let i = 0; i < polygon.length; i++) {
-          const [lat, lng] = polygon[i];
-          const pt = project(lat, lng);
-          if (pt.z > -radius * 0.1) {
-            const alpha = Math.max(0.1, (pt.z + radius * 0.1) / (radius * 1.1));
-            ctx.strokeStyle = `rgba(0, 245, 255, ${alpha * 0.45})`;
-            ctx.lineWidth = 1.2;
-            if (!started) {
-              ctx.moveTo(pt.x, pt.y);
-              started = true;
-            } else {
-              ctx.lineTo(pt.x, pt.y);
-            }
-          } else {
-            started = false;
-          }
-        }
-        ctx.stroke();
+      // 3. Render Landmass Outlines & Fill
+      ctx.fillStyle = 'rgba(0, 245, 255, 0.08)';
+      ctx.strokeStyle = 'rgba(0, 245, 255, 0.45)';
+      ctx.lineWidth = 1.2;
 
-        // Draw internal dot vertices
-        for (let i = 0; i < polygon.length; i += 2) {
-          const [lat, lng] = polygon[i];
-          const pt = project(lat, lng);
-          if (pt.z > 0) {
-            const alpha = pt.z / radius;
-            ctx.fillStyle = `rgba(0, 245, 255, ${alpha * 0.7})`;
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
-            ctx.fill();
-          }
+      CONTINENT_POLYGONS.forEach((poly) => {
+        ctx.beginPath();
+        let visibleCount = 0;
+        poly.forEach(([lat, lng], idx) => {
+          const pt = project3D(lat, lng, radius, rotationXRef.current, rotationYRef.current);
+          if (pt.visible) visibleCount++;
+          const sx = centerX + pt.x;
+          const sy = centerY + pt.y;
+          if (idx === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        });
+        ctx.closePath();
+        if (visibleCount > poly.length * 0.3) {
+          ctx.fill();
+          ctx.stroke();
         }
       });
 
-      // 5. Draw 3D Parabolic Attack Vector Trajectory Arc (Origin -> Target)
-      const originPt = project(originLat, originLng, 0);
-      const targetPt = project(targetLocation.lat, targetLocation.lng, 0);
+      // 4. Render Transit Trajectory Arc (Origin -> Target)
+      const originPt = project3D(originLat, originLng, radius, rotationXRef.current, rotationYRef.current);
+      const targetPt = project3D(targetLocation.lat, targetLocation.lng, radius, rotationXRef.current, rotationYRef.current);
 
-      if (originPt.isVisible || targetPt.isVisible) {
+      if (originPt.visible || targetPt.visible) {
         ctx.beginPath();
-        const steps = 40;
-        const arcPoints: { x: number; y: number; z: number }[] = [];
+        const arcSteps = 30;
+        let arcFirst = true;
 
-        for (let i = 0; i <= steps; i++) {
-          const t = i / steps;
+        for (let i = 0; i <= arcSteps; i++) {
+          const t = i / arcSteps;
           const curLat = originLat + (targetLocation.lat - originLat) * t;
           const curLng = originLng + (targetLocation.lng - originLng) * t;
-          // Parabolic altitude lift
-          const altitude = Math.sin(t * Math.PI) * (radius * 0.35);
-          const p = project(curLat, curLng, altitude);
-          arcPoints.push(p);
+          const altitude = Math.sin(t * Math.PI) * (radius * 0.18);
+          const pt = project3D(curLat, curLng, radius + altitude, rotationXRef.current, rotationYRef.current);
 
-          if (p.z > -radius * 0.2) {
-            if (i === 0) ctx.moveTo(p.x, p.y);
-            else ctx.lineTo(p.x, p.y);
+          if (pt.visible) {
+            if (arcFirst) {
+              ctx.moveTo(centerX + pt.x, centerY + pt.y);
+              arcFirst = false;
+            } else {
+              ctx.lineTo(centerX + pt.x, centerY + pt.y);
+            }
           }
         }
 
-        ctx.strokeStyle = 'rgba(255, 70, 70, 0.4)';
+        ctx.strokeStyle = 'rgba(255, 59, 48, 0.7)';
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 4]);
         ctx.stroke();
         ctx.setLineDash([]);
-
-        // Animated glowing photon particle along trajectory
-        const particleT = (pulsePhaseRef.current / (Math.PI * 2));
-        const particleIdx = Math.floor(particleT * (arcPoints.length - 1));
-        const particlePt = arcPoints[particleIdx];
-
-        if (particlePt && particlePt.z > 0) {
-          const particleGlow = ctx.createRadialGradient(particlePt.x, particlePt.y, 0, particlePt.x, particlePt.y, 12);
-          particleGlow.addColorStop(0, '#ff3366');
-          particleGlow.addColorStop(0.5, 'rgba(255, 51, 102, 0.6)');
-          particleGlow.addColorStop(1, 'rgba(255, 51, 102, 0)');
-          ctx.fillStyle = particleGlow;
-          ctx.beginPath();
-          ctx.arc(particlePt.x, particlePt.y, 12, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(particlePt.x, particlePt.y, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
       }
 
-      // 6. Draw Origin Threat Server Pinpoint & 3D Sonar Pulse
-      if (originPt.z > -radius * 0.1) {
-        const depthAlpha = Math.max(0.2, (originPt.z + radius * 0.1) / (radius * 1.1));
+      // 5. Render Origin Node (Attacker / Sending Mail Server)
+      if (originPt.visible) {
+        const ox = centerX + originPt.x;
+        const oy = centerY + originPt.y;
 
-        // Sonar expanding rings
-        const pulseRadius1 = 10 + (Math.sin(pulsePhaseRef.current) + 1) * 8;
-        const pulseRadius2 = 18 + (Math.sin(pulsePhaseRef.current + Math.PI / 2) + 1) * 12;
-
-        ctx.strokeStyle = `rgba(255, 50, 50, ${depthAlpha * (1 - (pulseRadius1 - 10) / 16)})`;
-        ctx.lineWidth = 1.5;
+        const pulseRadius = 6 + Math.sin(pulsePhase) * 6;
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
         ctx.beginPath();
-        ctx.arc(originPt.x, originPt.y, pulseRadius1, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.strokeStyle = `rgba(255, 100, 50, ${depthAlpha * (1 - (pulseRadius2 - 18) / 24) * 0.6})`;
-        ctx.beginPath();
-        ctx.arc(originPt.x, originPt.y, pulseRadius2, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Origin Beacon Pin
-        ctx.fillStyle = `rgba(255, 51, 102, ${depthAlpha})`;
-        ctx.beginPath();
-        ctx.arc(originPt.x, originPt.y, 5, 0, Math.PI * 2);
+        ctx.arc(ox, oy, pulseRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#ef4444';
         ctx.beginPath();
-        ctx.arc(originPt.x, originPt.y, 2, 0, Math.PI * 2);
+        ctx.arc(ox, oy, 4, 0, Math.PI * 2);
         ctx.fill();
 
-        // 3D Altitude Beacon Beam
-        ctx.strokeStyle = `rgba(255, 51, 102, ${depthAlpha * 0.8})`;
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(originPt.x, originPt.y);
-        ctx.lineTo(originPt.x, originPt.y - 25);
+        ctx.arc(ox, oy, 4, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Tactical HUD Box next to origin
-        if (originPt.z > 0) {
-          const tagX = originPt.x + 12;
-          const tagY = originPt.y - 30;
+        // Node Label HUD Tag
+        if (originPt.z > -radius * 0.05) {
+          const tagX = ox + 12;
+          const tagY = oy - 22;
 
-          ctx.fillStyle = 'rgba(5, 10, 20, 0.85)';
-          ctx.strokeStyle = 'rgba(255, 51, 102, 0.7)';
+          ctx.fillStyle = 'rgba(8, 14, 28, 0.9)';
+          ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.roundRect(tagX, tagY, 110, 32, 4);
+          ctx.roundRect(tagX, tagY, 150, 36, 4);
           ctx.fill();
           ctx.stroke();
 
-          ctx.fillStyle = '#ff4d6d';
-          ctx.font = 'bold 9px "JetBrains Mono", monospace';
-          ctx.fillText('ORIGIN SERVER', tagX + 6, tagY + 12);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '8px "JetBrains Mono", monospace';
-          ctx.fillText(`${originIP.city || 'Server'}, ${originIP.country || 'Host'}`, tagX + 6, tagY + 24);
-        }
-      }
-
-      // 7. Draw Target Destination Node Pin
-      if (targetPt.z > -radius * 0.1) {
-        const depthAlpha = Math.max(0.2, (targetPt.z + radius * 0.1) / (radius * 1.1));
-
-        ctx.fillStyle = `rgba(0, 245, 255, ${depthAlpha})`;
-        ctx.beginPath();
-        ctx.arc(targetPt.x, targetPt.y, 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(targetPt.x, targetPt.y, 1.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (targetPt.z > 0) {
-          const tagX = targetPt.x + 10;
-          const tagY = targetPt.y + 10;
-          ctx.fillStyle = 'rgba(5, 10, 20, 0.85)';
-          ctx.strokeStyle = 'rgba(0, 245, 255, 0.6)';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.roundRect(tagX, tagY, 95, 24, 4);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.fillStyle = '#00f5ff';
-          ctx.font = 'bold 8px "JetBrains Mono", monospace';
-          ctx.fillText('TARGET GATEWAY', tagX + 5, tagY + 11);
-          ctx.fillStyle = '#94a3b8';
+          ctx.fillStyle = '#ef4444';
+          ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+          ctx.fillText(`TARGET: ${activeIntel.ip.slice(0, 16)}`, tagX + 6, tagY + 12);
+          ctx.fillStyle = '#38bdf8';
           ctx.font = '7.5px "JetBrains Mono", monospace';
-          ctx.fillText(targetLocation.label.slice(0, 18), tagX + 5, tagY + 20);
+          ctx.fillText(`${activeIntel.city || 'City'}, ${activeIntel.countryCode || activeIntel.country || 'Region'}`, tagX + 6, tagY + 22);
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '7px "JetBrains Mono", monospace';
+          ctx.fillText(`${activeIntel.asn || 'AS-TRANSIT'}`, tagX + 6, tagY + 31);
         }
       }
 
-      // 8. Draw Orbital Horizon Compass Ring
+      // 6. Render Target Node
+      if (targetPt.visible) {
+        const tx = centerX + targetPt.x;
+        const ty = centerY + targetPt.y;
+
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(tx, ty, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 7. Outer Compass Ring
       ctx.strokeStyle = 'rgba(0, 245, 255, 0.15)';
       ctx.lineWidth = 1;
       ctx.setLineDash([2, 6]);
@@ -532,6 +464,8 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
       ctx.ellipse(centerX, centerY, radius * 1.25, radius * 0.4, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.setLineDash([]);
+
+      ctx.restore();
 
       animationFrameRef.current = requestAnimationFrame(render);
     };
@@ -542,14 +476,14 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
       isRunning = false;
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [viewMode, originLat, originLng, targetLocation, originIP, isAutoRotating, zoomLevel]);
+  }, [viewMode, originLat, originLng, targetLocation, activeIntel, isAutoRotating, zoomLevel]);
 
   return (
     <div className={`relative bg-[#070c18] border border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-all ${
       isExpanded ? 'fixed inset-4 z-50 flex flex-col' : 'w-full'
     }`}>
       {/* Top Cyber HUD Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-[#0a1224]/80 border-b border-white/10 backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-[#0a1224]/90 border-b border-white/10 backdrop-blur-md">
         <div className="flex items-center gap-2.5">
           <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
           <div>
@@ -558,18 +492,44 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
                 <Globe className="w-3.5 h-3.5 text-cyber-blue" />
                 GEOSPATIAL FORENSIC 3D RADAR
               </span>
-              <span className="text-[9px] font-mono font-bold bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.2 rounded uppercase">
-                LAT/LNG LOCKED
+              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded uppercase border flex items-center gap-1 ${
+                activeIntel.lookupStatus === 'RESOLVED'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  : activeIntel.lookupStatus === 'PRIVATE_IP'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+              }`}>
+                <CheckCircle2 className="w-2.5 h-2.5" />
+                {activeIntel.lookupStatus === 'RESOLVED' ? 'LIVE TELEMETRY' : activeIntel.lookupStatus === 'PRIVATE_IP' ? 'RFC1918 PRIVATE' : 'APPROX REGIONAL'}
               </span>
             </div>
-            <span className="text-[10px] text-gray-400 font-mono">
-              {originIP.city || 'Autonomous City'}, {originIP.country || 'Origin Nation'} — {formattedCoords.lat}, {formattedCoords.lng}
+            <span className="text-[10px] text-gray-300 font-mono flex items-center gap-1.5 mt-0.5">
+              <span className="text-white font-bold">{activeIntel.city || 'Autonomous City'}, {activeIntel.region || ''} {activeIntel.country || 'Public Zone'}</span>
+              <span className="text-gray-500">•</span>
+              <span className="text-cyber-blue font-bold">{formattedCoords.lat}, {formattedCoords.lng}</span>
+              {activeIntel.timezone && (
+                <>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-gray-400 flex items-center gap-1"><Clock className="w-2.5 h-2.5 text-gray-400" />{activeIntel.timezone}</span>
+                </>
+              )}
             </span>
           </div>
         </div>
 
-        {/* View Mode Switcher */}
+        {/* View Mode Switcher & Live Lookup Toggle */}
         <div className="flex items-center gap-1 bg-[#05080f] p-1 rounded-xl border border-white/10">
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            title="Inspect / Geoplot custom IP or Domain"
+            className={`px-2 py-1 rounded-lg text-[11px] font-mono font-bold transition-all flex items-center gap-1 ${
+              showSearch ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Search className="w-3 h-3" />
+            <span className="hidden sm:inline">IP / Host Query</span>
+          </button>
+
           <button
             onClick={() => setViewMode('3d-globe')}
             className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition-all flex items-center gap-1.5 ${
@@ -591,7 +551,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
             }`}
           >
             <Layers className="w-3 h-3" />
-            <span>Tactical Map</span>
+            <span>Google Maps™ Radar</span>
           </button>
 
           <button
@@ -616,6 +576,48 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
         </div>
       </div>
 
+      {/* Live Target IP / Domain Inspector Bar */}
+      {showSearch && (
+        <div className="bg-[#05080f] px-4 py-2.5 border-b border-white/10 flex flex-wrap items-center gap-2 text-xs font-mono">
+          <span className="text-gray-400 font-bold flex items-center gap-1">
+            <Radio className="w-3.5 h-3.5 text-cyber-blue" />
+            LIVE GEO QUERY:
+          </span>
+          <div className="flex-1 min-w-[200px] flex items-center gap-2">
+            <input
+              type="text"
+              value={searchTarget}
+              onChange={(e) => setSearchTarget(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handlePerformLiveQuery()}
+              placeholder="e.g. 104.28.19.44, trycloudflare.com, 185.220.101.45"
+              className="flex-1 bg-[#0a1224] border border-white/15 rounded-lg px-3 py-1.5 text-white placeholder-gray-500 focus:outline-none focus:border-cyber-blue font-mono text-xs"
+            />
+            <button
+              onClick={() => handlePerformLiveQuery()}
+              disabled={isResolving || !searchTarget.trim()}
+              className="px-3 py-1.5 bg-cyber-blue text-black font-bold rounded-lg hover:bg-cyan-300 disabled:opacity-50 transition-all flex items-center gap-1.5"
+            >
+              {isResolving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
+              <span>{isResolving ? 'Locating...' : 'Locate'}</span>
+            </button>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] text-gray-400">
+            <button
+              onClick={() => { setSearchTarget('104.28.19.44'); handlePerformLiveQuery('104.28.19.44'); }}
+              className="px-2 py-0.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded border border-white/10"
+            >
+              Cloudflare Anycast
+            </button>
+            <button
+              onClick={() => { setSearchTarget('185.220.101.45'); handlePerformLiveQuery('185.220.101.45'); }}
+              className="px-2 py-0.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded border border-white/10"
+            >
+              Tor Exit Relay
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main View Area */}
       <div className={`relative ${isExpanded ? 'flex-1 min-h-[500px]' : isCompact ? 'h-64' : 'h-80 sm:h-96'}`}>
         
@@ -636,18 +638,28 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
 
             {/* Tactical 3D HUD Floating Overlays */}
             <div className="absolute top-3 left-3 pointer-events-none space-y-1 font-mono text-[10px]">
-              <div className="bg-[#05080f]/80 backdrop-blur-sm border border-white/10 rounded-lg p-2 text-gray-300 space-y-1 pointer-events-auto">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-gray-500">TARGET NODE:</span>
-                  <span className="text-red-400 font-bold">{originIP.ip}</span>
+              <div className="bg-[#05080f]/85 backdrop-blur-md border border-white/10 rounded-xl p-2.5 text-gray-300 space-y-1.5 pointer-events-auto shadow-xl max-w-[240px]">
+                <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-1">
+                  <span className="text-gray-400 font-bold">TARGET HOST:</span>
+                  <span className="text-red-400 font-bold truncate">{activeIntel.resolvedDomain || activeIntel.ip}</span>
                 </div>
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-gray-500">LOCATION:</span>
+                  <span className="text-white font-bold truncate">{activeIntel.city}, {activeIntel.countryCode || activeIntel.country}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-gray-500">LAT / LNG:</span>
                   <span className="text-cyber-blue font-bold">{formattedCoords.lat}, {formattedCoords.lng}</span>
                 </div>
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-gray-500">ASN / ISP:</span>
-                  <span className="text-white truncate max-w-[140px]">{originIP.asn}</span>
+                  <span className="text-gray-300 truncate max-w-[120px]">{activeIntel.asn} • {activeIntel.isp}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <span className="text-gray-500">TELEMETRY:</span>
+                  <span className={`font-bold ${activeIntel.lookupStatus === 'RESOLVED' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {activeIntel.lookupStatus === 'RESOLVED' ? 'LIVE RESOLVED' : 'REGIONAL ESTIMATE'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -698,80 +710,15 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
           </div>
         )}
 
-        {/* 2. TACTICAL 2D/3D SATELLITE MAP MODE */}
+        {/* 2. GOOGLE MAPS TACTICAL RADAR MODE */}
         {viewMode === 'tactical-map' && (
           <div className="w-full h-full relative bg-[#060b14] overflow-hidden">
-            {googleMapsApiKey ? (
-              <APIProvider apiKey={googleMapsApiKey}>
-                <Map
-                  defaultCenter={{ lat: originLat, lng: originLng }}
-                  defaultZoom={11}
-                  mapId="DEMO_MAP_ID"
-                  className="w-full h-full"
-                  disableDefaultUI={false}
-                  internalUsageAttributionIds={["gmp_mcp_codeassist_v1_aistudio"]}
-                >
-                  <AdvancedMarker position={{ lat: originLat, lng: originLng }}>
-                    <div className="relative flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-full bg-red-500/30 animate-ping absolute" />
-                      <div className="w-5 h-5 rounded-full bg-red-600 border-2 border-white shadow-lg flex items-center justify-center text-white text-[9px] font-bold">
-                        !
-                      </div>
-                    </div>
-                  </AdvancedMarker>
-                </Map>
-              </APIProvider>
-            ) : (
-              // High-precision Cyber Dark Interactive Map Simulation & Satellite Tile Overlay
-              <div className="w-full h-full relative flex items-center justify-center bg-[#070f1e] select-none">
-                {/* Embedded High-Contrast Tactical Map Grid */}
-                <iframe
-                  title="Tactical Map"
-                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${originLng - 0.15}%2C${originLat - 0.1}%2C${originLng + 0.15}%2C${originLat + 0.1}&layer=mapnik&marker=${originLat}%2C${originLng}`}
-                  className="w-full h-full border-0 filter invert contrast-125 brightness-90 hue-rotate-180 opacity-80"
-                />
-
-                {/* Cyber Targeting Crosshair Overlay */}
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                  <div className="w-24 h-24 border border-red-500/40 rounded-full flex items-center justify-center animate-pulse">
-                    <div className="w-12 h-12 border border-cyber-blue/60 rounded-full flex items-center justify-center">
-                      <Crosshair className="w-6 h-6 text-red-400" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Live Tactical HUD Banner */}
-                <div className="absolute top-3 left-3 bg-[#05080f]/90 border border-white/10 rounded-xl p-3 backdrop-blur-md font-mono text-xs max-w-xs space-y-1.5">
-                  <div className="flex items-center gap-2 text-cyber-blue font-bold text-[11px]">
-                    <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-                    <span>PRECISION TARGET RADAR</span>
-                  </div>
-                  <div className="text-white text-xs font-bold truncate">
-                    {originIP.city}, {originIP.region}, {originIP.country}
-                  </div>
-                  <div className="text-[10px] text-gray-400">
-                    Coords: <span className="text-gray-200">{formattedCoords.lat}, {formattedCoords.lng}</span>
-                  </div>
-                  <div className="text-[10px] text-gray-400">
-                    ISP Gateway: <span className="text-gray-200">{originIP.isp}</span>
-                  </div>
-                </div>
-
-                {/* Google Maps API Key Notice / Direct Link */}
-                <div className="absolute bottom-3 right-3 bg-[#05080f]/90 border border-white/10 rounded-xl p-2.5 backdrop-blur-md font-mono text-[10px] text-gray-400 flex items-center gap-2">
-                  <span>Open in external GIS:</span>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${originLat},${originLng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyber-blue hover:underline flex items-center gap-1 font-bold"
-                  >
-                    <span>Google Maps</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
-            )}
+            <GoogleMapsTacticalRadar
+              originIP={activeIntel}
+              hops={hops}
+              targetLocation={targetLocation}
+              isCompact={isCompact}
+            />
           </div>
         )}
 
@@ -861,18 +808,24 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
         <div className="flex flex-wrap items-center gap-4 text-gray-400">
           <div>
             <span className="text-[10px] text-gray-500 block">IP TYPE:</span>
-            <span className="text-white">{originIP.ipType || 'Public IPv4'}</span>
+            <span className="text-white">{activeIntel.ipType || 'Public IPv4'}</span>
           </div>
           <div>
-            <span className="text-[10px] text-gray-500 block">ORGANIZATION:</span>
-            <span className="text-white truncate max-w-[160px] block">{originIP.organization || originIP.isp}</span>
+            <span className="text-[10px] text-gray-500 block">ORGANIZATION / ISP:</span>
+            <span className="text-white truncate max-w-[160px] block">{activeIntel.organization || activeIntel.isp}</span>
           </div>
           <div>
-            <span className="text-[10px] text-gray-500 block">VPN / TOR RISK:</span>
-            <span className={originIP.vpnTorIndicator.includes('TOR') || originIP.vpnTorIndicator.includes('BULLETPROOF') ? 'text-red-400 font-bold' : 'text-emerald-400'}>
-              {originIP.vpnTorIndicator || 'Low Threat Indicator'}
+            <span className="text-[10px] text-gray-500 block">VPN / TOR INDICATOR:</span>
+            <span className={activeIntel.vpnTorIndicator.includes('TOR') || activeIntel.vpnTorIndicator.includes('BULLETPROOF') ? 'text-red-400 font-bold' : 'text-emerald-400'}>
+              {activeIntel.vpnTorIndicator || 'Standard Public Gateway'}
             </span>
           </div>
+          {activeIntel.providerSource && (
+            <div className="hidden md:block">
+              <span className="text-[10px] text-gray-500 block">TELEMETRY SOURCE:</span>
+              <span className="text-cyan-400 font-medium">{activeIntel.providerSource}</span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

@@ -40,6 +40,7 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
   const [selectedGraphNode, setSelectedGraphNode] = useState<string | null>(null);
   const [selectedFinding, setSelectedFinding] = useState<ForensicFinding | null>(null);
   const [iocFilter, setIocFilter] = useState<'ALL' | 'IP' | 'DOMAIN' | 'URL' | 'EMAIL' | 'HASH'>('ALL');
+  const [threatMatrixFilter, setThreatMatrixFilter] = useState<'DETECTED' | 'ALL' | 'UNKNOWN' | 'NOT_DETECTED'>('DETECTED');
 
   const targetDomain = dossier.senderIdentity.fromDomain || dossier.authentication.dmarc.headerFromDomain || 'google.com';
 
@@ -435,68 +436,134 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
             </div>
           </div>
 
-          {/* Explicit Threat Signal Matrix (UNKNOWN != SAFE) */}
-          <div className="bg-[#0a0f1c] border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
-            <div className="flex justify-between items-center flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-cyber-blue" />
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
-                  THREAT SIGNAL MATRIX & EVIDENCE COMPLETENESS (UNKNOWN ≠ SAFE)
-                </h3>
+          {/* Clean, Easy-to-Understand Threat Signal Matrix */}
+          <div className="bg-[#0a0f1c] border border-white/10 rounded-2xl p-5 shadow-xl space-y-4 font-sans">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-cyber-blue/10 border border-cyber-blue/20 text-cyber-blue">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white tracking-wide">
+                    Threat & Security Signals
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Comprehensive heuristic evaluation of sender, routing, authentication, and links.
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-xs font-mono">
-                <span className="bg-red-500/15 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">
-                  DETECTED: {dossier.allThreatSignals?.filter(s => s.status === 'DETECTED').length || 0}
-                </span>
-                <span className="bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-bold">
-                  UNKNOWN: {dossier.allThreatSignals?.filter(s => s.status === 'UNKNOWN').length || 0}
-                </span>
-                <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">
-                  NOT DETECTED: {dossier.allThreatSignals?.filter(s => s.status === 'NOT_DETECTED').length || 0}
-                </span>
+
+              {/* Interactive Filter Pills */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <button
+                  onClick={() => setThreatMatrixFilter('DETECTED')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                    threatMatrixFilter === 'DETECTED'
+                      ? 'bg-red-500/20 text-red-400 border-red-500/50 shadow-sm'
+                      : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+                  <span>Threats Found ({dossier.allThreatSignals?.filter(s => s.status === 'DETECTED').length || 0})</span>
+                </button>
+
+                <button
+                  onClick={() => setThreatMatrixFilter('UNKNOWN')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                    threatMatrixFilter === 'UNKNOWN'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                      : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span>Incomplete Data ({dossier.allThreatSignals?.filter(s => s.status === 'UNKNOWN').length || 0})</span>
+                </button>
+
+                <button
+                  onClick={() => setThreatMatrixFilter('NOT_DETECTED')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                    threatMatrixFilter === 'NOT_DETECTED'
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-sm'
+                      : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span>Clean ({dossier.allThreatSignals?.filter(s => s.status === 'NOT_DETECTED').length || 0})</span>
+                </button>
+
+                <button
+                  onClick={() => setThreatMatrixFilter('ALL')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
+                    threatMatrixFilter === 'ALL'
+                      ? 'bg-cyber-blue/20 text-cyber-blue border-cyber-blue/50'
+                      : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'
+                  }`}
+                >
+                  All ({dossier.allThreatSignals?.length || 0})
+                </button>
               </div>
             </div>
 
-            <div className="space-y-2">
-              {dossier.allThreatSignals && dossier.allThreatSignals.map((signal) => (
-                <div
-                  key={signal.id}
-                  className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono transition-colors ${
-                    signal.status === 'DETECTED' ? 'bg-red-500/10 border-red-500/30 text-white' :
-                    signal.status === 'UNKNOWN' ? 'bg-amber-500/5 border-amber-500/20 text-gray-300' :
-                    'bg-white/5 border-white/5 text-gray-400'
-                  }`}
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                        signal.status === 'DETECTED' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
-                        signal.status === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
-                        'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                      }`}>
-                        {signal.status}
-                      </span>
-                      <span className="text-gray-500 text-[10px]">[{signal.categoryLabel}]</span>
-                      <strong className="text-white">{signal.name}</strong>
-                    </div>
-                    <p className="text-xs text-gray-300">{signal.evidence}</p>
-                  </div>
+            {/* Signal Items List */}
+            <div className="space-y-2.5">
+              {(() => {
+                const visibleSignals = (dossier.allThreatSignals || []).filter(s => 
+                  threatMatrixFilter === 'ALL' ? true : s.status === threatMatrixFilter
+                );
 
-                  <div className="flex items-center gap-3 shrink-0 text-right sm:flex-col sm:items-end">
-                    <span className="text-[10px] text-gray-500 block">
-                      Field: <strong className="text-gray-300">{signal.sourceField}</strong>
-                    </span>
-                    <span className={`text-[10px] font-bold ${
-                      signal.status === 'DETECTED' ? 'text-red-400' :
-                      signal.status === 'UNKNOWN' ? 'text-amber-400' : 'text-emerald-400'
-                    }`}>
-                      {signal.status === 'DETECTED' ? `Severity Impact: ${signal.severity}/100` :
-                       signal.status === 'UNKNOWN' ? `Confidence: ${signal.confidence}% (0 Risk Add)` :
-                       'Clean / Negative'}
-                    </span>
+                if (visibleSignals.length === 0) {
+                  return (
+                    <div className="py-8 text-center bg-white/[0.02] border border-dashed border-white/10 rounded-xl">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2 opacity-80" />
+                      <p className="text-sm font-medium text-gray-300">No signals found in this category.</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Switch filter to view other security telemetry.</p>
+                    </div>
+                  );
+                }
+
+                return visibleSignals.map((signal) => (
+                  <div
+                    key={signal.id}
+                    className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all ${
+                      signal.status === 'DETECTED' 
+                        ? 'bg-red-500/10 border-red-500/30 shadow-sm' 
+                        : signal.status === 'UNKNOWN' 
+                        ? 'bg-amber-500/5 border-amber-500/20' 
+                        : 'bg-white/[0.02] border-white/5'
+                    }`}
+                  >
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                          signal.status === 'DETECTED' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                          signal.status === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                          'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        }`}>
+                          {signal.status === 'DETECTED' ? 'THREAT DETECTED' :
+                           signal.status === 'UNKNOWN' ? 'DATA MISSING' : 'CLEAN / NEGATIVE'}
+                        </span>
+                        <span className="text-gray-500 text-[10px] font-mono">[{signal.categoryLabel}]</span>
+                        <h4 className="text-white font-semibold text-xs truncate">{signal.name}</h4>
+                      </div>
+                      <p className="text-xs text-gray-300 font-sans leading-relaxed">{signal.evidence}</p>
+                    </div>
+
+                    <div className="flex items-center sm:flex-col sm:items-end justify-between gap-2 shrink-0 border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
+                      <span className="text-[10px] font-mono text-gray-400 bg-black/40 px-2 py-0.5 rounded border border-white/5">
+                        Field: {signal.sourceField}
+                      </span>
+                      <span className={`text-[11px] font-bold font-mono ${
+                        signal.status === 'DETECTED' ? 'text-red-400' :
+                        signal.status === 'UNKNOWN' ? 'text-amber-400/80' : 'text-emerald-400/80'
+                      }`}>
+                        {signal.status === 'DETECTED' ? `Impact: ${signal.severity}/100` :
+                         signal.status === 'UNKNOWN' ? `Confidence: ${signal.confidence}%` :
+                         'Negative'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
 
@@ -676,11 +743,23 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
                   <span className="text-gray-500">CASE ID:</span>
                   <span className="text-white font-bold">{dossier.chainOfCustody.caseId}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">EVIDENCE DIGEST:</span>
-                  <span className="text-cyber-blue truncate max-w-[200px]">{dossier.chainOfCustody.sha256EvidenceHash}</span>
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-gray-500">SHA-256 DIGITAL FINGERPRINT:</span>
+                    <button
+                      onClick={() => copyToClipboard(dossier.chainOfCustody.sha256EvidenceHash, 'sha256-hash')}
+                      className="text-[10px] text-cyber-blue hover:text-white flex items-center gap-1 transition-colors"
+                      title="Copy SHA-256 Hash"
+                    >
+                      {copiedKey === 'sha256-hash' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedKey === 'sha256-hash' ? 'Copied' : 'Copy Hash'}</span>
+                    </button>
+                  </div>
+                  <div className="p-2 rounded bg-black/60 border border-white/10 text-cyber-blue text-[11px] font-mono break-all selection:bg-cyber-blue selection:text-black">
+                    {dossier.chainOfCustody.sha256EvidenceHash}
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center pt-1 border-t border-white/5">
                   <span className="text-gray-500">EVIDENCE SIZE:</span>
                   <span className="text-white">{dossier.chainOfCustody.fileSizeBytes} bytes</span>
                 </div>
@@ -791,6 +870,24 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
               <div className="bg-[#05080f] p-3 rounded-lg border border-white/5">
                 <span className="text-gray-500 block text-[10px]">MESSAGE-ID:</span>
                 <span className="text-white break-all">{dossier.headerFields.messageId || 'None specified'}</span>
+              </div>
+              <div className="bg-[#05080f] p-3 rounded-lg border border-white/5 md:col-span-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-gray-500 block text-[10px] uppercase font-bold flex items-center gap-1.5 text-cyber-blue">
+                    <Lock className="w-3 h-3" />
+                    IMMUTABLE PAYLOAD SHA-256 FINGERPRINT (LEGAL CHAIN-OF-CUSTODY):
+                  </span>
+                  <button
+                    onClick={() => copyToClipboard(dossier.chainOfCustody.sha256EvidenceHash, 'rfc-sha256')}
+                    className="text-[10px] text-cyber-blue hover:text-white flex items-center gap-1 transition-colors"
+                  >
+                    {copiedKey === 'rfc-sha256' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedKey === 'rfc-sha256' ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+                <div className="p-2 rounded bg-black/60 border border-cyber-blue/20 text-cyber-blue text-xs font-mono break-all selection:bg-cyber-blue selection:text-black">
+                  {dossier.chainOfCustody.sha256EvidenceHash}
+                </div>
               </div>
               <div className="bg-[#05080f] p-3 rounded-lg border border-white/5">
                 <span className="text-gray-500 block text-[10px]">CONTENT-TYPE:</span>
@@ -964,24 +1061,36 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
             ) : (
               <div className="space-y-4">
                 {dossier.urlForensics.map((url, i) => (
-                  <div key={i} className="bg-[#05080f] border border-white/10 rounded-xl p-4 space-y-3">
+                  <div key={i} className={`bg-[#05080f] border ${url.isReverseTunnel ? 'border-purple-500/40 bg-purple-950/10' : 'border-white/10'} rounded-xl p-4 space-y-3`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          url.threatLevel === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                          url.threatLevel === 'HIGH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                          'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        }`}>
-                          {url.threatLevel} THREAT
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            url.threatLevel === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                            url.threatLevel === 'HIGH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                            'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                          }`}>
+                            {url.threatLevel} THREAT
+                          </span>
+                          {url.isReverseTunnel && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 animate-pulse">
+                              ⚡ REVERSE TUNNEL / CLOUDFLARE EVASION
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs font-bold text-cyber-blue break-all">{url.rawUrl}</div>
+                        {url.tunnelProvider && (
+                          <div className="text-[11px] text-purple-300 font-mono">
+                            Tunnel Infrastructure: <span className="text-white font-semibold">{url.tunnelProvider}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono bg-[#0a0f1c] p-3 rounded-lg border border-white/5">
                       <div><span className="text-gray-500 block text-[10px]">DOMAIN:</span><span className="text-white">{url.domain}</span></div>
                       <div><span className="text-gray-500 block text-[10px]">SCHEME:</span><span className="text-white">{url.scheme}</span></div>
-                      <div><span className="text-gray-500 block text-[10px]">IS IP-BASED:</span><span className={url.isIPBased ? 'text-red-400 font-bold' : 'text-gray-400'}>{url.isIPBased ? 'YES' : 'NO'}</span></div>
+                      <div><span className="text-gray-500 block text-[10px]">IS REVERSE TUNNEL:</span><span className={url.isReverseTunnel ? 'text-purple-400 font-bold' : 'text-gray-400'}>{url.isReverseTunnel ? 'YES' : 'NO'}</span></div>
                       <div><span className="text-gray-500 block text-[10px]">IS HARVESTER:</span><span className={url.isCredentialHarvester ? 'text-red-400 font-bold' : 'text-gray-400'}>{url.isCredentialHarvester ? 'YES' : 'NO'}</span></div>
                     </div>
 

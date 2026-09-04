@@ -37,10 +37,10 @@ export function Settings() {
         <div>
           <h2 className="text-2xl font-bold font-sans tracking-wide text-white flex items-center gap-2">
             <Sliders className="w-6 h-6 text-cyber-blue" />
-            SECURITY SYSTEM PREFERENCES
+            {t('security_preferences')}
           </h2>
           <p className="text-cyber-muted text-xs sm:text-sm font-mono mt-1">
-            Configure SOC detection thresholds, AI models, and real-time response automation.
+            {t('settings_desc')}
           </p>
         </div>
         <Button 
@@ -48,14 +48,14 @@ export function Settings() {
           className="bg-cyber-blue text-black hover:bg-cyber-blue/90 font-mono text-xs font-bold gap-2 self-start sm:self-auto shadow-[0_0_15px_rgba(0,243,255,0.3)]"
         >
           <Save className="w-4 h-4" />
-          SAVE CONFIGURATION
+          {t('save_configuration')}
         </Button>
       </div>
 
       {savedAlert && (
         <div className="p-3 rounded-xl bg-cyber-green/10 border border-cyber-green/40 text-cyber-green text-xs font-mono flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-cyber-green" />
-          Settings successfully synchronized with NeuroShield gateway.
+          {t('settings_saved')}
         </div>
       )}
 
@@ -65,17 +65,17 @@ export function Settings() {
           <CardHeader className="pb-3 border-b border-white/5">
             <CardTitle className="text-sm font-mono flex items-center gap-2 text-white">
               <Shield className="w-4 h-4 text-cyber-blue" />
-              AI Threat Detection Rules
+              {t('ai_detection_rules')}
             </CardTitle>
             <p className="text-xs text-cyber-muted">
-              Tune sensitivity thresholds for incoming text, email headers, and URLs.
+              {t('detection_rules_desc')}
             </p>
           </CardHeader>
           <CardContent className="space-y-5 pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-medium text-white">Auto-Quarantine BEC & Phishing</div>
-                <div className="text-[11px] text-cyber-muted">Instantly isolate emails with DMARC fail or score &gt; 90</div>
+                <div className="text-xs font-medium text-white">{t('auto_quarantine_title')}</div>
+                <div className="text-[11px] text-cyber-muted">{t('auto_quarantine_desc')}</div>
               </div>
               <button 
                 onClick={() => setAutoQuarantine(!autoQuarantine)}
@@ -87,8 +87,8 @@ export function Settings() {
 
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-medium text-white">Real-Time DoH DNS Verification</div>
-                <div className="text-[11px] text-cyber-muted">Verify SPF, DKIM, and BIMI via Cloudflare/Google DoH</div>
+                <div className="text-xs font-medium text-white">{t('doh_dns_title')}</div>
+                <div className="text-[11px] text-cyber-muted">{t('doh_dns_desc')}</div>
               </div>
               <button 
                 onClick={() => setRealtimeDnsCheck(!realtimeDnsCheck)}
@@ -100,8 +100,8 @@ export function Settings() {
 
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-medium text-white">Sentinel Voice Deepfake Detection</div>
-                <div className="text-[11px] text-cyber-muted">Analyze live acoustic spectrograms for synthetic voices</div>
+                <div className="text-xs font-medium text-white">{t('deepfake_detection_title')}</div>
+                <div className="text-[11px] text-cyber-muted">{t('deepfake_detection_desc')}</div>
               </div>
               <button 
                 onClick={() => setDeepfakeAudioScan(!deepfakeAudioScan)}
@@ -113,7 +113,7 @@ export function Settings() {
 
             <div className="space-y-2 pt-2 border-t border-white/5">
               <div className="flex justify-between text-xs">
-                <span className="text-white font-medium">Alert Trigger Threshold</span>
+                <span className="text-white font-medium">{t('alert_threshold')}</span>
                 <span className="font-mono text-cyber-blue font-bold">{thresholdScore}% Risk</span>
               </div>
               <input 
@@ -138,10 +138,10 @@ export function Settings() {
           <CardHeader className="pb-3 border-b border-white/5">
             <CardTitle className="text-sm font-mono flex items-center gap-2 text-white">
               <Globe className="w-4 h-4 text-cyber-green" />
-              Language & Regional Localization
+              {t('lang_localization_title')}
             </CardTitle>
             <p className="text-xs text-cyber-muted">
-              Multi-lingual AI analysis and interface display language.
+              {t('lang_localization_desc')}
             </p>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
@@ -184,9 +184,9 @@ export function Settings() {
             </div>
 
             <div className="space-y-3 pt-3 border-t border-white/5">
-              <div className="text-xs font-medium text-white">Notification Webhooks</div>
+              <div className="text-xs font-medium text-white">{t('notifications_webhooks')}</div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-cyber-muted">Slack / Teams SOC Alerts</span>
+                <span className="text-xs text-cyber-muted">{t('slack_alerts')}</span>
                 <button 
                   onClick={() => setNotifySlack(!notifySlack)}
                   className={`w-11 h-6 rounded-full transition-colors relative ${notifySlack ? 'bg-cyber-green' : 'bg-white/10'}`}
@@ -196,7 +196,7 @@ export function Settings() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-cyber-muted">Email Daily Digest</span>
+                <span className="text-xs text-cyber-muted">{t('email_digest')}</span>
                 <button 
                   onClick={() => setNotifyEmail(!notifyEmail)}
                   className={`w-11 h-6 rounded-full transition-colors relative ${notifyEmail ? 'bg-cyber-green' : 'bg-white/10'}`}

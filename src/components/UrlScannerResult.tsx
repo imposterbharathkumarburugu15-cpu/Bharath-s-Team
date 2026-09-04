@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Globe, Shield, Activity as ActivityIcon, X } from 'lucide-react';
+import { Globe, Shield, Activity as ActivityIcon, X, AlertTriangle, Radio } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, PolarRadiusAxis } from 'recharts';
 import { ScanResult } from '@/services/geminiService';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,9 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
   const { t } = useLanguage();
   const isHighRisk = scanResult.riskScore > 50;
   const metrics = scanResult.urlMetrics;
+
+  const isReverseTunnel = /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(inputText) ||
+    (scanResult.signals && scanResult.signals.some(s => s.includes('REVERSE_TUNNEL') || s.includes('CLOUDFLARE')));
 
   const data = metrics ? [
     { subject: 'Domain Age', A: metrics.radarData.domainAge, fullMark: 100 },
@@ -51,6 +54,26 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
           <X className="w-5 h-5" />
         </button>
       </div>
+
+      {/* Evasion Banner if Reverse Tunnel Detected */}
+      {isReverseTunnel && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 rounded-xl border border-cyber-red/40 bg-cyber-red/10 backdrop-blur-md flex items-start gap-3 text-white"
+        >
+          <AlertTriangle className="w-6 h-6 text-cyber-red shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs">
+            <div className="font-bold text-cyber-red tracking-wider uppercase flex items-center gap-2">
+              <Radio className="w-4 h-4 animate-pulse" />
+              Critical Threat: Ephemeral Reverse Tunnel Evasion Vector (*.trycloudflare.com)
+            </div>
+            <p className="text-gray-300 leading-relaxed">
+              Threat actors weaponize Cloudflare Quick Tunnels (<span className="font-mono text-purple-300">trycloudflare.com</span>) as disposable reverse proxies. This technique bypasses traditional domain-age reputation filters, exploits trusted Cloudflare Anycast SSL certificates, and proxies victim credentials to hidden C2 harvesting infrastructure.
+            </p>
+          </div>
+        </motion.div>
+      )}
       
       <div className="mb-6 flex-shrink-0">
         <div className="relative group w-full">
@@ -119,7 +142,9 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
                 {isHighRisk ? t('high_risk') : t('low_risk')}
               </h3>
               <p className="text-xs text-cyber-muted mt-3 max-w-[200px] mx-auto leading-relaxed">
-                {isHighRisk 
+                {isReverseTunnel 
+                  ? "Ephemeral reverse tunnel proxy detected. Hostile credential harvesting risk."
+                  : isHighRisk 
                   ? "Domain exhibits multiple indicators of compromise." 
                   : "Domain appears clean with no significant threat indicators."}
               </p>
@@ -136,17 +161,18 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
           
           <div className="space-y-1 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {[
-              { label: t('domain_age'), value: metrics?.domainAge || 'N/A', isBad: metrics?.domainAge.includes('day') || metrics?.domainAge.includes('week') },
-              { label: t('ssl_cert'), value: metrics?.sslCertificate || 'N/A', isBad: metrics?.sslCertificate.toLowerCase().includes('invalid') || metrics?.sslCertificate.toLowerCase().includes('none') },
-              { label: t('url_domain'), value: inputText ? getHostname(inputText) : 'N/A', isBad: false },
-              { label: t('blacklist_status'), value: metrics?.blacklistStatus || 'N/A', isBad: !metrics?.blacklistStatus.toLowerCase().includes('clean') },
-              { label: t('typosquatting'), value: metrics?.typosquatting || 'N/A', isBad: !metrics?.typosquatting.toLowerCase().includes('none') },
-              { label: t('subdomains'), value: metrics?.subdomains || 'N/A', isBad: Number(metrics?.subdomains) > 5 },
+              ...(isReverseTunnel ? [{ label: "Tunnel Proxy", value: "Cloudflare Quick Tunnel (AS13335)", isBad: true }] : []),
+              { label: t('domain_age'), value: metrics?.domainAge || (isReverseTunnel ? 'Ephemeral (< 1 Hour)' : 'N/A'), isBad: isReverseTunnel || metrics?.domainAge.includes('day') || metrics?.domainAge.includes('week') || metrics?.domainAge.includes('Ephemeral') },
+              { label: t('ssl_cert'), value: metrics?.sslCertificate || (isReverseTunnel ? 'Cloudflare Proxy TLS' : 'N/A'), isBad: isReverseTunnel || metrics?.sslCertificate.toLowerCase().includes('invalid') || metrics?.sslCertificate.toLowerCase().includes('none') || metrics?.sslCertificate.includes('Proxy') },
+              { label: t('url_domain'), value: inputText ? getHostname(inputText) : 'N/A', isBad: isReverseTunnel },
+              { label: t('blacklist_status'), value: metrics?.blacklistStatus || (isReverseTunnel ? 'Flagged / Tunnel Proxy' : 'N/A'), isBad: isReverseTunnel || !metrics?.blacklistStatus.toLowerCase().includes('clean') },
+              { label: t('typosquatting'), value: metrics?.typosquatting || (isReverseTunnel ? 'Dictionary Subdomain Evasion' : 'N/A'), isBad: isReverseTunnel || !metrics?.typosquatting.toLowerCase().includes('none') },
+              { label: t('subdomains'), value: metrics?.subdomains || (isReverseTunnel ? 'Random Disposable Subdomain' : 'N/A'), isBad: isReverseTunnel || Number(metrics?.subdomains) > 5 },
             ].map((item, idx) => (
-              <div key={idx} className="flex justify-between items-center py-4 border-b border-white/5 last:border-0 relative group">
+              <div key={idx} className="flex justify-between items-center py-3.5 border-b border-white/5 last:border-0 relative group">
                 <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity rounded" />
                 <span className="text-[11px] text-cyber-muted z-10 relative px-2">{item.label}</span>
-                <span className={cn("text-[11px] font-mono z-10 relative px-2 text-right break-words max-w-[150px]", item.label === 'URL Domain' ? "text-white" : item.isBad ? "text-cyber-red" : "text-cyber-green")}>
+                <span className={cn("text-[11px] font-mono z-10 relative px-2 text-right break-words max-w-[150px]", item.label === 'URL Domain' && !item.isBad ? "text-white" : item.isBad ? "text-cyber-red" : "text-cyber-green")}>
                   {item.value}
                 </span>
               </div>
@@ -176,8 +202,8 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
                   <Radar
                     name="Risk"
                     dataKey="A"
-                    stroke="#00f5ff"
-                    fill="#00f5ff"
+                    stroke={isHighRisk ? "#ff2e5b" : "#00f5ff"}
+                    fill={isHighRisk ? "#ff2e5b" : "#00f5ff"}
                     fillOpacity={0.2}
                     strokeWidth={2}
                   />

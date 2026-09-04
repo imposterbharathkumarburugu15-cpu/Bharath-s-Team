@@ -141,6 +141,38 @@ This is a routine notification regarding policy updates to your Google Workspace
 You can review the updated compliance settings inside your official admin dashboard at https://admin.google.com
 
 No urgent action is required.`
+  },
+  {
+    id: 'cloudflare_tunnel_evasion',
+    title: 'Cloudflare Quick Tunnel Phish (Reverse Proxy Evasion)',
+    tag: 'CRITICAL THREAT / TUNNEL EVASION',
+    tagColor: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
+    rawHeaders: `From: "IT Identity Operations" <support@it-cloudsecurity-portal.com>
+To: target.user@enterprise.corp
+Reply-To: security.incident.ticket@gmail.com
+Subject: [CRITICAL ACTION] Mandatory Session Token Re-authentication
+Date: Mon, 31 Aug 2026 14:22:00 +0000
+Message-ID: <98321.tunnel@it-cloudsecurity-portal.com>
+
+Received: from relay.it-cloudsecurity-portal.com (104.28.19.44)
+    by mx.enterprise.corp with ESMTPS;
+    Mon, 31 Aug 2026 14:21:55 +0000
+
+Authentication-Results: mx.enterprise.corp;
+    spf=fail smtp.mailfrom=it-cloudsecurity-portal.com;
+    dkim=none;
+    dmarc=fail header.from=it-cloudsecurity-portal.com`,
+    body: `Attention Enterprise User,
+
+An anomalous login attempt was detected against your single sign-on (SSO) session from an unverified IP.
+
+Your account access will be locked in 15 minutes unless you complete immediate identity verification via our Cloudflare-protected corporate gateway:
+
+https://emerging-angeles-policies-nursery.trycloudflare.com/sso-login
+
+Please enter your corporate password and 2FA authentication code to clear the compliance hold.
+
+IT Infrastructure & Identity Operations Team`
   }
 ];
 
@@ -540,9 +572,9 @@ export default function EmailPhishing() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-2 font-mono">
-                EMAIL THREAT FORENSICS & ORIGIN TRACEABILITY
+                {t('email_threat_forensics')}
               </h1>
-              <p className="text-xs text-cyber-muted">RFC 5322 Protocol Verification, Relay Reconstruction & Attribution Engine</p>
+              <p className="text-xs text-cyber-muted">{t('forensic_engine_subtitle')}</p>
             </div>
           </div>
 
@@ -557,7 +589,7 @@ export default function EmailPhishing() {
               }`}
             >
               <Terminal className="w-3.5 h-3.5" />
-              FORENSIC LAB & .EML
+              {t('forensic_lab')}
             </button>
             <button
               onClick={() => setActiveTab('inbox')}
@@ -568,7 +600,7 @@ export default function EmailPhishing() {
               }`}
             >
               <Mail className="w-3.5 h-3.5" />
-              GMAIL INBOX SCANNER
+              {t('gmail_inbox_scanner')}
             </button>
             <button
               onClick={() => setActiveTab('dns-lookup')}
@@ -579,7 +611,7 @@ export default function EmailPhishing() {
               }`}
             >
               <Globe className="w-3.5 h-3.5" />
-              SPF/DKIM/DMARC LOOKUP
+              {t('spf_dkim_dmarc_lookup')}
             </button>
           </div>
         </div>
@@ -606,10 +638,10 @@ export default function EmailPhishing() {
                 <div className="absolute inset-0 bg-black/85 backdrop-blur-md rounded-2xl z-30 flex flex-col items-center justify-center border-2 border-dashed border-cyber-blue p-6 pointer-events-none">
                   <UploadCloud className="w-12 h-12 text-cyber-blue animate-bounce mb-3" />
                   <span className="text-sm font-bold text-white uppercase tracking-widest">
-                    DROP .EML OR RFC 5322 FILE HERE
+                    {t('drop_eml_file_here')}
                   </span>
                   <span className="text-xs text-cyber-blue font-mono mt-1">
-                    Instant Header Extraction & Deep Forensic Reconstruction
+                    {t('instant_header_extraction')}
                   </span>
                 </div>
               )}
@@ -619,22 +651,22 @@ export default function EmailPhishing() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-cyber-blue">
-                      RFC 5322 FORENSIC LAB
+                      {t('rfc_forensic_lab')}
                     </span>
                     {inputMode === 'custom' ? (
                       <span className="text-[9px] bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 px-2 py-0.5 rounded font-mono font-bold">
-                        LIVE / CUSTOM INPUT MODE
+                        {t('live_custom_input_mode')}
                       </span>
                     ) : (
                       <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono font-bold">
-                        DEMO SCENARIOS MODE
+                        {t('demo_scenarios_mode')}
                       </span>
                     )}
                   </div>
                   <h3 className="text-sm font-bold text-white">
                     {inputMode === 'custom' 
-                      ? 'Analyze Your Own Raw Headers, Body Text, or Upload .EML' 
-                      : 'Explore Pre-Configured Threat Scenarios'}
+                      ? t('analyze_own_headers') 
+                      : t('explore_demo_scenarios')}
                   </h3>
                 </div>
                 
@@ -845,12 +877,12 @@ export default function EmailPhishing() {
                   {isAnalyzing ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin text-black" />
-                      <span>Analyzing RFC 5322 Vectors...</span>
+                      <span>{t('analyzing_vectors')}</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 text-black" />
-                      <span>Execute Deep Forensics Pipeline</span>
+                      <span>{t('execute_deep_forensics')}</span>
                     </>
                   )}
                 </button>

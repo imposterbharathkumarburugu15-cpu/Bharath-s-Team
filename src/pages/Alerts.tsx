@@ -1,28 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, ShieldAlert, Cpu, Search, Filter } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const mockAlerts = [
-  { id: 'INC-2024-0891', threat: 'Spear Phishing', score: 98, source: 'invoice-secure@paypal-update.com', user: 'cfo@company.com', status: 'Quarantined', date: '10 mins ago' },
-  { id: 'INC-2024-0890', threat: 'Credential Harvester', score: 95, source: 'http://login.microsoftonline.verification-doc.com', user: 'sales-team@company.com', status: 'Active', date: '25 mins ago' },
-  { id: 'INC-2024-0889', threat: 'CEO Fraud (BEC)', score: 88, source: 'ceo.name@gmail.com', user: 'finance-ap@company.com', status: 'Investigating', date: '1 hr ago' },
-  { id: 'INC-2024-0888', threat: 'Malicious Attachment', score: 91, source: 'hr-benefits@external-vendor.net', user: 'all-employees@company.com', status: 'Resolved', date: '3 hrs ago' },
-  { id: 'INC-2024-0887', threat: 'SMS Crypto Scam', score: 75, source: '+1 (555) 019-2834', user: 'm.smith (Mobile)', status: 'Active', date: '5 hrs ago' },
-  { id: 'INC-2024-0886', threat: 'Suspicious Login Link', score: 60, source: 'support@slack-verify.net', user: 'dev-team', status: 'Resolved', date: '12 hrs ago' },
+  { id: 'INC-2024-0891', threat: 'Spear Phishing', score: 98, source: 'invoice-secure@paypal-update.com', user: 'cfo@company.com', status: 'quarantined', date: '10 mins ago' },
+  { id: 'INC-2024-0890', threat: 'Credential Harvester', score: 95, source: 'http://login.microsoftonline.verification-doc.com', user: 'sales-team@company.com', status: 'active', date: '25 mins ago' },
+  { id: 'INC-2024-0889', threat: 'CEO Fraud (BEC)', score: 88, source: 'ceo.name@gmail.com', user: 'finance-ap@company.com', status: 'investigating', date: '1 hr ago' },
+  { id: 'INC-2024-0888', threat: 'Malicious Attachment', score: 91, source: 'hr-benefits@external-vendor.net', user: 'all-employees@company.com', status: 'resolved', date: '3 hrs ago' },
+  { id: 'INC-2024-0887', threat: 'SMS Crypto Scam', score: 75, source: '+1 (555) 019-2834', user: 'm.smith (Mobile)', status: 'active', date: '5 hrs ago' },
+  { id: 'INC-2024-0886', threat: 'Suspicious Login Link', score: 60, source: 'support@slack-verify.net', user: 'dev-team', status: 'resolved', date: '12 hrs ago' },
 ];
 
 export function Alerts() {
+  const { t } = useLanguage();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredAlerts = mockAlerts.filter(a => 
+    a.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    a.source.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    a.threat.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col space-y-6 h-full">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl font-mono text-cyber-text tracking-tight mb-1">INCIDENT RESPONSE</h2>
-          <p className="text-cyber-muted text-sm">Manage and prioritize active security alerts and threats.</p>
+          <h2 className="text-2xl font-mono text-cyber-text tracking-tight mb-1">{t('incident_response')}</h2>
+          <p className="text-cyber-muted text-sm">{t('manage_alerts_desc')}</p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="font-mono text-xs"><Filter className="w-4 h-4 mr-2" /> FILTER</Button>
-          <Button variant="default" size="sm" className="font-mono text-xs"><Shield className="w-4 h-4 mr-2" /> AUTO-REMEDIATE ALL</Button>
+          <Button variant="outline" size="sm" className="font-mono text-xs"><Filter className="w-4 h-4 mr-2" /> {t('filter')}</Button>
+          <Button variant="default" size="sm" className="font-mono text-xs"><Shield className="w-4 h-4 mr-2" /> {t('auto_remediate')}</Button>
         </div>
       </div>
 
@@ -30,12 +40,14 @@ export function Alerts() {
         <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-cyber-border">
           <div className="flex items-center">
             <ShieldAlert className="w-5 h-5 text-cyber-red mr-2" />
-            <CardTitle className="text-sm">ACTIVE ALERTS KANBAN / LIST</CardTitle>
+            <CardTitle className="text-sm">{t('active_alerts_list')}</CardTitle>
           </div>
           <div className="relative group">
             <input 
               type="text" 
-              placeholder="Search INC-ID or Source..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={t('search_inc_placeholder')} 
               className="bg-cyber-bg/50 border border-cyber-border rounded-md py-1 pl-3 pr-8 text-xs font-mono focus:outline-none focus:border-cyber-blue text-cyber-text w-48 transition-all"
             />
             <Search className="w-3 h-3 absolute right-3 py-1 top-1.5 text-cyber-muted" />
@@ -45,17 +57,17 @@ export function Alerts() {
           <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs font-mono text-cyber-muted border-b border-cyber-border bg-cyber-panel/50 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-4 font-medium">INCIDENT ID</th>
-                <th className="px-6 py-4 font-medium">THREAT TYPE</th>
-                <th className="px-6 py-4 font-medium">AI RISK SCORE</th>
-                <th className="px-6 py-4 font-medium">SOURCE / INDICATOR</th>
-                <th className="px-6 py-4 font-medium">TARGET / USER</th>
-                <th className="px-6 py-4 font-medium">STATUS</th>
-                <th className="px-6 py-4 font-medium border-l border-cyber-border w-48">ACTION</th>
+                <th className="px-6 py-4 font-medium">{t('incident_id')}</th>
+                <th className="px-6 py-4 font-medium">{t('threat_type')}</th>
+                <th className="px-6 py-4 font-medium">{t('ai_risk_score')}</th>
+                <th className="px-6 py-4 font-medium">{t('source_indicator')}</th>
+                <th className="px-6 py-4 font-medium">{t('target_user')}</th>
+                <th className="px-6 py-4 font-medium">{t('status')}</th>
+                <th className="px-6 py-4 font-medium border-l border-cyber-border w-48">{t('action')}</th>
               </tr>
             </thead>
             <tbody className="font-mono text-xs">
-              {mockAlerts.map((alert) => (
+              {filteredAlerts.map((alert) => (
                 <tr key={alert.id} className="border-b border-cyber-border/30 hover:bg-cyber-blue/5 transition-colors group">
                   <td className="px-6 py-4">
                     <span className="text-cyber-blue cursor-pointer hover:underline">{alert.id}</span>
@@ -76,22 +88,22 @@ export function Alerts() {
                   <td className="px-6 py-4 text-cyber-muted">{alert.user}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-[10px] font-bold ${
-                      alert.status === 'Quarantined' ? 'bg-cyber-blue/20 text-cyber-blue' :
-                      alert.status === 'Active' ? 'bg-cyber-red/20 text-cyber-red animate-pulse' :
-                      alert.status === 'Investigating' ? 'bg-[#f59e0b]/20 text-[#f59e0b]' :
+                      alert.status === 'quarantined' ? 'bg-cyber-blue/20 text-cyber-blue' :
+                      alert.status === 'active' ? 'bg-cyber-red/20 text-cyber-red animate-pulse' :
+                      alert.status === 'investigating' ? 'bg-[#f59e0b]/20 text-[#f59e0b]' :
                       'bg-cyber-green/20 text-cyber-green'
                     }`}>
-                      {alert.status.toUpperCase()}
+                      {t(alert.status).toUpperCase()}
                     </span>
                   </td>
                   <td className="px-6 py-3 border-l border-cyber-border">
                     <div className="flex space-x-2">
-                      {alert.status === 'Active' ? (
-                        <Button size="sm" variant="danger" className="h-7 text-[10px]">QUARANTINE</Button>
+                      {alert.status === 'active' ? (
+                        <Button size="sm" variant="danger" className="h-7 text-[10px]">{t('quarantine')}</Button>
                       ) : (
-                        <Button size="sm" variant="outline" className="h-7 text-[10px]">INVESTIGATE</Button>
+                        <Button size="sm" variant="outline" className="h-7 text-[10px]">{t('investigate')}</Button>
                       )}
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="Ask AI Copilot"><Cpu className="w-3 h-3 text-cyber-blue" /></Button>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title={t('ask_ai_copilot')}><Cpu className="w-3 h-3 text-cyber-blue" /></Button>
                     </div>
                   </td>
                 </tr>

@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "./ErrorBoundary";
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
@@ -12,7 +13,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <LanguageProvider>
-        <App />
+        <ErrorBoundary><App /></ErrorBoundary>
       </LanguageProvider>
     </GoogleOAuthProvider>
   </StrictMode>,

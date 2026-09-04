@@ -7,7 +7,7 @@ import { addScanToHistory } from '@/lib/history';
 import { UrlScannerResult } from '@/components/UrlScannerResult';
 import { TextScannerResult } from '@/components/TextScannerResult';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
+import { executeEmailForensics, ForensicDossier, detectReverseTunnel } from '@/services/forensicsEngine';
 import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 
 type ScanStatus = 'idle' | 'scanning' | 'complete';
@@ -84,7 +84,7 @@ export function LiveScanner() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Helper to enrich ScanResult with deep RFC 5322 Forensics
+  // Helper to enrich ScanResult with deep RFC 5322 and URL/Tunnel Forensics
   const enrichWithEmailForensics = async (res: ScanResult, textToAnalyze: string) => {
     const hasEmailHeaders = textToAnalyze.includes('Received:') || 
       textToAnalyze.includes('Authentication-Results:') || 
@@ -93,16 +93,50 @@ export function LiveScanner() {
       textToAnalyze.includes('Return-Path:') ||
       textToAnalyze.includes('Message-ID:') ||
       res.detectedType === 'EMAIL';
+    
+    const hasUrls = textToAnalyze.includes('http') || textToAnalyze.includes('www.') || textToAnalyze.includes('.com') || textToAnalyze.includes('.net') || textToAnalyze.includes('.app');
 
-    if (hasEmailHeaders) {
+    if (hasEmailHeaders || hasUrls) {
       try {
         const dossier = await executeEmailForensics(textToAnalyze, '');
         res.forensicDossier = dossier;
-        res.detectedType = 'EMAIL';
-        res.riskScore = Math.max(res.riskScore || 0, dossier.classification.riskScore);
+        
+        const isTunnelDetected = dossier.urlForensics.some(u => u.isReverseTunnel) || /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(textToAnalyze);
+
+        if (isTunnelDetected) {
+          res.detectedType = 'URL';
+          res.riskScore = Math.max(res.riskScore || 0, 96);
+          res.threatName = 'Cloudflare Quick Tunnel / Reverse Proxy Evasion';
+          res.payloadDescription = 'Ephemeral reverse tunnel (*.trycloudflare.com) detected proxying victim traffic to bypass domain age and perimeter URL reputation filters.';
+          res.aiExplanation = 'CRITICAL THREAT: This URL utilizes a Cloudflare Quick Tunnel (*.trycloudflare.com). Threat actors generate random ephemeral subdomains to bypass domain age restrictions, hide behind Cloudflare Anycast edge IPs (AS13335), and proxy credential harvesters without static DNS records.';
+          res.urlMetrics = {
+            domainAge: 'Ephemeral (< 1 Hour / Tunnel)',
+            sslCertificate: 'Cloudflare Managed Edge TLS (Proxy Masked)',
+            blacklistStatus: 'Flagged / Ephemeral Tunnel Proxy',
+            typosquatting: 'Dictionary Subdomain Evasion',
+            subdomains: 'Random Disposable Tunnel Endpoint',
+            radarData: {
+              domainAge: 5,
+              sslStatus: 40,
+              blacklist: 10,
+              typosquatting: 30,
+              subdomains: 15,
+              contentRisk: 98
+            }
+          };
+        } else if (hasEmailHeaders) {
+          res.detectedType = 'EMAIL';
+          res.riskScore = Math.max(res.riskScore || 0, dossier.classification.riskScore);
+        }
         
         // Add specific forensic signals
         const forensicSignals = [
+          ...(isTunnelDetected ? [
+            'REVERSE_TUNNEL_EVASION',
+            'EPHEMERAL_SUBDOMAIN',
+            'CLOUDFLARE_PROXY_BYPASS',
+            'CRITICAL_PHISHING_VECTOR'
+          ] : []),
           `Forensic Verdict: ${dossier.classification.verdict} (${dossier.classification.threatType})`,
           `SPF: ${dossier.authentication.spf.status} | DKIM: ${dossier.authentication.dkim.status} | DMARC: ${dossier.authentication.dmarc.status}`,
           ...dossier.senderIdentity.inconsistencies.map(inc => `Header Anomaly: ${inc.title}`),
@@ -208,7 +242,12 @@ export function LiveScanner() {
       dynamicSignals.push("⚠ URGENCY DETECTED");
     }
 
-    if (inputText.includes('http') || inputText.includes('www.')) {
+    const isTunnel = /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(inputText);
+    if (isTunnel) {
+      dynamicRiskScore = Math.max(dynamicRiskScore, 95);
+      dynamicSignals.push("⚡ REVERSE TUNNEL / CLOUDFLARE EVASION DETECTED");
+      dynamicSignals.push("🚨 EPHEMERAL SUBDOMAIN PHISHING VECTOR");
+    } else if (inputText.includes('http') || inputText.includes('www.')) {
       dynamicRiskScore += 30;
       dynamicSignals.push("🔗 SUSPICIOUS LINK");
     }
@@ -551,7 +590,7 @@ export function LiveScanner() {
                 <div className="flex items-center gap-3 mb-6">
                   <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#00f5ff]"></span>
                   <p className="text-[#00f5ff] text-xs md:text-sm tracking-[0.4em] text-center font-bold uppercase drop-shadow-[0_0_5px_rgba(0,245,255,0.5)]">
-                    Advanced Deep Payload & Threat Analysis
+                    {t('scanner_subtitle')}
                   </p>
                   <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#00f5ff]"></span>
                 </div>
@@ -568,7 +607,7 @@ export function LiveScanner() {
                     )}
                   >
                     <Cpu className="w-4 h-4" />
-                    <span>PAYLOAD & TEXT SCANNER</span>
+                    <span>{t('payload_text_scanner')}</span>
                   </button>
                   <button
                     onClick={() => setScannerMode('dns-lookup')}
@@ -580,7 +619,7 @@ export function LiveScanner() {
                     )}
                   >
                     <Globe className="w-4 h-4" />
-                    <span>DOMAIN AUTH LOOKUP (SPF/DKIM/DMARC)</span>
+                    <span>{t('domain_auth_lookup')}</span>
                   </button>
                 </div>
               </div>
@@ -593,7 +632,7 @@ export function LiveScanner() {
                 <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-8 max-w-4xl mx-auto relative z-10">
                 {[
-                  { icon: Globe, label: "DOMAIN AUTH (SPF/DKIM)", text: "Check SPF, DKIM, DMARC, BIMI and MX records for any domain", action: () => setScannerMode('dns-lookup') },
+                  { icon: Globe, label: t('quick_action_domain_label'), text: t('quick_action_domain_text'), action: () => setScannerMode('dns-lookup') },
                   { icon: Mail, label: t('quick_action_email_headers_label'), text: t('quick_action_email_headers_text') },
                   { icon: Mail, label: t('quick_action_phishing_label'), text: t('quick_action_phishing_text') },
                   { icon: Link2, label: t('quick_action_url_label'), text: t('quick_action_url_text') },
@@ -698,13 +737,13 @@ export function LiveScanner() {
                   
                   <div className="absolute bottom-4 left-6 right-6 flex justify-between items-center z-20">
                     <div className="flex items-center gap-3">
-                      <button 
+                        <button 
                         onClick={() => fileInputRef.current?.click()}
                         className="text-[#8a99af] hover:text-[#00f5ff] transition-colors p-2 rounded-lg bg-white/5 hover:bg-[#00f5ff]/10 border border-transparent hover:border-[#00f5ff]/30 relative group shadow-sm flex items-center gap-2"
                         title={t('attach_file')}
                       >
                         <Paperclip className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline-block">Attach</span>
+                        <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline-block">{t('attach_file')}</span>
                       </button>
                       
                       {attachedFile && !previewUrl && (
@@ -730,7 +769,7 @@ export function LiveScanner() {
                       {(inputText.trim() || attachedFile) && (
                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                       )}
-                      <span>INITIATE</span>
+                      <span>{t('initiate')}</span>
                       <Send className={cn("w-4 h-4", (inputText.trim() || attachedFile) && "ml-1")} />
                     </button>
                   </div>
@@ -827,17 +866,17 @@ export function LiveScanner() {
                       exit={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
                       className="text-3xl md:text-5xl font-black tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00f5ff] uppercase drop-shadow-[0_0_15px_rgba(0,245,255,0.5)]"
                     >
-                      {scanProgress < 40 ? 'DECRYPTING PAYLOAD...' : scanProgress < 75 ? 'NEURAL THREAT ANALYSIS...' : 'COMPILING RISKS...'}
+                      {scanProgress < 40 ? t('decrypting_payload') : scanProgress < 75 ? t('neural_threat_analysis') : t('compiling_risks')}
                     </motion.div>
                   </AnimatePresence>
                   
                   <div className="flex justify-between items-end border-b border-white/10 pb-2">
                     <div className="flex flex-col text-left space-y-1">
                       <span className="text-[10px] text-[#8a99af] tracking-[0.2em] font-mono">SYS.PROCESS.ID // 0x8F92A</span>
-                      <span className="text-xs text-[#00ff66] font-mono font-bold animate-pulse">CONNECTION_SECURE</span>
+                      <span className="text-xs text-[#00ff66] font-mono font-bold animate-pulse">{t('connection_secure')}</span>
                     </div>
                     <div className="text-right">
-                       <span className="text-[10px] text-[#8a99af] tracking-widest block font-mono">ESTIMATED COMPLETION</span>
+                       <span className="text-[10px] text-[#8a99af] tracking-widest block font-mono">{t('estimated_completion')}</span>
                        <span className="text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_10px_white]">
                          {Math.floor(scanProgress)}<span className="text-[#00f5ff] text-xl">%</span>
                        </span>

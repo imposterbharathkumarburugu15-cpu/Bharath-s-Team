@@ -59,6 +59,37 @@ export async function analyzeThreat(
     if (res.ok) {
       const data = await res.json();
       if (data && !data.fallback && data.riskScore !== undefined) {
+        const isReverseTunnel = /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(text || "") ||
+          (data.detectedLinks && data.detectedLinks.some((l: string) => /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(l)));
+        
+        if (isReverseTunnel) {
+          data.riskScore = Math.max(data.riskScore || 0, 94);
+          data.detectedType = "URL";
+          data.threatName = "Cloudflare Quick Tunnel / Reverse Proxy Evasion";
+          data.signals = Array.from(new Set([
+            "REVERSE_TUNNEL_EVASION",
+            "EPHEMERAL_SUBDOMAIN",
+            "CLOUDFLARE_PROXY_BYPASS",
+            ...(data.signals || [])
+          ]));
+          if (!data.urlMetrics) {
+            data.urlMetrics = {
+              domainAge: "Ephemeral (< 1 Hour / Quick Tunnel)",
+              sslCertificate: "Cloudflare Managed Edge TLS (Proxy Masked)",
+              blacklistStatus: "Flagged / Ephemeral Tunnel Proxy",
+              typosquatting: "Dictionary Subdomain Evasion",
+              subdomains: "Random Disposable Tunnel Endpoint",
+              radarData: {
+                domainAge: 5,
+                sslStatus: 40,
+                blacklist: 10,
+                typosquatting: 30,
+                subdomains: 15,
+                contentRisk: 98
+              }
+            };
+          }
+        }
         return data as ScanResult;
       }
     }

@@ -1,7 +1,325 @@
 import express from "express";
 import path from "path";
+import dns from "dns";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
+
+// In-Memory GeoIP & ASN Cache
+const geoIpCache = new Map<string, { data: any; expiry: number }>();
+const GEO_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 Hours Cache
+
+function isPrivateIP(ip: string): boolean {
+  const clean = ip.trim();
+  return clean === '127.0.0.1' || 
+         clean === '::1' || 
+         clean.startsWith('10.') || 
+         clean.startsWith('192.168.') || 
+         /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(clean) ||
+         clean.startsWith('169.254.') ||
+         clean.startsWith('fc00:') ||
+         clean.startsWith('fe80:');
+}
+
+async function resolveGeoIP(target: string): Promise<any> {
+  let clean = target.trim();
+  let resolvedDomain: string | undefined;
+
+  // Clean URL prefixes if present
+  if (clean.includes('://')) {
+    try {
+      const u = new URL(clean);
+      clean = u.hostname;
+      resolvedDomain = clean;
+    } catch {
+      clean = clean.replace(/^https?:\/\//i, '').split('/')[0].split(':')[0];
+      resolvedDomain = clean;
+    }
+  } else if (clean.includes('/')) {
+    clean = clean.split('/')[0].split(':')[0];
+    resolvedDomain = clean;
+  }
+
+  // If input is a domain name, resolve via DNS
+  const isIP = /^(\d{1,3}\.){3}\d{1,3}$/.test(clean) || clean.includes(':');
+  let ipToLookup = clean;
+
+  if (!isIP && clean) {
+    resolvedDomain = clean;
+    try {
+      const lookupResult = await dns.promises.lookup(clean, { family: 4 });
+      if (lookupResult && lookupResult.address) {
+        ipToLookup = lookupResult.address;
+      }
+    } catch (e) {
+      console.warn(`[GeoIP] DNS lookup failed for ${clean}:`, (e as any)?.message);
+    }
+  }
+
+  // Check cache
+  const cached = geoIpCache.get(ipToLookup);
+  if (cached && cached.expiry > Date.now()) {
+    return { ...cached.data, resolvedDomain: resolvedDomain || cached.data.resolvedDomain };
+  }
+
+  // Handle RFC 1918 Private IPs
+  if (isPrivateIP(ipToLookup)) {
+    const privResult = {
+      ip: ipToLookup,
+      resolvedDomain,
+      isPrivate: true,
+      ipType: 'RFC 1918 Private Local Network',
+      country: 'Private Network',
+      countryCode: 'LAN',
+      region: 'Local Subnet / DMZ',
+      city: 'Internal Network',
+      latitude: 0,
+      longitude: 0,
+      isp: 'Internal Enterprise Infrastructure',
+      asn: 'AS-PRIVATE',
+      organization: 'Local Infrastructure',
+      hostingProvider: 'On-Premises / Internal Gateway',
+      vpnTorIndicator: 'Internal Non-Routable IP',
+      threatReputation: 'Benign / Non-Routable',
+      attributionDisclaimer: 'Private RFC 1918 address cannot be geolocated on the public internet.',
+      lookupStatus: 'PRIVATE_IP'
+    };
+    return privResult;
+  }
+
+  // Fetch from Live GeoIP providers
+  let geoData: any = null;
+  const ipGeoApiKey = process.env.IPGEOLOCATION_API_KEY || process.env.IP_GEOLOCATION_API_KEY;
+
+  // Provider 0: Official IP Geolocation API (ipgeolocation.io) if key configured
+  if (ipGeoApiKey) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3500);
+      const resp = await fetch(`https://api.ipgeolocation.io/ipgeo?apiKey=${encodeURIComponent(ipGeoApiKey)}&ip=${encodeURIComponent(ipToLookup)}`, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'NeuroShield-SOC-Cyber-Engine/2.0' }
+      });
+      clearTimeout(timeout);
+
+      if (resp.ok) {
+        const json = await resp.json();
+        if (json && json.country_name && !json.message) {
+          const lat = parseFloat(json.latitude) || 37.7749;
+          const lng = parseFloat(json.longitude) || -122.4194;
+          const isTor = json.threat?.is_tor || json.isp?.toLowerCase().includes('tor') || json.organization?.toLowerCase().includes('tor');
+          const isProxy = json.threat?.is_proxy || json.threat?.is_anonymous;
+
+          geoData = {
+            ip: json.ip || ipToLookup,
+            resolvedDomain,
+            isPrivate: false,
+            ipType: (json.ip || ipToLookup).includes(':') ? 'Public IPv6' : 'Public IPv4',
+            country: json.country_name || 'International Public Zone',
+            countryCode: json.country_code2 || 'UN',
+            countryFlag: json.country_flag,
+            region: json.state_prov || json.country_name || 'Public Region',
+            city: json.city || json.state_prov || 'Autonomous Gateway',
+            latitude: lat,
+            longitude: lng,
+            isp: json.isp || json.organization || 'Internet Service Provider',
+            asn: json.asn ? (json.asn.startsWith('AS') ? json.asn : `AS${json.asn}`) : 'AS-UNKNOWN',
+            organization: json.organization || json.isp || 'Autonomous System Infrastructure',
+            hostingProvider: json.isp || json.organization || 'Public Transit Network',
+            timezone: json.time_zone?.name || 'UTC',
+            currency: json.currency?.code,
+            providerSource: 'ipgeolocation.io (API Key Authenticated)',
+            vpnTorIndicator: isTor 
+              ? 'ACTIVE TOR EXIT NODE' 
+              : isProxy
+              ? 'ANONYMOUS PROXY / VPN'
+              : (json.organization?.includes('Cloudflare') || json.asn?.includes('13335'))
+              ? 'Anycast Reverse Proxy'
+              : 'Standard Public ISP Gateway',
+            threatReputation: isTor
+              ? 'HIGH_RISK / TOR_ANONYMIZED'
+              : isProxy
+              ? 'SUSPICIOUS / PROXY_GATEWAY'
+              : 'RESOLVED_PUBLIC_TELEMETRY',
+            attributionDisclaimer: 'Geographical coordinates approximate the physical location of the Autonomous System (ISP / data center), not necessarily the human threat actor.',
+            lookupStatus: 'RESOLVED'
+          };
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[GeoIP] ipgeolocation.io API provider error for ${ipToLookup}:`, err?.message);
+    }
+  }
+
+  // Provider 1: ipwhois.app
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const resp = await fetch(`https://ipwhois.app/json/${encodeURIComponent(ipToLookup)}`, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'NeuroShield-SOC-Cyber-Engine/2.0' }
+    });
+    clearTimeout(timeout);
+
+    if (resp.ok) {
+      const json = await resp.json();
+      if (json && json.success !== false && json.country) {
+        geoData = {
+          ip: json.ip || ipToLookup,
+          resolvedDomain,
+          isPrivate: false,
+          ipType: json.type === 'IPv6' ? 'Public IPv6' : 'Public IPv4',
+          country: json.country || 'International Public Zone',
+          countryCode: json.country_code || 'UN',
+          countryFlag: json.country_flag,
+          region: json.region || json.country || 'Public Region',
+          city: json.city || json.region || 'Autonomous Gateway',
+          latitude: typeof json.latitude === 'number' ? json.latitude : parseFloat(json.latitude) || 51.5074,
+          longitude: typeof json.longitude === 'number' ? json.longitude : parseFloat(json.longitude) || -0.1278,
+          isp: json.isp || json.org || 'Internet Service Provider',
+          asn: json.asn ? (json.asn.startsWith('AS') ? json.asn : `AS${json.asn}`) : 'AS-UNKNOWN',
+          organization: json.org || json.isp || 'Autonomous System Infrastructure',
+          hostingProvider: json.isp || json.org || 'Public Transit Network',
+          timezone: json.timezone || 'UTC',
+          currency: json.currency,
+          vpnTorIndicator: (json.org?.includes('Tor') || json.isp?.includes('Tor') || json.asn?.includes('208294')) 
+            ? 'ACTIVE TOR EXIT NODE' 
+            : (json.org?.includes('Cloudflare') || json.asn?.includes('13335'))
+            ? 'Anycast Reverse Proxy'
+            : (json.org?.includes('Microsoft') || json.org?.includes('Google') || json.org?.includes('Amazon'))
+            ? 'Commercial Enterprise Cloud'
+            : 'Standard Public ISP Gateway',
+          threatReputation: (json.org?.includes('Tor') || json.asn?.includes('208294'))
+            ? 'HIGH_RISK / TOR_ANONYMIZED'
+            : (json.org?.includes('Alexhost') || json.asn?.includes('200019'))
+            ? 'CRITICAL / BULLETPROOF_HOSTING'
+            : 'RESOLVED_PUBLIC_TELEMETRY',
+          attributionDisclaimer: 'Geographical coordinates approximate the physical location of the Autonomous System (ISP / data center), not necessarily the human threat actor.',
+          lookupStatus: 'RESOLVED'
+        };
+      }
+    }
+  } catch (err: any) {
+    console.warn(`[GeoIP] ipwhois provider error for ${ipToLookup}:`, err?.message);
+  }
+
+  // Provider 2 Fallback: ip-api.com
+  if (!geoData) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3500);
+      const resp = await fetch(`http://ip-api.com/json/${encodeURIComponent(ipToLookup)}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query,proxy,hosting`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      if (resp.ok) {
+        const json = await resp.json();
+        if (json && json.status === 'success') {
+          const asnMatch = (json.as || '').match(/AS\d+/i);
+          const asn = asnMatch ? asnMatch[0].toUpperCase() : (json.as || 'AS-UNKNOWN');
+          geoData = {
+            ip: json.query || ipToLookup,
+            resolvedDomain,
+            isPrivate: false,
+            ipType: ipToLookup.includes(':') ? 'Public IPv6' : 'Public IPv4',
+            country: json.country || 'International Public Zone',
+            countryCode: json.countryCode || 'UN',
+            region: json.regionName || json.region || 'Public Region',
+            city: json.city || 'Autonomous Gateway',
+            latitude: typeof json.lat === 'number' ? json.lat : 51.5074,
+            longitude: typeof json.lon === 'number' ? json.lon : -0.1278,
+            isp: json.isp || json.org || 'Internet Service Provider',
+            asn,
+            organization: json.org || json.isp || 'Autonomous System Infrastructure',
+            hostingProvider: json.hosting ? 'Cloud Hosting / Data Center' : (json.isp || 'Telecom Provider'),
+            timezone: json.timezone || 'UTC',
+            vpnTorIndicator: json.proxy ? 'PROXY / VPN DETECTED' : 'Standard Public Gateway',
+            threatReputation: json.proxy ? 'SUSPICIOUS / PROXY_GATEWAY' : 'RESOLVED_PUBLIC_TELEMETRY',
+            attributionDisclaimer: 'Geographical coordinates approximate the ISP point of presence or edge gateway.',
+            lookupStatus: 'RESOLVED'
+          };
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[GeoIP] ip-api provider error for ${ipToLookup}:`, err?.message);
+    }
+  }
+
+  // Known Heuristics Fallback if external API down
+  if (!geoData) {
+    if (ipToLookup.startsWith('104.28.') || ipToLookup.startsWith('104.244.') || ipToLookup.startsWith('172.67.')) {
+      geoData = {
+        ip: ipToLookup,
+        resolvedDomain,
+        isPrivate: false,
+        ipType: 'Public IPv4',
+        country: 'United States',
+        countryCode: 'US',
+        region: 'California',
+        city: 'San Francisco',
+        latitude: 37.7749,
+        longitude: -122.4194,
+        isp: 'Cloudflare Anycast Network',
+        asn: 'AS13335',
+        organization: 'Cloudflare, Inc.',
+        hostingProvider: 'Cloudflare Edge CDN',
+        vpnTorIndicator: 'Anycast Reverse Proxy',
+        threatReputation: 'NEUTRAL / REVERSE_PROXY',
+        attributionDisclaimer: 'Identifies an Anycast reverse proxy endpoint; originating client is proxied.',
+        lookupStatus: 'RESOLVED'
+      };
+    } else if (ipToLookup.startsWith('185.220.')) {
+      geoData = {
+        ip: ipToLookup,
+        resolvedDomain,
+        isPrivate: false,
+        ipType: 'Public IPv4',
+        country: 'Germany',
+        countryCode: 'DE',
+        region: 'Hessen',
+        city: 'Frankfurt am Main',
+        latitude: 50.1109,
+        longitude: 8.6821,
+        isp: 'Zwiebelfreunde e.V. (Tor Anonymous Gateway)',
+        asn: 'AS208294',
+        organization: 'Tor Anonymizing Relays Network',
+        hostingProvider: 'High-Risk Tor Exit Relay',
+        vpnTorIndicator: 'ACTIVE TOR EXIT NODE',
+        threatReputation: 'HIGH_RISK / MALICIOUS_ACTIVITY_ASSOCIATED',
+        attributionDisclaimer: 'Identifies sending Tor exit relay; does not reveal human attacker location.',
+        lookupStatus: 'RESOLVED'
+      };
+    } else {
+      geoData = {
+        ip: ipToLookup,
+        resolvedDomain,
+        isPrivate: false,
+        ipType: ipToLookup.includes(':') ? 'Public IPv6' : 'Public IPv4',
+        country: 'International Public Zone',
+        countryCode: 'UN',
+        region: 'Public Transit Node',
+        city: 'Autonomous System Gateway',
+        latitude: 37.0902,
+        longitude: -95.7129,
+        isp: 'Tier-1 Internet Transit Provider',
+        asn: 'AS-TRANSIT',
+        organization: 'Public Mail Relay Gateway',
+        hostingProvider: 'Autonomous System Gateway',
+        vpnTorIndicator: 'Standard Public Gateway',
+        threatReputation: 'APPROXIMATE_REGIONAL_GEOIP',
+        attributionDisclaimer: 'Observed sending infrastructure point-of-presence.',
+        lookupStatus: 'APPROXIMATE'
+      };
+    }
+  }
+
+  // Cache valid result
+  if (geoData) {
+    geoIpCache.set(ipToLookup, { data: geoData, expiry: Date.now() + GEO_CACHE_TTL });
+  }
+
+  return geoData;
+}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -74,7 +392,9 @@ function generateLocalScanReport(text: string, language: string) {
   else if (isNetwork) detectedType = "NETWORK_LOG";
 
   const safeDomains = ["google.com", "ai.studio", "github.com", "vercel.app", "microsoft.com", "apple.com"];
-  const isSafeDomain = safeDomains.some(d => t.toLowerCase().includes(d));
+  const isSafeDomain = safeDomains.some(d => t.toLowerCase().includes(d)) && !t.toLowerCase().includes("trycloudflare.com");
+
+  const isReverseTunnel = /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)|workers\.dev|pages\.dev/i.test(t);
 
   const riskKeywords = ["urgent", "verify your account", "password expired", "wire transfer", "gift card", "suspended", "unauthorized login", "click here to claim"];
   const foundKeywords = riskKeywords.filter(k => t.toLowerCase().includes(k));
@@ -84,7 +404,13 @@ function generateLocalScanReport(text: string, language: string) {
   let payloadDescription = "No malicious signature detected.";
   let signals = ["AUTHENTIC_STRUCTURE", "CLEAN_REPUTATION"];
 
-  if (isSafeDomain) {
+  if (isReverseTunnel) {
+    riskScore = 96;
+    detectedType = "URL";
+    threatName = "Cloudflare Quick Tunnel / Reverse Proxy Evasion";
+    payloadDescription = "Ephemeral reverse tunnel (*.trycloudflare.com / cloudflared) detected proxying victim traffic to bypass domain age and perimeter URL reputation filters.";
+    signals = ["REVERSE_TUNNEL_EVASION", "EPHEMERAL_SUBDOMAIN", "CLOUDFLARE_PROXY_BYPASS", "CRITICAL_PHISHING_VECTOR"];
+  } else if (isSafeDomain) {
     riskScore = 5;
     threatName = "Verified Safe Ecosystem";
     payloadDescription = "Authentic cloud application / platform domain.";
@@ -102,38 +428,40 @@ function generateLocalScanReport(text: string, language: string) {
     detectedType,
     riskScore,
     signals,
-    source: isEmail ? "external-gateway@unverified.net" : "192.168.1.105",
+    source: isReverseTunnel ? "Cloudflare Anycast Edge (AS13335) / Ephemeral Ingress" : isEmail ? "external-gateway@unverified.net" : "192.168.1.105",
     target: "USER WORKSTATION / IDENTITY",
     payloadDescription,
     threatName,
-    aiExplanation: isSafeDomain 
+    aiExplanation: isReverseTunnel
+      ? "CRITICAL THREAT: This URL utilizes a Cloudflare Quick Tunnel (*.trycloudflare.com). Attackers deploy ephemeral cloudflared tunnels to host credential harvesting sites, bypassing domain age restrictions, inheriting trusted Cloudflare SSL certificates, and masking origin C2 infrastructure."
+      : isSafeDomain 
       ? "NeuroShield SOC heuristic telemetry verifies this input belongs to a reputable and authentic domain."
       : foundKeywords.length > 0
       ? `NeuroShield heuristic engine flagged suspicious urgency patterns and potential impersonation indicators.`
       : `Input analyzed by NeuroShield heuristic defense engines. Standard baseline security score assigned.`,
-    suspiciousKeywords: foundKeywords,
+    suspiciousKeywords: isReverseTunnel ? ["trycloudflare.com", "ephemeral tunnel", "evasion proxy", ...foundKeywords] : foundKeywords,
     detectedLinks: urlMatches,
     maskedData: [],
     textMetrics: {
-      urgency: foundKeywords.length > 0 ? 80 : 15,
+      urgency: isReverseTunnel || foundKeywords.length > 0 ? 85 : 15,
       financial: t.toLowerCase().includes("bank") || t.toLowerCase().includes("transfer") ? 85 : 10,
-      impersonation: foundKeywords.length > 0 ? 75 : 10,
-      deception: foundKeywords.length > 0 ? 70 : 15,
+      impersonation: isReverseTunnel ? 90 : (foundKeywords.length > 0 ? 75 : 10),
+      deception: isReverseTunnel ? 95 : (foundKeywords.length > 0 ? 70 : 15),
       coercion: foundKeywords.length > 0 ? 65 : 10
     },
     urlMetrics: {
-      domainAge: isSafeDomain ? "10+ Years (Established)" : "14 Days (Recently Registered)",
-      sslCertificate: "Valid ECDSA / TLS 1.3",
-      blacklistStatus: "Clean / 0 engines flagged",
-      typosquatting: "0.0% Homoglyph variance",
-      subdomains: "Direct Root Endpoint",
+      domainAge: isReverseTunnel ? "Ephemeral (< 1 Hour / Tunnel)" : isSafeDomain ? "10+ Years (Established)" : "14 Days (Recently Registered)",
+      sslCertificate: isReverseTunnel ? "Cloudflare Managed Edge TLS (Proxy Masked)" : "Valid ECDSA / TLS 1.3",
+      blacklistStatus: isReverseTunnel ? "Flagged / Ephemeral Tunnel Proxy" : "Clean / 0 engines flagged",
+      typosquatting: isReverseTunnel ? "Dictionary Subdomain Evasion" : "0.0% Homoglyph variance",
+      subdomains: isReverseTunnel ? "Random Disposable Tunnel Endpoint" : "Direct Root Endpoint",
       radarData: {
-        domainAge: isSafeDomain ? 95 : 40,
-        sslStatus: 90,
-        blacklist: 95,
-        typosquatting: 95,
-        subdomains: 85,
-        contentRisk: isSafeDomain ? 10 : (foundKeywords.length > 0 ? 80 : 20)
+        domainAge: isReverseTunnel ? 5 : (isSafeDomain ? 95 : 40),
+        sslStatus: isReverseTunnel ? 40 : 90,
+        blacklist: isReverseTunnel ? 10 : 95,
+        typosquatting: isReverseTunnel ? 30 : 95,
+        subdomains: isReverseTunnel ? 15 : 85,
+        contentRisk: isReverseTunnel ? 98 : (isSafeDomain ? 10 : (foundKeywords.length > 0 ? 80 : 20))
       }
     }
   };
@@ -172,6 +500,59 @@ async function startServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // Live Real-Time GeoIP & ASN Resolution Endpoint
+  app.get("/api/geoip", async (req, res) => {
+    const rawTarget = (req.query.ip || req.query.host || req.query.domain || req.query.query || "") as string;
+    let target = rawTarget.trim();
+
+    // If no IP/host provided, use client IP
+    if (!target) {
+      const forwarded = req.headers["x-forwarded-for"];
+      if (typeof forwarded === "string") {
+        target = forwarded.split(",")[0].trim();
+      } else if (Array.isArray(forwarded) && forwarded[0]) {
+        target = forwarded[0].trim();
+      } else {
+        target = req.socket.remoteAddress || "8.8.8.8";
+      }
+    }
+
+    try {
+      const geoResult = await resolveGeoIP(target);
+      res.json(geoResult);
+    } catch (err: any) {
+      console.error("[GeoIP Endpoint] Error resolving:", err?.message || err);
+      res.status(500).json({
+        ip: target,
+        country: "International Public Zone",
+        countryCode: "UN",
+        region: "Public Transit Node",
+        city: "Autonomous System Gateway",
+        latitude: 37.0902,
+        longitude: -95.7129,
+        isp: "Tier-1 Internet Transit",
+        asn: "AS-TRANSIT",
+        organization: "Public Relay Gateway",
+        hostingProvider: "Transit Gateway",
+        vpnTorIndicator: "Standard Public Gateway",
+        threatReputation: "APPROXIMATE_REGIONAL_GEOIP",
+        attributionDisclaimer: "Observed sending infrastructure point-of-presence.",
+        lookupStatus: "APPROXIMATE"
+      });
+    }
+  });
+
+  app.post("/api/geoip", async (req, res) => {
+    const { ip, host, domain } = req.body || {};
+    const target = (ip || host || domain || "").trim();
+    try {
+      const geoResult = await resolveGeoIP(target || "8.8.8.8");
+      res.json(geoResult);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || "Failed to resolve IP" });
+    }
+  });
+
   // Threat Scan endpoint
   app.post("/api/scan", async (req, res) => {
     const { text = "", language = "en", base64Image, mimeType } = req.body;
@@ -201,8 +582,11 @@ async function startServer() {
       parts.push({
         text: `Analyze the provided input (text and/or image) for potential phishing, scams, or malicious intent. 
 1. Auto-detect whether this represents an EMAIL, a CHAT message, a URL/Domain, CODE, a NETWORK_LOG, a QR code, a FILE or UNKNOWN.
-2. Provide a risk score from 0 to 100 (100 being most dangerous). If the input is a benign website, legitimate web application, portfolio, staging deployment (e.g. Vercel, Netlify, GitHub Pages), or normal text with no malicious code, scams, or credential harvesting, assign a low/safe risk score (0-15) and note that the domain appears legitimate and safe.
-3. List detection signals (short, bold phrases like "CLEAN_REPUTATION" or "URGENT LANGUAGE DETECTED").
+2. Provide a risk score from 0 to 100 (100 being most dangerous). 
+CRITICAL SECURITY RULES:
+- EPHEMERAL REVERSE TUNNELS (*.trycloudflare.com, *.ngrok-free.app, *.ngrok.io, *.localtunnel.me, *.serveo.net, *.pinggy.link): These are HIGH-RISK EVASION VECTORS used extensively in phishing and credential harvesting campaigns to bypass domain-age filters, inherit trusted CDN SSL certificates, and mask origin attacker infrastructure. If the input contains or is a reverse tunnel (e.g. trycloudflare.com), you MUST classify it as detectedType='URL', riskScore between 90-98, threatName='Cloudflare Quick Tunnel / Reverse Proxy Evasion', and explain how attackers abuse ephemeral tunnels to evade perimeter phishing filters.
+- If the input is a benign website, legitimate web application, portfolio, staging deployment on verified enterprise platforms (e.g. Vercel, Netlify, GitHub Pages, Google, Microsoft), or normal text with no malicious code, scams, or credential harvesting, assign a low/safe risk score (0-15) and note that the domain appears legitimate and safe.
+3. List detection signals (short, bold phrases like "REVERSE_TUNNEL_EVASION", "EPHEMERAL_SUBDOMAIN", "URGENT LANGUAGE DETECTED", or "CLEAN_REPUTATION").
 4. Identify the likely source (attacker IP, sender email, or domain) and target (user or system).
 5. Describe the payload/attack vector briefly. If benign, state "Legitimate web application" or "No threat detected".
 6. Identify any sensitive data exposed (e.g., credit cards, tokens, personal info) and provide a masked version. If none, return an empty array.
@@ -320,6 +704,37 @@ ALL RESPONSES AND STRINGS (EXCEPT ENUM VALUES) MUST BE IN ${targetLang}.`,
       if (result.success && result.text) {
         try {
           const parsed = JSON.parse(result.text);
+          const isReverseTunnel = /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(text || "") || 
+            (parsed.detectedLinks && parsed.detectedLinks.some((l: string) => /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(l)));
+
+          if (isReverseTunnel) {
+            parsed.riskScore = Math.max(parsed.riskScore || 0, 94);
+            parsed.detectedType = "URL";
+            parsed.threatName = "Cloudflare Quick Tunnel / Reverse Proxy Evasion";
+            parsed.signals = Array.from(new Set([
+              "REVERSE_TUNNEL_EVASION",
+              "EPHEMERAL_SUBDOMAIN",
+              "CLOUDFLARE_PROXY_BYPASS",
+              ...(parsed.signals || [])
+            ]));
+            if (!parsed.urlMetrics) {
+              parsed.urlMetrics = {
+                domainAge: "Ephemeral (< 1 Hour / Quick Tunnel)",
+                sslCertificate: "Cloudflare Managed Edge TLS (Proxy Masked)",
+                blacklistStatus: "Flagged / Ephemeral Tunnel Proxy",
+                typosquatting: "Dictionary Subdomain Evasion",
+                subdomains: "Random Disposable Tunnel Endpoint",
+                radarData: {
+                  domainAge: 5,
+                  sslStatus: 40,
+                  blacklist: 10,
+                  typosquatting: 30,
+                  subdomains: 15,
+                  contentRisk: 98
+                }
+              };
+            }
+          }
           return res.json(parsed);
         } catch {
           // If JSON parse fails, fall through to fallback

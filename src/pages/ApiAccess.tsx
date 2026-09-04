@@ -185,7 +185,7 @@ export function ApiAccess() {
         <div className="bg-[#0a0d1a]/50 backdrop-blur-md border border-white/5 rounded-xl p-6 hover:border-white/20 transition-colors">
           <div className="flex items-center gap-2 mb-6 text-white">
             <Database className="w-5 h-5 text-cyber-blue" />
-            <h2 className="font-semibold tracking-wider">REST Endpoints</h2>
+            <h2 className="font-semibold tracking-wider">{t('rest_endpoints')}</h2>
           </div>
           
           <div className="space-y-4">
@@ -208,13 +208,13 @@ export function ApiAccess() {
                  <span className="text-cyber-blue">Auth: Bearer</span>
               </div>
                <div className="p-4 font-mono text-[11px] text-cyber-muted hover:text-white transition-colors">
-                 Query the global threat intelligence database for known malicious IoCs (IPs, domains, hashes). Rate limit: 1000/min.
+                 {t('api_docs')}
                </div>
             </div>
             
             <button className="w-full py-3 bg-white/5 hover:bg-cyber-blue/10 border border-white/10 hover:border-cyber-blue/50 transition-colors rounded-lg flex items-center justify-center gap-2 text-sm text-white tracking-widest group">
                <Shield className="w-4 h-4 text-cyber-blue group-hover:scale-125 transition-transform" />
-               VIEW FULL DOCUMENTATION
+               {t('view_docs')}
             </button>
           </div>
         </div>
