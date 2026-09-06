@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldCheck, Search, Cpu, X, UploadCloud, AlertCircle, Send, Globe, Mail, Code, Link2, Paperclip, FileText, Image as ImageIcon, Database, Terminal, Lock } from 'lucide-react';
+import { ShieldCheck, Search, Cpu, X, UploadCloud, AlertCircle, Send, Globe, Mail, Code, Link2, Paperclip, FileText, Image as ImageIcon, Database, Terminal, Lock, Brain, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { analyzeThreat, ScanResult } from '@/services/geminiService';
 import { addScanToHistory } from '@/lib/history';
@@ -596,7 +596,7 @@ export function LiveScanner() {
                 </div>
 
                 {/* Mode Selector Tabs */}
-                <div className="inline-flex p-1 bg-[#05080f]/90 border border-white/10 rounded-2xl backdrop-blur-md shadow-2xl">
+                <div className="inline-flex p-1 bg-[#05080f]/90 border border-white/10 rounded-2xl backdrop-blur-md shadow-2xl mb-4">
                   <button
                     onClick={() => setScannerMode('payload')}
                     className={cn(
@@ -621,6 +621,56 @@ export function LiveScanner() {
                     <Globe className="w-4 h-4" />
                     <span>{t('domain_auth_lookup')}</span>
                   </button>
+                </div>
+
+                {/* 2 ACTIVE SCANNING LAYERS INDICATOR */}
+                <div className="w-full max-w-4xl bg-black/60 border border-white/10 rounded-2xl p-3.5 sm:p-4 backdrop-blur-xl shadow-2xl flex flex-col md:flex-row items-center justify-between gap-3 text-left">
+                  <div className="flex items-center gap-2.5 w-full md:w-auto">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 shadow-[0_0_8px_#34d399]" />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono font-bold tracking-widest text-white uppercase">
+                          SCANNER ENGINE PIPELINE
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+                          2 / 2 LAYERS ACTIVE
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-gray-400 font-sans block">
+                        Multi-dimensional payload deconstruction running across technical and cognitive vectors.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full md:w-auto shrink-0">
+                    {/* Layer 1: Protocol Forensics Layer */}
+                    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs font-mono">
+                      <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-4 h-4 text-cyan-300" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-cyan-300 text-[11px]">Layer 1: Protocol Forensics</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">ACTIVE</span>
+                        </div>
+                        <span className="text-[10px] text-gray-300 font-sans block">RFC 5322 • SPF/DKIM • Reverse Tunnels</span>
+                      </div>
+                    </div>
+
+                    {/* Layer 2: Neural Profile Layer */}
+                    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-purple-950/40 border border-purple-500/30 text-xs font-mono">
+                      <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0">
+                        <Brain className="w-4 h-4 text-purple-300 animate-pulse" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-purple-300 text-[11px]">Layer 2: Neural Profile</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">ACTIVE</span>
+                        </div>
+                        <span className="text-[10px] text-gray-300 font-sans block">Cognitive Urgency • AI Text • Mimicry</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 

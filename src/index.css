@@ -19,7 +19,22 @@
 @layer base {
   body {
     @apply bg-cyber-bg text-cyber-text font-sans antialiased overflow-x-hidden;
-    font-size: 13px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}
+
+/* Responsive screen scaling and readability */
+@media (min-width: 1280px) {
+  .forensic-scalable {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+    line-height: 1.5;
   }
 }
 
@@ -89,5 +104,138 @@
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
+  }
+}
+
+/* ==========================================================================
+   FORENSIC INVESTIGATION REPORT — PRINT TO PDF STYLESHEET
+   Preserves dark forensic aesthetic, ensures all SVGs/graphs render,
+   forces exact color contrast, prevents awkward pagination splits.
+   ========================================================================== */
+
+@media print {
+  /* Enforce exact background colors and graphics */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  @page {
+    size: portrait;
+    margin: 8mm 8mm 10mm 8mm;
+  }
+
+  /* Force dark forensic background across canvas */
+  html, body {
+    background: #03060a !important;
+    background-color: #03060a !important;
+    color: #e0e6ed !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    font-size: 11px !important;
+  }
+
+  /* Reset outer application containers that use overflow or fixed heights */
+  #root,
+  .app-container,
+  main,
+  .flex-1,
+  div[class*="overflow-y-auto"],
+  div[class*="overflow-x-hidden"],
+  div[class*="h-full"],
+  div[class*="h-screen"],
+  div[class*="min-h-screen"] {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide navigation, toolbars, sidebars, interactive controls */
+  aside,
+  header,
+  nav,
+  button,
+  .print\:hidden,
+  .scanline,
+  .bg-grid,
+  #forensic-report-navigation,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  /* Always display the Chain of Custody Seal at top of printed report */
+  #chain-of-custody-seal {
+    display: block !important;
+    margin-bottom: 16px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background-color: #060b17 !important;
+    border: 1.5px solid #00f3ff !important;
+  }
+
+  /* Maintain dark theme backgrounds and glowing borders on forensic sections */
+  #forensic-case-header,
+  #executive-forensic-summary,
+  #email-forensic-anatomy-visualization,
+  #sender-identity-graph,
+  #smtp-hop-route-graph,
+  #email-timeline-section,
+  #authentication-visual-matrix,
+  #authentication-flow-diagram,
+  #ioc-intelligence-section,
+  #social-engineering-analysis,
+  #url-forensics-section,
+  #attachment-forensics-section,
+  #threat-correlation-graph,
+  #final-forensic-verdict,
+  #raw-rfc-evidence-section,
+  #soc-playbooks-section {
+    background-color: #080d1a !important;
+    border: 1px solid rgba(0, 243, 255, 0.4) !important;
+    border-radius: 12px !important;
+    margin-bottom: 14px !important;
+    padding: 14px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Ensure cards within grids stay intact */
+  .grid > div {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Ensure SVGs and icons render cleanly */
+  svg {
+    display: inline-block !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure tables render completely without horizontal scrollbars */
+  table {
+    width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Ensure preformatted text wraps cleanly */
+  pre, code {
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+  }
+
+  /* Links should not output URLs in parentheses */
+  a[href]:after {
+    content: none !important;
   }
 }

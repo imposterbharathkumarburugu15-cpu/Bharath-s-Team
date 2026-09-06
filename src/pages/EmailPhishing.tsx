@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Mail, Search, RefreshCw, LogIn, Bell, Shield, ShieldCheck, ShieldAlert, 
   AlertTriangle, FileText, Terminal, ArrowRight, Copy, Check, CheckCircle2, Download, 
-  ExternalLink, Network, Globe, Server, Clock, Lock, AlertCircle, Sparkles, UploadCloud, Layers, X
+  ExternalLink, Network, Globe, Server, Clock, Lock, AlertCircle, Sparkles, UploadCloud, Layers, X, Brain, Cpu
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { addScanToHistory } from '@/lib/history';
@@ -12,6 +12,7 @@ import { googleSignIn, googleLogout, initAuth, getAccessToken } from '@/services
 import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import { Forensic3DGeoMap } from '@/components/Forensic3DGeoMap';
 import { EmailForensicsPanel } from '@/components/EmailForensicsPanel';
+import { NeuralProfile } from '@/components/forensics/NeuralProfile';
 import type { User } from 'firebase/auth';
 
 // Sample Presets for instantaneous testing
@@ -178,7 +179,7 @@ IT Infrastructure & Identity Operations Team`
 
 export default function EmailPhishing() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'forensics' | 'inbox' | 'dns-lookup'>('forensics');
+  const [activeTab, setActiveTab] = useState<'forensics' | 'neural' | 'inbox' | 'dns-lookup'>('forensics');
   const [inputMode, setInputMode] = useState<'custom' | 'demo'>('custom');
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [rawHeaderText, setRawHeaderText] = useState<string>('');
@@ -561,57 +562,79 @@ export default function EmailPhishing() {
   };
 
   return (
-    <div className="flex-1 w-full h-full bg-[#03060a] overflow-y-auto custom-scrollbar p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="flex-1 w-full h-full bg-[#03060a] overflow-y-auto custom-scrollbar p-3 sm:p-5 lg:p-7">
+      <div className="w-full max-w-[1680px] mx-auto space-y-6 lg:space-y-8">
         
-        {/* Navigation & Header Status */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-[#0a0f1c] border border-white/5 p-4 rounded-2xl shadow-xl">
+        {/* Navigation & Header Status (Screen Only) */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-[#0a0f1c] border border-white/5 p-4 sm:p-5 rounded-2xl shadow-xl print:hidden">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center">
               <Mail className="w-5 h-5 text-cyber-blue" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-2 font-mono">
+              <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2 font-mono">
                 {t('email_threat_forensics')}
               </h1>
-              <p className="text-xs text-cyber-muted">{t('forensic_engine_subtitle')}</p>
+              <p className="text-xs sm:text-sm text-cyber-muted">{t('forensic_engine_subtitle')}</p>
             </div>
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="flex flex-wrap items-center bg-[#05080f] p-1 rounded-xl border border-white/5 gap-1">
+          <div className="flex flex-wrap items-center bg-[#05080f] p-1.5 rounded-xl border border-white/5 gap-1.5">
+            {/* SEPARATE BUTTON: LAYER 2 NEURAL PROFILE */}
             <button
-              onClick={() => setActiveTab('forensics')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
-                activeTab === 'forensics'
-                  ? 'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm'
+              onClick={() => {
+                if (!dossier && !rawHeaderText && !bodyText) {
+                  handleScenarioChange(TEST_SCENARIOS[0].id);
+                }
+                setActiveTab('neural');
+              }}
+              className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'neural'
+                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_12px_rgba(168,85,247,0.3)]'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              <Terminal className="w-3.5 h-3.5" />
-              {t('forensic_lab')}
+              <Cpu className="w-4 h-4 text-purple-400" />
+              <span>LAYER 2: NEURAL PROFILE</span>
             </button>
+
+            {/* SEPARATE BUTTON: LAYER 1 PROTOCOL FORENSICS */}
+            <button
+              onClick={() => setActiveTab('forensics')}
+              className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'forensics'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Terminal className="w-4 h-4 text-cyan-400" />
+              <span>LAYER 1: PROTOCOL FORENSICS</span>
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            </button>
+
             <button
               onClick={() => setActiveTab('inbox')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
+              className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'inbox'
                   ? 'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
               <Mail className="w-3.5 h-3.5" />
-              {t('gmail_inbox_scanner')}
+              <span>GMAIL INBOX</span>
             </button>
+
             <button
               onClick={() => setActiveTab('dns-lookup')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
+              className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
                 activeTab === 'dns-lookup'
                   ? 'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
               <Globe className="w-3.5 h-3.5" />
-              {t('spf_dkim_dmarc_lookup')}
+              <span>SPF/DKIM/DMARC LOOKUP</span>
             </button>
           </div>
         </div>
@@ -620,14 +643,61 @@ export default function EmailPhishing() {
           <DomainAuthLookup initialDomain={lookupDomain} />
         )}
 
+        {activeTab === 'neural' && (
+          <div className="space-y-6">
+            {/* Neural Profile Header Banner */}
+            <div className="bg-[#0a0f1c] border border-purple-500/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                  <Cpu className="w-6 h-6 text-purple-300 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                      LAYER 2: NEURAL PROFILE & COGNITIVE BEHAVIORAL ANALYSIS
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
+                      Layer 2 Active
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-300 font-sans mt-0.5 max-w-2xl leading-relaxed">
+                    Evaluates temporal urgency (Amygdala hijack), executive authority mimicry, loss aversion coercion, and synthetic AI/LLM text perplexity.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setActiveTab('forensics')}
+                  className="px-3.5 py-2 rounded-lg text-xs font-mono font-bold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Inspect Layer 1 Forensics</span>
+                </button>
+              </div>
+            </div>
+
+            {/* NeuralProfile Component */}
+            <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-4 sm:p-6 shadow-2xl">
+              <NeuralProfile
+                dossier={dossier || undefined}
+                emailSubject={dossier?.headerFields?.subject || (selectedScenario ? TEST_SCENARIOS.find(s => s.id === selectedScenario)?.title : 'Executive Access Profile Synchronization')}
+                emailSender={dossier?.senderIdentity?.fromAddress || 'security-notice@enterprise-auth-portal.xyz'}
+                emailBody={bodyText || dossier?.contentAnalysis?.signals?.map(s => s.description).join(' ') || TEST_SCENARIOS[0].body}
+                onOpenFullForensics={() => setActiveTab('forensics')}
+              />
+            </div>
+          </div>
+        )}
+
         {activeTab === 'forensics' && (
           <div className="space-y-6">
-            {/* Simulation Presets & Raw Header Input Drawer */}
+            {/* Simulation Presets & Raw Header Input Drawer (Screen Only, hidden in print) */}
             <div 
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`bg-[#0a0f1c] border rounded-2xl p-5 shadow-xl relative transition-all duration-300 ${
+              className={`bg-[#0a0f1c] border rounded-2xl p-5 shadow-xl relative transition-all duration-300 print:hidden ${
                 isDragging 
                   ? 'border-cyber-blue shadow-[0_0_30px_rgba(0,245,255,0.4)] bg-cyber-blue/5' 
                   : 'border-white/5'
@@ -896,7 +966,7 @@ export default function EmailPhishing() {
               )}
 
             {!dossier && (
-              <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-8 text-center space-y-6">
+              <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-8 text-center space-y-6 print:hidden">
                 <div className="w-14 h-14 rounded-2xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center mx-auto text-cyber-blue shadow-[0_0_20px_rgba(0,245,255,0.15)]">
                   <Terminal className="w-7 h-7" />
                 </div>
@@ -979,17 +1049,36 @@ export default function EmailPhishing() {
                 {authError && (
                   <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                    <div className="text-xs space-y-1">
-                      <p className="font-bold text-amber-300">Notice: {authError}</p>
-                      <p className="text-gray-400 leading-relaxed">
-                        If running inside a sandboxed iframe or if popup was blocked, you can also use the Sample Inbox mode to test all phishing triage and forensic graph features immediately.
-                      </p>
-                      <div className="pt-2">
+                    <div className="text-xs space-y-2">
+                      <p className="font-bold text-amber-300">Authentication Notice: {authError}</p>
+                      <div className="text-gray-300 leading-relaxed space-y-1">
+                        <p>
+                          <strong>Why Google displays "Access blocked: app has not completed the Google verification process" (Error 403: access_denied):</strong>
+                        </p>
+                        <p className="text-gray-400">
+                          Gmail reading (<code className="text-cyber-blue font-mono text-[10px]">gmail.readonly</code>) is a restricted Google API. While in development / "Testing" mode, Google requires tester accounts to be explicitly added in the Google Cloud Console.
+                        </p>
+                        <div className="bg-black/40 border border-white/10 rounded-lg p-2.5 mt-2 space-y-1 text-gray-300">
+                          <p className="font-semibold text-white">How to allow your email:</p>
+                          <ol className="list-decimal list-inside space-y-0.5 text-gray-400">
+                            <li>Open <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noreferrer" className="text-cyber-blue underline">Google Cloud Console → OAuth consent screen</a> for project <span className="font-mono text-white">gen-lang-client-0095086476</span>.</li>
+                            <li>Navigate to <strong>Test users</strong> and click <strong>+ ADD USERS</strong>.</li>
+                            <li>Add your email address (e.g. <span className="font-mono text-cyber-blue">valikeabhiramyadav@gmail.com</span>) and click <strong>Save</strong>.</li>
+                          </ol>
+                        </div>
+                      </div>
+                      <div className="pt-2 flex items-center gap-3">
                         <button
                           onClick={() => loadSampleInbox()}
                           className="px-3 py-1.5 rounded-lg bg-cyber-blue/20 hover:bg-cyber-blue/30 text-cyber-blue border border-cyber-blue/40 font-mono font-bold text-[11px]"
                         >
                           Load Simulated Inbox for Testing
+                        </button>
+                        <button
+                          onClick={() => setAuthError(null)}
+                          className="text-gray-500 hover:text-gray-300 text-[11px] underline"
+                        >
+                          Dismiss
                         </button>
                       </div>
                     </div>
@@ -1020,43 +1109,148 @@ export default function EmailPhishing() {
                           await handleGoogleLogin();
                         }
                       }}
-                      className="text-xs font-mono text-cyber-blue hover:underline flex items-center gap-1.5"
+                      className="text-xs font-mono text-cyber-blue hover:underline flex items-center gap-1.5 cursor-pointer"
                     >
                       <RefreshCw className="w-3.5 h-3.5" /> Refresh Inbox
                     </button>
                     <button
                       onClick={() => handleLogout()}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 hover:underline"
+                      className="text-xs font-mono text-red-400 hover:text-red-300 hover:underline cursor-pointer"
                     >
                       Disconnect
                     </button>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  {emails.map((email) => (
-                    <div
-                      key={email.id}
-                      className="bg-[#0a0f1c] border border-white/5 rounded-xl p-5 hover:border-cyber-blue/30 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-                    >
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-bold text-white">{email.subject}</h4>
-                          <span className="text-[10px] font-mono text-gray-500">{email.time}</span>
-                        </div>
-                        <p className="text-xs text-gray-400 font-mono">From: {email.sender}</p>
-                        <p className="text-xs text-gray-500 line-clamp-1">{email.body}</p>
+                {/* 2 ACTIVE SCANNING LAYERS STATUS BANNER (MATCHING SCANNER PIPELINE) */}
+                <div className="bg-black/60 border border-white/10 rounded-2xl p-3.5 sm:p-4 backdrop-blur-xl shadow-2xl flex flex-col md:flex-row items-center justify-between gap-3 text-left">
+                  <div className="flex items-center gap-2.5 w-full md:w-auto">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 shadow-[0_0_8px_#34d399]" />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono font-bold tracking-widest text-white uppercase">
+                          GMAIL SCANNER PIPELINE
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+                          2 / 2 LAYERS ACTIVE
+                        </span>
                       </div>
-
-                      <button
-                        onClick={() => inspectGmailMessage(email)}
-                        className="px-4 py-2 rounded-lg text-xs font-mono font-bold bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center gap-1.5 transition-colors whitespace-nowrap"
-                      >
-                        <Terminal className="w-3.5 h-3.5" />
-                        <span>Run Forensics</span>
-                      </button>
+                      <span className="text-[10px] text-gray-400 font-sans block">
+                        Incoming messages are continuously inspected through technical infrastructure forensics and cognitive threat profiling.
+                      </span>
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full md:w-auto shrink-0">
+                    {/* Layer 1: Protocol Forensics Layer */}
+                    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs font-mono">
+                      <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-4 h-4 text-cyan-300" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-cyan-300 text-[11px]">Layer 1: Protocol Forensics</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">ACTIVE</span>
+                        </div>
+                        <span className="text-[10px] text-gray-300 font-sans block">RFC 5322 • SPF/DKIM • Reverse Tunnels</span>
+                      </div>
+                    </div>
+
+                    {/* Layer 2: Neural Profile Layer */}
+                    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-purple-950/40 border border-purple-500/30 text-xs font-mono">
+                      <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0">
+                        <Brain className="w-4 h-4 text-purple-300 animate-pulse" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-purple-300 text-[11px]">Layer 2: Neural Profile</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">ACTIVE</span>
+                        </div>
+                        <span className="text-[10px] text-gray-300 font-sans block">Cognitive Urgency • AI Text • Mimicry</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {emails.map((email) => {
+                    const bodyLower = (email.body || '').toLowerCase();
+                    const subjLower = (email.subject || '').toLowerCase();
+                    const isHighUrgency = bodyLower.includes('urgent') || bodyLower.includes('2 hours') || bodyLower.includes('immediately') || bodyLower.includes('suspended') || subjLower.includes('urgent');
+                    const isAuthority = subjLower.includes('security') || subjLower.includes('admin') || bodyLower.includes('ceo') || bodyLower.includes('payroll') || email.sender.includes('paypa1') || email.sender.includes('portal');
+                    const hasFinancialThreat = bodyLower.includes('invoice') || bodyLower.includes('bitcoin') || bodyLower.includes('$') || bodyLower.includes('payment');
+
+                    return (
+                      <div
+                        key={email.id}
+                        className="bg-[#0a0f1c] border border-white/5 rounded-xl p-5 hover:border-cyber-blue/30 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                      >
+                        <div className="space-y-2 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-bold text-white">{email.subject}</h4>
+                            <span className="text-[10px] font-mono text-gray-500">{email.time}</span>
+                          </div>
+                          <p className="text-xs text-gray-400 font-mono">From: {email.sender}</p>
+                          <p className="text-xs text-gray-400 font-sans line-clamp-1">{email.body}</p>
+
+                          {/* Quick Threat Signals */}
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold flex items-center gap-1 ${
+                              isHighUrgency ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            }`}>
+                              <Brain className="w-3 h-3" />
+                              {isHighUrgency ? 'Amygdala Hijack: HIGH' : 'Cognitive Urgency: NORMAL'}
+                            </span>
+                            {isAuthority && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                                <ShieldAlert className="w-3 h-3" />
+                                Authority Mimicry
+                              </span>
+                            )}
+                            {hasFinancialThreat && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                Loss Aversion Trigger
+                              </span>
+                            )}
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                              Synthetic AI Check: {isHighUrgency ? '92%' : '14%'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
+                          {/* SEPARATE BUTTON: LAYER 2 NEURAL PROFILE */}
+                          <button
+                            onClick={() => {
+                              setInputMode('custom');
+                              setSelectedScenario(null);
+                              setUploadedFileName(`Gmail: ${email.subject}`);
+                              setRawHeaderText(email.rawHeaders);
+                              setBodyText(email.body);
+                              handleRunForensics(email.rawHeaders, email.body, 'gmail');
+                              setActiveTab('neural');
+                            }}
+                            className="px-3.5 py-2 rounded-lg text-xs font-mono font-bold bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/35 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-[0_0_10px_rgba(168,85,247,0.2)] whitespace-nowrap"
+                            title="Inspect Layer 2 Neural Profile & Cognitive Threat Telemetry"
+                          >
+                            <Cpu className="w-3.5 h-3.5 text-purple-400" />
+                            <span>LAYER 2: NEURAL PROFILE</span>
+                          </button>
+
+                          {/* SEPARATE BUTTON: LAYER 1 PROTOCOL FORENSICS */}
+                          <button
+                            onClick={() => inspectGmailMessage(email)}
+                            className="px-3.5 py-2 rounded-lg text-xs font-mono font-bold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/35 flex items-center gap-1.5 transition-all whitespace-nowrap cursor-pointer active:scale-95 shadow-[0_0_12px_rgba(0,245,255,0.15)]"
+                            title="Execute Layer 1 RFC 5322 Protocol Forensics"
+                          >
+                            <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>LAYER 1: PROTOCOL FORENSICS</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

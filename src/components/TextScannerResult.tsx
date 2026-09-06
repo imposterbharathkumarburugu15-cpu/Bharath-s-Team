@@ -199,26 +199,26 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               className={cn(
                 "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
                 activeTab === 'neural'
-                  ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm"
+                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
                   : "text-gray-400 hover:text-white"
               )}
             >
-              <Cpu className="w-3.5 h-3.5" />
-              <span>NEURAL PROFILE</span>
+              <Cpu className="w-3.5 h-3.5 text-purple-400" />
+              <span>LAYER 2: NEURAL PROFILE</span>
             </button>
             <button
               onClick={handleSwitchToForensics}
               className={cn(
                 "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
                 activeTab === 'forensics'
-                  ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm"
+                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
                   : "text-gray-400 hover:text-white"
               )}
             >
-              <Terminal className="w-3.5 h-3.5 text-cyber-blue" />
-              <span>EMAIL FORENSICS</span>
+              <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+              <span>LAYER 1: PROTOCOL FORENSICS</span>
               {isEmailOrHeaders && (
-                <span className="w-2 h-2 rounded-full bg-cyber-blue animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
               )}
             </button>
             <button

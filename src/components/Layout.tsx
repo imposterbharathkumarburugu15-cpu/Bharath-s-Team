@@ -187,11 +187,11 @@ export function Layout({
   });
 
   return (
-    <div className="flex h-screen w-full bg-[#050811] text-white overflow-hidden relative selection:bg-cyber-blue selection:text-black font-sans">
+    <div className="flex h-screen w-full bg-[#050811] text-white overflow-hidden relative selection:bg-cyber-blue selection:text-black font-sans print:h-auto print:overflow-visible print:bg-[#050811]">
       {/* Background Cyber Grid */}
-      <div className="bg-grid absolute inset-0 opacity-30 pointer-events-none" />
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyber-blue/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-cyber-purple/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="bg-grid absolute inset-0 opacity-30 pointer-events-none print:hidden" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyber-blue/5 rounded-full blur-[140px] pointer-events-none print:hidden" />
+      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-cyber-purple/5 rounded-full blur-[140px] pointer-events-none print:hidden" />
 
       {/* ========================================================
           1. COMPUTER / DESKTOP SIDEBAR (Visible on md and above)
@@ -199,7 +199,7 @@ export function Layout({
          ======================================================== */}
       <aside 
         className={cn(
-          "hidden md:flex h-full flex-shrink-0 border-r border-cyber-border/40 bg-[#070b14]/95 backdrop-blur-2xl z-30 flex-col py-4 box-border shadow-[10px_0_30px_rgba(0,0,0,0.6)] transition-all duration-300 relative",
+          "hidden md:flex h-full flex-shrink-0 border-r border-cyber-border/40 bg-[#070b14]/95 backdrop-blur-2xl z-30 flex-col py-4 box-border shadow-[10px_0_30px_rgba(0,0,0,0.6)] transition-all duration-300 relative print:hidden",
           isSidebarCollapsed ? "w-20 px-2.5 items-center" : "w-64 xl:w-72 px-4"
         )}
       >
@@ -565,9 +565,9 @@ export function Layout({
       {/* ========================================================
           2. MAIN CONTENT WRAPPER & DESKTOP TOP NAVIGATION BAR
          ======================================================== */}
-      <div className="flex-1 flex flex-col z-10 h-full overflow-hidden relative min-w-0">
+      <div className="flex-1 flex flex-col z-10 h-full overflow-hidden relative min-w-0 print:h-auto print:overflow-visible">
         {/* Top Header Bar for Desktop Computers & Mobile */}
-        <header className="h-16 flex-shrink-0 border-b border-cyber-border/40 bg-[#070b14]/90 backdrop-blur-xl flex items-center justify-between px-3 sm:px-6 z-20 shadow-md">
+        <header className="h-16 flex-shrink-0 border-b border-cyber-border/40 bg-[#070b14]/90 backdrop-blur-xl flex items-center justify-between px-3 sm:px-6 z-20 shadow-md print:hidden">
           {/* Left: Mobile menu toggle + Breadcrumbs & Active Title */}
           <div className="flex items-center gap-3 min-w-0">
             {/* Mobile Hamburger Toggle Button (< md) */}
@@ -773,7 +773,7 @@ export function Layout({
 
         {/* Page Content Viewport with Responsive Padding */}
         <div className={cn(
-          "flex-1 overflow-y-auto overflow-x-hidden flex flex-col min-h-0",
+          "flex-1 overflow-y-auto overflow-x-hidden flex flex-col min-h-0 print:overflow-visible print:h-auto print:p-0 print:pb-0",
           // On mobile (< md) add bottom padding for mobile dock, on computers (md+) no bottom dock needed!
           (activeTab === 'wave' || activeTab === 'scanner') 
             ? "p-0 pb-20 md:pb-0" 
@@ -1123,7 +1123,7 @@ export function Layout({
           5. MOBILE DOCKED BOTTOM NAVIGATION BAR (< md ONLY)
              Hidden on desktop & laptops so it doesn't clutter computers!
          ======================================================== */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#070b14]/95 backdrop-blur-2xl border-t border-cyber-border/60 px-2 py-1.5 shadow-[0_-10px_25px_rgba(0,0,0,0.8)] safe-bottom">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#070b14]/95 backdrop-blur-2xl border-t border-cyber-border/60 px-2 py-1.5 shadow-[0_-10px_25px_rgba(0,0,0,0.8)] safe-bottom print:hidden">
         <div className="flex items-center justify-around">
           {/* 1. Dashboard */}
           <button

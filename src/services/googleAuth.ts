@@ -34,19 +34,55 @@ export const initAuth = (
   });
 };
 
+// Global listener to catch and suppress Firebase Auth's known internal popup race condition in iframe environments
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    if (event.message && event.message.includes('Pending promise was never set')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      console.warn('Handled Firebase Auth popup lifecycle race condition gracefully.');
+      return true;
+    }
+  }, true);
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const msg = event.reason?.message || String(event.reason || '');
+    if (msg.includes('Pending promise was never set')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      console.warn('Handled Firebase Auth unhandled rejection for pending promise assertion.');
+    }
+  });
+}
+
 export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
+  if (isSigningIn) {
+    console.warn('Sign-in already in progress, ignoring duplicate trigger.');
+    return null;
+  }
+
   try {
     isSigningIn = true;
     const result = await signInWithPopup(auth, provider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
     if (!credential?.accessToken) {
-      throw new Error('Failed to obtain Google OAuth access token');
+      throw new Error('Google OAuth succeeded, but no access token was returned for Gmail.');
     }
 
     cachedAccessToken = credential.accessToken;
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
-    console.warn('Google Workspace Sign-in notice:', error);
+    const errorMsg = error?.message || String(error || '');
+    console.warn('Google Workspace Sign-in event:', error);
+
+    // Normalize known popup/internal aborts
+    if (
+      errorMsg.includes('Pending promise was never set') ||
+      error?.code === 'auth/popup-closed-by-user' ||
+      error?.code === 'auth/cancelled-popup-request'
+    ) {
+      throw new Error('Google sign-in popup was closed or blocked. If previewed in an iframe, try opening in a new tab.');
+    }
     throw error;
   } finally {
     isSigningIn = false;
