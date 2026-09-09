@@ -140,9 +140,9 @@ export function InboxShieldView({
                 {t('pipeline_desc')}
               </p>
               <div className="text-[11px] font-mono text-cyan-300/90 flex items-center gap-2 pt-0.5">
-                <span className="text-emerald-400">✓</span> {t('protocol_forensics_label')}
-                <span className="text-gray-500">+</span>
                 <span className="text-purple-400">✓</span> {t('neuro_profile_label')}
+                <span className="text-gray-500">+</span>
+                <span className="text-cyan-400">✓</span> {t('protocol_forensics_label')}
               </div>
             </div>
           </div>

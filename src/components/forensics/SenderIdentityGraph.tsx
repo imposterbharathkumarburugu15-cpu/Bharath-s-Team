@@ -268,6 +268,114 @@ export function SenderIdentityGraph({ dossier, onDrillDown }: SenderIdentityGrap
           </div>
         </div>
       </div>
+
+      {/* Phase 8: Context & Trust-Chain Intelligence Sub-Card */}
+      {dossier.trustChain && (
+        <div className="bg-[#050914] border border-cyan-500/30 rounded-xl p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                Context & Trust-Chain Intelligence (Historical Interaction Graph)
+              </h3>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                dossier.trustChain.trustChainVerdict === 'BROKEN_TRUST_CHAIN'
+                  ? 'bg-red-500/20 text-red-400 border-red-500/40'
+                  : dossier.trustChain.trustChainVerdict === 'ANOMALOUS_DEVIATION'
+                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                  : dossier.trustChain.trustChainVerdict === 'CAUTION_NEW_SENDER'
+                  ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
+                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+              }`}>
+                {dossier.trustChain.trustChainVerdict.replace(/_/g, ' ')}
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                {dossier.trustChain.senderFamiliarity.replace(/_/g, ' ')}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="bg-black/40 border border-white/5 rounded-lg p-3">
+              <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">
+                Historical Interactions
+              </span>
+              <div className="text-lg font-black text-cyan-300">
+                {dossier.trustChain.priorInteractionsCount} <span className="text-xs font-normal text-gray-400">recorded sessions</span>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1 font-sans">
+                {dossier.trustChain.baselineSummary}
+              </p>
+            </div>
+
+            <div className="bg-black/40 border border-white/5 rounded-lg p-3">
+              <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">
+                Historical Trust Score
+              </span>
+              <div className="flex items-center gap-2">
+                <span className={`text-lg font-black ${
+                  dossier.trustChain.historicalTrustScore < 40 ? 'text-red-400' :
+                  dossier.trustChain.historicalTrustScore < 70 ? 'text-amber-400' : 'text-emerald-400'
+                }`}>
+                  {dossier.trustChain.historicalTrustScore}%
+                </span>
+                <div className="h-1.5 flex-1 bg-white/10 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${
+                      dossier.trustChain.historicalTrustScore < 40 ? 'bg-red-500' :
+                      dossier.trustChain.historicalTrustScore < 70 ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`}
+                    style={{ width: `${dossier.trustChain.historicalTrustScore}%` }}
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1 font-sans">
+                Trust metric derived from past SPF/DKIM verification and clean delivery records.
+              </p>
+            </div>
+
+            <div className="bg-black/40 border border-white/5 rounded-lg p-3">
+              <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">
+                Trust-Chain Recommendation
+              </span>
+              <p className="text-[11px] text-gray-300 font-sans leading-relaxed">
+                {dossier.trustChain.recommendation}
+              </p>
+            </div>
+          </div>
+
+          {/* Anomalies List if any */}
+          {dossier.trustChain.anomalies.length > 0 && (
+            <div className="border-t border-white/5 pt-2 space-y-1.5">
+              <span className="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">
+                Detected Baseline Deviations ({dossier.trustChain.anomalies.length})
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {dossier.trustChain.anomalies.map((anom, idx) => (
+                  <div key={idx} className="bg-black/60 border border-amber-500/30 rounded-lg p-2.5 text-left">
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className="text-[11px] font-bold text-white">{anom.title}</span>
+                      <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase ${
+                        anom.severity === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
+                        anom.severity === 'HIGH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' :
+                        'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
+                      }`}>
+                        {anom.severity}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-gray-300 font-sans">{anom.description}</p>
+                    <div className="text-[9px] text-gray-400 font-mono mt-1 bg-white/5 p-1 rounded">
+                      {anom.evidence}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }

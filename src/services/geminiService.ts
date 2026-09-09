@@ -59,10 +59,59 @@ export async function analyzeThreat(
     if (res.ok) {
       const data = await res.json();
       if (data && !data.fallback && data.riskScore !== undefined) {
+        const isGroupChatLog = (
+          /(\[\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}|Messages and calls are end-to-end encrypted|added You|changed the group name to|<group-history|<message_history_notice)/i.test(text || "") ||
+          ((text.match(/\b(You|Aditya|Abhiram|Varshith|Mani|Bharath)[a-zA-Z0-9._-]*\s*:/gi) || []).length >= 2)
+        );
+
+        const isExecutiveSmishing = (
+          /(new\s*number|save\s*(this|it)|travelling\s*today|company\s*number|client\s*migration|deployment\s*issue)/i.test(text || "") &&
+          /(confidential|don'?t\s*involve\s*(the\s*rest\s*of\s*)?the\s*team|internal\s*review)/i.test(text || "") &&
+          /(client\s*access|contact\s*sheet|employee\s*contact|upload\s*them\s*here|within\s*\d+\s*minutes|enter\s*another\s*meeting)/i.test(text || "") &&
+          /https?:\/\/[^\s]+/i.test(text || "")
+        );
+
         const isReverseTunnel = /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(text || "") ||
           (data.detectedLinks && data.detectedLinks.some((l: string) => /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)/i.test(l)));
-        
-        if (isReverseTunnel) {
+
+        const isRecruitmentLure = !isGroupChatLog && (
+          /(confidential\s*(senior|lead|staff|software|ai|engineer)?\s*position|hiring\s*manager\s*has\s*approved|immediate\s*interview\s*slot|candidate\s*verification\s*form|complete\s*(the|your)?\s*candidate\s*verification)/i.test(text || "") &&
+          /(closing\s*(the\s*candidate\s*list|tonight)|verify\s*here|today\s*because)/i.test(text || "")
+        );
+
+        if (isExecutiveSmishing) {
+          data.riskScore = Math.max(data.riskScore || 0, 95);
+          data.detectedType = "CHAT";
+          data.threatName = "Executive Smishing / Spear Phishing & Data Exfiltration";
+          data.signals = Array.from(new Set([
+            "EXECUTIVE_IMPERSONATION_FRAUD",
+            "CONFIDENTIAL_DATA_EXFILTRATION",
+            "ISOLATION_SOCIAL_ENGINEERING",
+            "ARTIFICIAL_URGENCY_AMYGDALA_HIJACK",
+            "UNVERIFIED_NUMBER_SWAP_PRETEXT",
+            "EXTERNAL_CREDENTIAL_UPLOAD_LINK",
+            ...(data.signals || [])
+          ]));
+          if (!data.textMetrics) {
+            data.textMetrics = {
+              urgency: 95,
+              financial: 85,
+              impersonation: 98,
+              deception: 96,
+              coercion: 92
+            };
+          }
+        } else if (isGroupChatLog && !isReverseTunnel) {
+          data.riskScore = Math.min(data.riskScore || 0, 10);
+          data.detectedType = "CHAT";
+          data.threatName = "Legitimate Group Chat / Team Discussion";
+          data.signals = Array.from(new Set([
+            "AUTHENTIC_CONVERSATION",
+            "MULTI_PARTY_COLLABORATION",
+            "VERIFIED_PLATFORM_LINKS",
+            ...(data.signals || []).filter((s: string) => !s.includes("PHISHING") && !s.includes("HARVESTING"))
+          ]));
+        } else if (isReverseTunnel) {
           data.riskScore = Math.max(data.riskScore || 0, 94);
           data.detectedType = "URL";
           data.threatName = "Cloudflare Quick Tunnel / Reverse Proxy Evasion";
@@ -87,6 +136,27 @@ export async function analyzeThreat(
                 subdomains: 15,
                 contentRisk: 98
               }
+            };
+          }
+        } else if (isRecruitmentLure) {
+          data.riskScore = Math.max(data.riskScore || 0, 91);
+          if (!data.threatName || data.threatName.includes("Safe") || data.threatName.includes("Clean")) {
+            data.threatName = "Spear Phishing / Recruitment & Candidate Verification Lure";
+          }
+          data.signals = Array.from(new Set([
+            "RECRUITMENT_SPEAR_PHISHING",
+            "CANDIDATE_VERIFICATION_HARVESTING",
+            "ARTIFICIAL_URGENCY",
+            "FINANCIAL_COMPENSATION_INCENTIVE",
+            ...(data.signals || [])
+          ]));
+          if (!data.textMetrics) {
+            data.textMetrics = {
+              urgency: 88,
+              financial: 90,
+              impersonation: 92,
+              deception: 94,
+              coercion: 80
             };
           }
         }

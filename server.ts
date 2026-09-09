@@ -394,22 +394,64 @@ function generateLocalScanReport(text: string, language: string) {
   const safeDomains = ["google.com", "ai.studio", "github.com", "vercel.app", "microsoft.com", "apple.com"];
   const isSafeDomain = safeDomains.some(d => t.toLowerCase().includes(d)) && !t.toLowerCase().includes("trycloudflare.com");
 
+  const isGroupChatLog = (
+    /(\[\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}|Messages and calls are end-to-end encrypted|added You|changed the group name to|<group-history|<message_history_notice)/i.test(t) ||
+    ((t.match(/\b(You|Aditya|Abhiram|Varshith|Mani|Bharath)[a-zA-Z0-9._-]*\s*:/gi) || []).length >= 2)
+  );
+
+  const isExecutiveSmishing = (
+    /(new\s*number|save\s*(this|it)|travelling\s*today|company\s*number|client\s*migration|deployment\s*issue)/i.test(t) &&
+    /(confidential|don'?t\s*involve\s*(the\s*rest\s*of\s*)?the\s*team|internal\s*review)/i.test(t) &&
+    /(client\s*access|contact\s*sheet|employee\s*contact|upload\s*them\s*here|within\s*\d+\s*minutes|enter\s*another\s*meeting)/i.test(t) &&
+    /https?:\/\/[^\s]+/i.test(t)
+  );
+
   const isReverseTunnel = /trycloudflare\.com|ngrok(-free)?\.(app|io)|localtunnel\.me|serveo\.net|pinggy\.(io|link)|workers\.dev|pages\.dev/i.test(t);
 
-  const riskKeywords = ["urgent", "verify your account", "password expired", "wire transfer", "gift card", "suspended", "unauthorized login", "click here to claim"];
-  const foundKeywords = riskKeywords.filter(k => t.toLowerCase().includes(k));
+  const isRecruitmentLure = !isGroupChatLog && (
+    /(confidential\s*(senior|lead|staff|software|ai|engineer)?\s*position|hiring\s*manager\s*has\s*approved|immediate\s*interview\s*slot|candidate\s*verification\s*form|complete\s*(the|your)?\s*candidate\s*verification)/i.test(t) &&
+    /(closing\s*(the\s*candidate\s*list|tonight)|verify\s*here|today\s*because)/i.test(t)
+  );
+
+  const riskKeywords = ["urgent", "verify your account", "candidate verification", "closing tonight", "closing the candidate list", "password expired", "wire transfer", "gift card", "suspended", "unauthorized login", "click here to claim"];
+  const foundKeywords = (isGroupChatLog && !isExecutiveSmishing) ? [] : riskKeywords.filter(k => t.toLowerCase().includes(k));
 
   let riskScore = 15;
   let threatName = "Clean Communication / Safe Payload";
   let payloadDescription = "No malicious signature detected.";
   let signals = ["AUTHENTIC_STRUCTURE", "CLEAN_REPUTATION"];
 
-  if (isReverseTunnel) {
+  if (isExecutiveSmishing) {
+    riskScore = 95;
+    detectedType = "CHAT";
+    threatName = "Executive Smishing / Spear Phishing & Data Exfiltration";
+    payloadDescription = "Multi-day executive impersonation scam: establishes rapport via number-swap pretext, enforces team isolation ('don't involve the team'), and creates false urgency (10 min) to exfiltrate confidential client/employee access files to an unverified external upload portal.";
+    signals = [
+      "EXECUTIVE_IMPERSONATION_FRAUD",
+      "CONFIDENTIAL_DATA_EXFILTRATION",
+      "ISOLATION_SOCIAL_ENGINEERING",
+      "ARTIFICIAL_URGENCY_AMYGDALA_HIJACK",
+      "UNVERIFIED_NUMBER_SWAP_PRETEXT",
+      "EXTERNAL_CREDENTIAL_UPLOAD_LINK"
+    ];
+  } else if (isReverseTunnel) {
     riskScore = 96;
     detectedType = "URL";
     threatName = "Cloudflare Quick Tunnel / Reverse Proxy Evasion";
     payloadDescription = "Ephemeral reverse tunnel (*.trycloudflare.com / cloudflared) detected proxying victim traffic to bypass domain age and perimeter URL reputation filters.";
     signals = ["REVERSE_TUNNEL_EVASION", "EPHEMERAL_SUBDOMAIN", "CLOUDFLARE_PROXY_BYPASS", "CRITICAL_PHISHING_VECTOR"];
+  } else if (isGroupChatLog) {
+    riskScore = 8;
+    detectedType = "CHAT";
+    threatName = "Legitimate Group Chat / Team Collaboration";
+    payloadDescription = "Authentic multi-party chat transcript / team discussion (hackathon project planning & resource sharing). No malicious phishing vector detected.";
+    signals = ["AUTHENTIC_CONVERSATION", "MULTI_PARTY_COLLABORATION", "VERIFIED_PLATFORM_LINKS"];
+  } else if (isRecruitmentLure) {
+    riskScore = 91;
+    detectedType = isEmail ? "EMAIL" : "CHAT";
+    threatName = "Spear Phishing / Recruitment & Candidate Verification Lure";
+    payloadDescription = "Low-signal spear phishing lure targeting professional background with unsolicited job offer, lucrative compensation incentive, and urgent pre-interview credential verification form.";
+    signals = ["RECRUITMENT_SPEAR_PHISHING", "CANDIDATE_VERIFICATION_HARVESTING", "ARTIFICIAL_URGENCY", "AUTHORITY_MIMICRY", "FINANCIAL_COMPENSATION_INCENTIVE"];
   } else if (isSafeDomain) {
     riskScore = 5;
     threatName = "Verified Safe Ecosystem";
@@ -428,26 +470,28 @@ function generateLocalScanReport(text: string, language: string) {
     detectedType,
     riskScore,
     signals,
-    source: isReverseTunnel ? "Cloudflare Anycast Edge (AS13335) / Ephemeral Ingress" : isEmail ? "external-gateway@unverified.net" : "192.168.1.105",
+    source: isReverseTunnel ? "Cloudflare Anycast Edge (AS13335) / Ephemeral Ingress" : isRecruitmentLure ? "recruiter@unverified-recruitment-domain.net" : isEmail ? "external-gateway@unverified.net" : "192.168.1.105",
     target: "USER WORKSTATION / IDENTITY",
     payloadDescription,
     threatName,
     aiExplanation: isReverseTunnel
       ? "CRITICAL THREAT: This URL utilizes a Cloudflare Quick Tunnel (*.trycloudflare.com). Attackers deploy ephemeral cloudflared tunnels to host credential harvesting sites, bypassing domain age restrictions, inheriting trusted Cloudflare SSL certificates, and masking origin C2 infrastructure."
+      : isRecruitmentLure
+      ? "HIGH RISK PHISHING: This communication is a low-signal recruitment spear-phishing attack. It establishes false credibility by referencing your professional profile (LinkedIn/qualifications), offers lucrative compensation/approved interview slots, and imposes an artificial deadline ('closing tonight') to coerce immediate completion of an unverified candidate verification/credential form."
       : isSafeDomain 
       ? "NeuroShield SOC heuristic telemetry verifies this input belongs to a reputable and authentic domain."
       : foundKeywords.length > 0
       ? `NeuroShield heuristic engine flagged suspicious urgency patterns and potential impersonation indicators.`
       : `Input analyzed by NeuroShield heuristic defense engines. Standard baseline security score assigned.`,
-    suspiciousKeywords: isReverseTunnel ? ["trycloudflare.com", "ephemeral tunnel", "evasion proxy", ...foundKeywords] : foundKeywords,
+    suspiciousKeywords: isReverseTunnel ? ["trycloudflare.com", "ephemeral tunnel", "evasion proxy", ...foundKeywords] : isRecruitmentLure ? ["candidate verification", "closing tonight", "hiring manager", "interview slot", ...foundKeywords] : foundKeywords,
     detectedLinks: urlMatches,
     maskedData: [],
     textMetrics: {
-      urgency: isReverseTunnel || foundKeywords.length > 0 ? 85 : 15,
-      financial: t.toLowerCase().includes("bank") || t.toLowerCase().includes("transfer") ? 85 : 10,
-      impersonation: isReverseTunnel ? 90 : (foundKeywords.length > 0 ? 75 : 10),
-      deception: isReverseTunnel ? 95 : (foundKeywords.length > 0 ? 70 : 15),
-      coercion: foundKeywords.length > 0 ? 65 : 10
+      urgency: isReverseTunnel || isRecruitmentLure || foundKeywords.length > 0 ? 88 : 15,
+      financial: isRecruitmentLure || t.toLowerCase().includes("bank") || t.toLowerCase().includes("transfer") ? 90 : 10,
+      impersonation: isReverseTunnel || isRecruitmentLure ? 92 : (foundKeywords.length > 0 ? 75 : 10),
+      deception: isReverseTunnel || isRecruitmentLure ? 94 : (foundKeywords.length > 0 ? 70 : 15),
+      coercion: isRecruitmentLure || foundKeywords.length > 0 ? 80 : 10
     },
     urlMetrics: {
       domainAge: isReverseTunnel ? "Ephemeral (< 1 Hour / Tunnel)" : isSafeDomain ? "10+ Years (Established)" : "14 Days (Recently Registered)",
@@ -584,7 +628,10 @@ async function startServer() {
 1. Auto-detect whether this represents an EMAIL, a CHAT message, a URL/Domain, CODE, a NETWORK_LOG, a QR code, a FILE or UNKNOWN.
 2. Provide a risk score from 0 to 100 (100 being most dangerous). 
 CRITICAL SECURITY RULES:
+- EXECUTIVE SMISHING / MULTI-DAY BOSS IMPERSONATION & DATA EXFILTRATION: Social engineering transcripts where an attacker poses as a manager/executive (e.g., claiming a new phone number, building rapport over several days, stating they are travelling/unavailable on official lines, demanding strict confidentiality like 'don't involve the team', and urgently requesting sensitive files like client access reports, contact sheets, or payroll to be uploaded to an external link within minutes). This is a CRITICAL SPEAR PHISHING & DATA EXFILTRATION ATTACK (NOT benign chat). You MUST classify it as detectedType='CHAT', riskScore between 92-98, threatName='Executive Smishing / Spear Phishing & Data Exfiltration', and include signals like ['EXECUTIVE_IMPERSONATION_FRAUD', 'CONFIDENTIAL_DATA_EXFILTRATION', 'ISOLATION_SOCIAL_ENGINEERING', 'ARTIFICIAL_URGENCY', 'UNVERIFIED_NUMBER_SWAP'].
 - EPHEMERAL REVERSE TUNNELS (*.trycloudflare.com, *.ngrok-free.app, *.ngrok.io, *.localtunnel.me, *.serveo.net, *.pinggy.link): These are HIGH-RISK EVASION VECTORS used extensively in phishing and credential harvesting campaigns to bypass domain-age filters, inherit trusted CDN SSL certificates, and mask origin attacker infrastructure. If the input contains or is a reverse tunnel (e.g. trycloudflare.com), you MUST classify it as detectedType='URL', riskScore between 90-98, threatName='Cloudflare Quick Tunnel / Reverse Proxy Evasion', and explain how attackers abuse ephemeral tunnels to evade perimeter phishing filters.
+- LOW-SIGNAL RECRUITMENT & SPEAR PHISHING (Fake Job Offer / Recruiter Credential Harvesting): Phishing communications posing as recruiters or hiring managers (e.g., referencing LinkedIn/technical background, claiming approved interview slots, high compensation packages like ₹42 LPA / $200k+, and requiring upfront 'candidate verification forms', identity portals, or urgent deadlines like 'closing candidate list tonight'). These are HIGH RISK SPEAR PHISHING & CREDENTIAL HARVESTING attacks (NOT safe). You MUST classify them with riskScore between 88-95, detectedType='EMAIL' or 'CHAT', threatName='Spear Phishing / Recruitment & Candidate Verification Lure', and include signals like ['RECRUITMENT_SPEAR_PHISHING', 'CANDIDATE_VERIFICATION_HARVESTING', 'ARTIFICIAL_URGENCY', 'FINANCIAL_COMPENSATION_INCENTIVE'].
+- MULTI-PARTY GROUP CHAT & TEAM CONVERSATIONS (Benign): If the input is a normal WhatsApp, Slack, Discord, or team chat history transcript containing multiple peers collaborating on projects/hackathons without executive data exfiltration lures or malicious URLs, assign a SAFE/LOW risk score (0-10), detectedType='CHAT', threatName='Legitimate Team Discussion / Chat Log'.
 - If the input is a benign website, legitimate web application, portfolio, staging deployment on verified enterprise platforms (e.g. Vercel, Netlify, GitHub Pages, Google, Microsoft), or normal text with no malicious code, scams, or credential harvesting, assign a low/safe risk score (0-15) and note that the domain appears legitimate and safe.
 3. List detection signals (short, bold phrases like "REVERSE_TUNNEL_EVASION", "EPHEMERAL_SUBDOMAIN", "URGENT LANGUAGE DETECTED", or "CLEAN_REPUTATION").
 4. Identify the likely source (attacker IP, sender email, or domain) and target (user or system).

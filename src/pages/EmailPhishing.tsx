@@ -192,7 +192,7 @@ IT Infrastructure & Identity Operations Team`
 
 export default function EmailPhishing() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'inbox' | 'neural' | 'forensics' | 'dns-lookup'>('inbox');
+  const [activeTab, setActiveTab] = useState<'neural' | 'forensics' | 'inbox' | 'dns-lookup'>('neural');
   const [inputMode, setInputMode] = useState<'custom' | 'demo'>('custom');
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [rawHeaderText, setRawHeaderText] = useState<string>('');
@@ -830,23 +830,7 @@ export default function EmailPhishing() {
 
           {/* Mode Switcher Tabs */}
           <div className="flex flex-wrap items-center bg-[#05080f] p-1.5 rounded-xl border border-white/5 gap-1.5">
-            {/* 1. INBOX SHIELD (PRIMARY VIEW) */}
-            <button
-              onClick={() => setActiveTab('inbox')}
-              className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
-                activeTab === 'inbox'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.3)]'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Mail className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{t('inbox_shield_tab')}</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold">
-                {emails.length > 0 ? emails.length : (isAuthenticated ? '0' : 'LIVE')}
-              </span>
-            </button>
-
-            {/* 2. NEURAL PROFILE */}
+            {/* 1. NEURAL PROFILE (FIRST & PRIMARY VIEW) */}
             <button
               onClick={() => {
                 if (!dossier && !rawHeaderText && !bodyText) {
@@ -865,7 +849,7 @@ export default function EmailPhishing() {
               <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
             </button>
 
-            {/* 3. EMAIL FORENSICS */}
+            {/* 2. EMAIL FORENSICS */}
             <button
               onClick={() => setActiveTab('forensics')}
               className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
@@ -876,6 +860,22 @@ export default function EmailPhishing() {
             >
               <Terminal className="w-4 h-4 text-cyan-400" />
               <span>{t('email_forensics_tab')}</span>
+            </button>
+
+            {/* 3. INBOX SHIELD */}
+            <button
+              onClick={() => setActiveTab('inbox')}
+              className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'inbox'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.3)]'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{t('inbox_shield_tab')}</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold">
+                {emails.length > 0 ? emails.length : (isAuthenticated ? '0' : 'LIVE')}
+              </span>
             </button>
 
             {/* 4. DOMAIN LOOKUP */}
@@ -1464,7 +1464,7 @@ export default function EmailPhishing() {
                           }`}
                         >
                           <Cpu className="w-4 h-4 text-purple-400" />
-                          <span>🧠 1. NEURAL PROFILE</span>
+                          <span>🧠 1. NEURO PROFILE</span>
                         </button>
 
                         <button
@@ -1476,11 +1476,11 @@ export default function EmailPhishing() {
                           }`}
                         >
                           <Terminal className="w-4 h-4 text-cyan-400" />
-                          <span>🔎 2. PROTOCOL / EMAIL FORENSICS</span>
+                          <span>🔎 2. EMAIL FORENSIC LAYER</span>
                         </button>
                       </div>
 
-                      {/* Layer 1: Neural Profile */}
+                      {/* Layer 1: Neuro Profile */}
                       {activeAnalysisLayer === 'neural' && (
                         <div className="bg-[#0a0f1c] border border-purple-500/30 rounded-2xl p-4 sm:p-6 shadow-2xl">
                           <NeuralProfile

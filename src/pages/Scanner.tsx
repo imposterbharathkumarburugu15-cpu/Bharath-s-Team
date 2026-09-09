@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldCheck, Search, Cpu, X, UploadCloud, AlertCircle, Send, Globe, Mail, Code, Link2, Paperclip, FileText, Image as ImageIcon, Database, Terminal, Lock, Brain, Layers, Zap, ChevronDown, Check } from 'lucide-react';
+import { ShieldCheck, Search, Cpu, X, UploadCloud, AlertCircle, Send, Globe, Mail, Code, Link2, Paperclip, FileText, Image as ImageIcon, Database, Terminal, Lock, Brain, Layers, Zap, ChevronDown, Check, MessageSquare, PhoneCall, Users, QrCode } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { analyzeThreat, ScanResult } from '@/services/geminiService';
 import { addScanToHistory } from '@/lib/history';
@@ -47,8 +47,53 @@ export function LiveScanner() {
       id: 'email-headers',
       icon: Mail, 
       label: t('quick_action_email_headers_label') || 'RFC 5322 Forensics & BEC', 
-      badge: 'RFC 5322',
+      badge: 'RFC 5322 / BEC',
       text: t('quick_action_email_headers_text') 
+    },
+    { 
+      id: 'smishing', 
+      icon: MessageSquare, 
+      label: 'SMS Phishing (Smishing OTP Lure)', 
+      badge: 'Smishing',
+      text: `[HDFC-BANK-ALERT] Urgent: Your NetBanking access is scheduled for suspension due to unverified PAN registration. Click immediately to update credentials and preserve account status: https://hdfc-bank-verify.in/auth?otp_req=true (Do not share this alert with anyone)`
+    },
+    { 
+      id: 'vishing', 
+      icon: PhoneCall, 
+      label: 'Voice Phishing (Vishing AI Clone Transcript)', 
+      badge: 'Vishing Call',
+      text: `[CALL TRANSCRIPT - INCOMING 2026-08-30 14:15 UTC]
+Caller Identity: Spoofed +1 (415) 555-0199 (Display: "Executive Office - CEO")
+Acoustic Profile: Synthesized Neural Voice Model (89% ElevenLabs artifact signature)
+Caller: "Hey Rahul, this is Mark. I'm in the middle of a confidential board acquisition meeting right now and my network is unstable. We need to wire $42,500 for the closing escrow immediately before 4 PM EST. I emailed you the vendor account details. Please process it right now and bypass standard dual-authorization—I'll sign off on the override as soon as I'm out of the room. Send me the transaction confirmation on WhatsApp."`
+    },
+    { 
+      id: 'social-media', 
+      icon: Users, 
+      label: 'Social Media & Chat Lure (LinkedIn / WhatsApp)', 
+      badge: 'Social Lure',
+      text: `[LINKEDIN INMAIL - Senior Tech Recruiter]
+"Hi there! Loved your GitHub repositories. We have an urgent remote Staff Security Engineer position at Google AI team ($240k/yr). The hiring manager wants to interview you tomorrow. Please download the confidential technical project briefing and pre-interview task from our secure portal: https://google-careers-portal.app/candidate-briefing.zip (Password: google2026)."`
+    },
+    { 
+      id: 'quishing', 
+      icon: QrCode, 
+      label: 'QR Code / Quishing (MFA Reset Payload)', 
+      badge: 'Quishing',
+      text: `[IT HELPDESK NOTIFICATION - MANDATORY MFA UPGRADE]
+Subject: Critical: Authenticator App Migration Required within 12 Hours
+Body: Our corporate identity system is transitioning to hardware-enforced FIDO2 authentication. To prevent lockout from your enterprise workstation and Slack workspace, scan the embedded QR code with your mobile camera immediately to bind your security profile.
+QR Payload URL: https://identity-okta-fido2.pages.dev/mfa-enroll?employee_id=94821`
+    },
+    { 
+      id: 'reverse-tunnel', 
+      icon: Zap, 
+      label: 'Reverse Tunnel Evasion (Cloudflare Quick Tunnel)', 
+      badge: 'Tunnel Evasion',
+      text: `From: "IT Operations" <admin@corp-internal.com>
+Subject: Action Required: Mandatory SSO Session Refresh
+Body: We detected an anomalous authentication token on your account. Please re-authenticate your single sign-on profile through our secure gateway:
+https://auth-session-recovery-9281.trycloudflare.com/login`
     },
     { 
       id: 'phishing', 
@@ -65,13 +110,6 @@ export function LiveScanner() {
       text: t('quick_action_url_text') 
     },
     { 
-      id: 'code', 
-      icon: Code, 
-      label: t('quick_action_code_label') || 'Obfuscated Exploit Script', 
-      badge: 'Script',
-      text: t('quick_action_code_text') 
-    },
-    { 
       id: 'prompt', 
       icon: Cpu, 
       label: t('quick_action_prompt_label') || 'AI Prompt Injection', 
@@ -79,18 +117,11 @@ export function LiveScanner() {
       text: t('quick_action_prompt_text') 
     },
     { 
-      id: 'sql', 
-      icon: Database, 
-      label: t('quick_action_sql_label') || 'SQL Injection Vector', 
-      badge: 'SQLi',
-      text: t('quick_action_sql_text') 
-    },
-    { 
-      id: 'network', 
-      icon: Globe, 
-      label: t('quick_action_network_label') || 'Network Firewall Log', 
-      badge: 'Network Log',
-      text: t('quick_action_network_text') 
+      id: 'code', 
+      icon: Code, 
+      label: t('quick_action_code_label') || 'Obfuscated Exploit Script', 
+      badge: 'Script',
+      text: t('quick_action_code_text') 
     },
     { 
       id: 'dns', 

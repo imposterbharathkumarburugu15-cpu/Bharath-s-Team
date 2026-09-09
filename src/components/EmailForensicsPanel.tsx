@@ -145,7 +145,7 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
   };
 
   const navSections = [
-    { id: 'neural-profile', label: '1. Neural Profile' },
+    { id: 'neural-profile', label: '1. Neuro Profile' },
     { id: 'plain-english-explainer', label: '2. Plain-English' },
     { id: 'executive-forensic-summary', label: '3. Summary' },
     { id: 'email-forensic-anatomy-visualization', label: '4. Anatomy' },

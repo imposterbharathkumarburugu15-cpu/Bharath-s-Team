@@ -98,14 +98,14 @@ export function NeuralProfile({
                 GMAIL API THREAT INTELLIGENCE
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                Neural Profile v3.2
+                1. Neuro Profile
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                 Enterprise Active
               </span>
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2 mt-0.5">
-              Neural Profile & Behavioral Sender Analysis
+              1. Neuro Profile & Behavioral Sender Analysis
             </h2>
           </div>
         </div>
@@ -363,7 +363,7 @@ export function NeuralProfile({
             onClick={onOpenFullForensics}
             className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_12px_rgba(0,245,255,0.3)] active:scale-95"
           >
-            <span>Proceed to Step 2: Email Forensics (22-Point RFC Analysis)</span>
+            <span>Proceed to 2. Email Forensic Layer (22-Point RFC Analysis)</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
