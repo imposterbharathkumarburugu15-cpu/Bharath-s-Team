@@ -73,7 +73,7 @@ export interface SenderIdentityAnalysis {
   replyToAddress: string;
   returnPathAddress: string;
   inconsistencies: Array<{
-    type: 'REPLY_TO_MISMATCH' | 'RETURN_PATH_MISMATCH' | 'MESSAGE_ID_MISMATCH' | 'DISPLAY_NAME_SPOOF' | 'BRAND_TYPOSQUATTING' | 'HOMOGLYPH_SUBSTITUTION' | 'SUSPICIOUS_SUBDOMAIN';
+    type: 'REPLY_TO_MISMATCH' | 'RETURN_PATH_MISMATCH' | 'MESSAGE_ID_MISMATCH' | 'DISPLAY_NAME_SPOOF' | 'BRAND_TYPOSQUATTING' | 'HOMOGLYPH_SUBSTITUTION' | 'SUSPICIOUS_SUBDOMAIN' | 'FREE_MAILBOX_IMPERSONATION';
     severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
     title: string;
     description: string;
@@ -769,6 +769,36 @@ export function parseRawHeaders(headerStr: string): {
     }
   }
 
+  // Fallback: If headers['from'] was not extracted via strict RFC headers, inspect bodyLines
+  if (!headers['from']) {
+    const fromLine = bodyLines.find(l => /^from:\s*.+/i.test(l.trim()));
+    if (fromLine) {
+      headers['from'] = fromLine.replace(/^from:\s*/i, '').trim();
+    } else {
+      // Look for format like "Abhiram Yadav <valikeabhiramyadav@gmail.com>" in first 25 lines
+      const senderPattern = bodyLines.slice(0, 25).find(l => /([^<\n\r]+)?<([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})>/i.test(l.trim()));
+      if (senderPattern) {
+        headers['from'] = senderPattern.trim();
+      } else {
+        const plainEmail = bodyLines.slice(0, 25).find(l => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i.test(l.trim()));
+        if (plainEmail) {
+          headers['from'] = plainEmail.trim();
+        }
+      }
+    }
+  }
+
+  // Fallback: If headers['subject'] was not extracted via strict RFC headers, inspect bodyLines
+  if (!headers['subject']) {
+    const subjectLine = bodyLines.find(l => /^subject:\s*.+/i.test(l.trim()));
+    if (subjectLine) {
+      headers['subject'] = subjectLine.replace(/^subject:\s*/i, '').trim();
+    } else if (bodyLines.length > 0 && !bodyLines[0].includes(':') && bodyLines[0].length < 150) {
+      // If line 0 is a promotional or subject title (e.g. "🚀 Grow Your Instagram Followers — Exclusive Promotion")
+      headers['subject'] = bodyLines[0].trim();
+    }
+  }
+
   return { headers, xHeaders, body: bodyLines.join('\n').trim() };
 }
 
@@ -1364,6 +1394,32 @@ export async function executeEmailForensics(
     });
   }
 
+  // Check for Free Mailbox Brand Impersonation (e.g. Claiming Instagram, Meta, PayPal, Google from personal @gmail.com)
+  const isFreeMailSender = fromDomain === 'gmail.com' || fromDomain === 'yahoo.com' || fromDomain === 'outlook.com' || fromDomain === 'hotmail.com' || fromDomain === 'icloud.com' || fromDomain === 'proton.me' || fromDomain === 'protonmail.com';
+
+  const brandMentions = BRAND_TARGETS.filter(brand => {
+    const brandRegex = new RegExp(`\\b${brand}\\b`, 'i');
+    return brandRegex.test(displayName) || brandRegex.test(subjectRaw) || brandRegex.test(emailBody);
+  });
+
+  const teamPersonaRegex = /\b(instagram|meta|facebook|microsoft|paypal|apple|amazon|netflix|google|bank|whatsapp|telegram)\s+(team|support|security|helpdesk|billing|compliance|growth|service|verification|admin)\b/i;
+  const personaMatch = (subjectRaw + ' ' + emailBody + ' ' + displayName).match(teamPersonaRegex);
+
+  const isFreeMailBrandSpoof = isFreeMailSender && (brandMentions.length > 0 && !fromDomain.includes(brandMentions[0]) || Boolean(personaMatch));
+  const impersonatedBrand = personaMatch ? personaMatch[0] : (brandMentions[0] ? brandMentions[0].toUpperCase() : 'Enterprise Organization');
+
+  if (isFreeMailBrandSpoof) {
+    inconsistencies.push({
+      type: 'FREE_MAILBOX_IMPERSONATION',
+      severity: 'CRITICAL',
+      title: `Brand Impersonation via Consumer Mailbox (${impersonatedBrand})`,
+      description: `Email claims official identity or team persona '${impersonatedBrand}' but was dispatched from free consumer email account '${fromAddress}'.`,
+      evidence: `Claimed Persona: ${impersonatedBrand} | Sender Envelope: ${fromAddress} | Domain: ${fromDomain}`,
+      significance: 'Critical social engineering indicator. Legitimate enterprise platforms never dispatch account verification, security notices, or creator campaigns from personal consumer webmail accounts.',
+      recommendedAction: 'Quarantine immediately. Flag domain and sender address for brand impersonation abuse.'
+    });
+  }
+
   // 3. SPF / DKIM / DMARC Authentication Engine
   const authResultsLower = authResultsRaw.toLowerCase();
 
@@ -1869,6 +1925,20 @@ export async function executeEmailForensics(
     sourceField: 'From: display name'
   });
 
+  allThreatSignals.push({
+    id: 'SIG-SENDER-FREEMAIL-IMPERSONATION',
+    category: 'SENDER_IDENTITY',
+    categoryLabel: 'Sender Identity',
+    name: 'Consumer Mailbox Impersonating Enterprise Brand',
+    status: isFreeMailBrandSpoof ? 'DETECTED' : 'NOT_DETECTED',
+    severity: isFreeMailBrandSpoof ? 95 : 0,
+    confidence: 95,
+    evidence: isFreeMailBrandSpoof
+      ? `Sender claims to represent '${impersonatedBrand}' but email was dispatched from consumer email account ${fromAddress} (${fromDomain}).`
+      : 'No consumer mailbox brand impersonation detected.',
+    sourceField: 'From: header & Content Persona'
+  });
+
   const hasReturnPath = Boolean(returnPathDomain);
   const isReturnPathMismatch = hasReturnPath && returnPathDomain !== fromDomain;
   allThreatSignals.push({
@@ -2143,6 +2213,7 @@ export async function executeEmailForensics(
   // Category 1: Sender Identity (Max: 15)
   let catSenderScore = 0;
   if (isTyposquatSender) catSenderScore += 15;
+  else if (isFreeMailBrandSpoof) catSenderScore += 15;
   else if (isReplyToMismatch) catSenderScore += (replyToDomain.includes('gmail.com') || replyToDomain.includes('yahoo.com') ? 12 : 9);
   else if (isDisplayNameSpoof) catSenderScore += 10;
   else if (isReturnPathMismatch) catSenderScore += 4;
@@ -2206,7 +2277,16 @@ export async function executeEmailForensics(
   // High-Confidence Threat Compound Elevation Rules:
   // Rule 0: Reverse Tunnel / Cloudflare Quick Tunnel Payload (Critical Evasion Attack)
   if (isReverseTunnelUrl) {
-    rawRiskScore = Math.max(rawRiskScore, 86);
+    const isCredHarvesterTunnel = urlForensicsList.some(u => u.isReverseTunnel && (u.isCredentialHarvester || u.rawUrl.toLowerCase().includes('login') || u.rawUrl.toLowerCase().includes('signin') || u.rawUrl.toLowerCase().includes('auth') || u.rawUrl.toLowerCase().includes('verify')));
+    rawRiskScore = Math.max(rawRiskScore, isCredHarvesterTunnel ? 98 : 96);
+  }
+  // Rule 0.5: Consumer Mailbox Brand Impersonation (e.g. claiming Instagram / Meta / PayPal from @gmail.com)
+  if (isFreeMailBrandSpoof) {
+    if (isReverseTunnelUrl || hasUrls) {
+      rawRiskScore = Math.max(rawRiskScore, 98);
+    } else {
+      rawRiskScore = Math.max(rawRiskScore, 88);
+    }
   }
   // Rule 1: Adversarial Prompt Injection combined with Sensitive Data Request or Social Engineering Coercion
   if (isPromptInjection && (catPrivacyScore > 0 || catSocialScore >= 7)) {
@@ -2272,7 +2352,9 @@ export async function executeEmailForensics(
     totalRisk >= 21 ? 'SUSPICIOUS' : 'BENIGN';
 
   const threatType =
+    isReverseTunnelUrl ? 'CLOUDFLARE_REVERSE_TUNNEL_EVASION' :
     isPromptInjection ? 'AI_PROMPT_INJECTION_EVASION' :
+    isFreeMailBrandSpoof ? 'BRAND_IMPERSONATION' :
     hasCredentialHarvester || catUrlScore >= 12 ? 'CREDENTIAL_HARVESTING' :
     catPrivacyScore >= 8 ? 'SENSITIVE_DATA_HARVESTING' :
     contentSignals.some(s => s.category === 'Financial / BEC') ? 'BUSINESS_EMAIL_COMPROMISE' :
@@ -2367,6 +2449,18 @@ export async function executeEmailForensics(
       whyItMatters: 'Adversaries weaponize Cloudflare Quick Tunnels (*.trycloudflare.com) to bypass domain age restrictions, hide behind Cloudflare Anycast CDN IPs, and evade perimeter email URL parameter inspection.',
       sourceField: 'Message Body / Link Endpoint',
       recommendedAction: 'Block *.trycloudflare.com and public tunneling domains in Secure Web Gateway (SWG) and DNS RPZ; invalidate active user SSO sessions.'
+    });
+  }
+
+  if (isFreeMailBrandSpoof) {
+    findings.push({
+      id: 'FIND-BRAND-SPOOF-06',
+      title: `Corporate Brand Impersonation via Consumer Mailbox: '${impersonatedBrand}'`,
+      severity: 'CRITICAL',
+      evidence: `Email claims representation of '${impersonatedBrand}' (e.g. promotional team, support, verification) but was dispatched from free consumer email account '${fromAddress}' (${fromDomain}).`,
+      whyItMatters: 'Adversaries register disposable consumer email accounts to bypass domain-level reputation checks while impersonating high-trust platforms.',
+      sourceField: 'From: header & Content Persona',
+      recommendedAction: 'Quarantine message. Flag domain and sender address for brand impersonation phishing.'
     });
   }
 

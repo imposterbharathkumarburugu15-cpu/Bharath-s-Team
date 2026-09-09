@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   ShieldAlert, ShieldCheck, Copy, Check, Download, 
-  Share2, FileText, Hash, Calendar, Mail, AlertOctagon, Terminal, Printer, Award,
+  Share2, FileText, Hash, Calendar, Mail, AlertOctagon, Terminal, Printer,
   Activity, Flame, Gauge, Zap, Radio, CheckCircle2, Shield
 } from 'lucide-react';
 import { ForensicDossier } from '@/services/forensicsEngine';
@@ -12,8 +12,6 @@ interface ForensicCaseHeaderProps {
   onExportJson?: () => void;
   onExportStix?: () => void;
   onPrintPdf?: () => void;
-  onToggleChainOfCustody?: () => void;
-  isCustodyOpen?: boolean;
 }
 
 export function ForensicCaseHeader({
@@ -21,9 +19,7 @@ export function ForensicCaseHeader({
   onOpenSocReport,
   onExportJson,
   onExportStix,
-  onPrintPdf,
-  onToggleChainOfCustody,
-  isCustodyOpen
+  onPrintPdf
 }: ForensicCaseHeaderProps) {
   const [copiedHash, setCopiedHash] = useState(false);
   const [copiedCaseId, setCopiedCaseId] = useState(false);
@@ -115,32 +111,17 @@ export function ForensicCaseHeader({
           </div>
         </div>
 
-        {/* Action Buttons: Includes Print to PDF, Custody Seal toggle, SOC Report, JSON, STIX */}
+        {/* Action Buttons: Includes Print to PDF, SOC Report, JSON, STIX */}
         <div className="flex items-center gap-2 flex-wrap">
           {onPrintPdf && (
             <button
               id="print-to-pdf-btn"
               onClick={onPrintPdf}
               className="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(0,245,255,0.3)] active:scale-95 shrink-0"
-              title="Export complete forensic investigation report to PDF with dark aesthetic and chain-of-custody seal"
+              title="Export complete forensic investigation report to PDF with dark aesthetic"
             >
               <Printer className="w-4 h-4" />
               <span>Print to PDF</span>
-            </button>
-          )}
-
-          {onToggleChainOfCustody && (
-            <button
-              onClick={onToggleChainOfCustody}
-              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm border flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
-                isCustodyOpen 
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-[0_0_10px_rgba(0,255,102,0.2)]'
-                  : 'bg-white/5 hover:bg-white/10 text-gray-200 border-white/10'
-              }`}
-              title="Inspect or toggle official tamper-evident Chain of Custody Seal"
-            >
-              <Award className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline">Custody Seal</span>
             </button>
           )}
 

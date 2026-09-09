@@ -361,9 +361,9 @@ export function NeuralProfile({
         <div className="pt-2 flex justify-end">
           <button
             onClick={onOpenFullForensics}
-            className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_12px_rgba(0,245,255,0.3)] active:scale-95"
+            className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_12px_rgba(0,245,255,0.3)] active:scale-95"
           >
-            <span>Proceed to 22-Point Deep RFC Forensics</span>
+            <span>Proceed to Step 2: Email Forensics (22-Point RFC Analysis)</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldCheck, Search, Cpu, X, UploadCloud, AlertCircle, Send, Globe, Mail, Code, Link2, Paperclip, FileText, Image as ImageIcon, Database, Terminal, Lock, Brain, Layers } from 'lucide-react';
+import { ShieldCheck, Search, Cpu, X, UploadCloud, AlertCircle, Send, Globe, Mail, Code, Link2, Paperclip, FileText, Image as ImageIcon, Database, Terminal, Lock, Brain, Layers, Zap, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { analyzeThreat, ScanResult } from '@/services/geminiService';
 import { addScanToHistory } from '@/lib/history';
@@ -24,6 +24,95 @@ export function LiveScanner() {
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [showDemoMenu, setShowDemoMenu] = useState(false);
+  const [selectedDemoIndex, setSelectedDemoIndex] = useState(0);
+  const [demoFeedback, setDemoFeedback] = useState<string | null>(null);
+  const demoMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (demoMenuRef.current && !demoMenuRef.current.contains(event.target as Node)) {
+        setShowDemoMenu(false);
+      }
+    }
+    if (showDemoMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDemoMenu]);
+
+  const demoOptions = [
+    { 
+      id: 'email-headers',
+      icon: Mail, 
+      label: t('quick_action_email_headers_label') || 'RFC 5322 Forensics & BEC', 
+      badge: 'RFC 5322',
+      text: t('quick_action_email_headers_text') 
+    },
+    { 
+      id: 'phishing', 
+      icon: Mail, 
+      label: t('quick_action_phishing_label') || 'Phishing Credential Lure', 
+      badge: 'Phishing',
+      text: t('quick_action_phishing_text') 
+    },
+    { 
+      id: 'url', 
+      icon: Link2, 
+      label: t('quick_action_url_label') || 'Malicious URL', 
+      badge: 'URL Attack',
+      text: t('quick_action_url_text') 
+    },
+    { 
+      id: 'code', 
+      icon: Code, 
+      label: t('quick_action_code_label') || 'Obfuscated Exploit Script', 
+      badge: 'Script',
+      text: t('quick_action_code_text') 
+    },
+    { 
+      id: 'prompt', 
+      icon: Cpu, 
+      label: t('quick_action_prompt_label') || 'AI Prompt Injection', 
+      badge: 'Prompt Injection',
+      text: t('quick_action_prompt_text') 
+    },
+    { 
+      id: 'sql', 
+      icon: Database, 
+      label: t('quick_action_sql_label') || 'SQL Injection Vector', 
+      badge: 'SQLi',
+      text: t('quick_action_sql_text') 
+    },
+    { 
+      id: 'network', 
+      icon: Globe, 
+      label: t('quick_action_network_label') || 'Network Firewall Log', 
+      badge: 'Network Log',
+      text: t('quick_action_network_text') 
+    },
+    { 
+      id: 'dns', 
+      icon: Globe, 
+      label: t('quick_action_domain_label') || 'Domain Auth Lookup', 
+      badge: 'DNS Lookup',
+      text: t('quick_action_domain_text'),
+      action: () => setScannerMode('dns-lookup')
+    },
+  ];
+
+  const handleLoadDemo = (idx = selectedDemoIndex) => {
+    const selected = demoOptions[idx];
+    if (!selected) return;
+    if (selected.action) {
+      selected.action();
+      return;
+    }
+    setInputText(selected.text);
+    setDemoFeedback(selected.badge);
+    setTimeout(() => setDemoFeedback(null), 2500);
+  };
 
   const placeholders = [
     t('paste_placeholder'),
@@ -680,43 +769,89 @@ export function LiveScanner() {
                 </div>
               ) : (
                 <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-8 max-w-4xl mx-auto relative z-10">
-                {[
-                  { icon: Globe, label: t('quick_action_domain_label'), text: t('quick_action_domain_text'), action: () => setScannerMode('dns-lookup') },
-                  { icon: Mail, label: t('quick_action_email_headers_label'), text: t('quick_action_email_headers_text') },
-                  { icon: Mail, label: t('quick_action_phishing_label'), text: t('quick_action_phishing_text') },
-                  { icon: Link2, label: t('quick_action_url_label'), text: t('quick_action_url_text') },
-                  { icon: Code, label: t('quick_action_code_label'), text: t('quick_action_code_text') },
-                  { icon: Globe, label: t('quick_action_network_label'), text: t('quick_action_network_text') },
-                  { icon: Cpu, label: t('quick_action_prompt_label'), text: t('quick_action_prompt_text') },
-                  { icon: Database, label: t('quick_action_sql_label'), text: t('quick_action_sql_text') },
-                ].map((suggestion, idx) => (
-                  <motion.button
-                    key={idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + idx * 0.1 }}
-                    onClick={() => {
-                      if (suggestion.action) {
-                        suggestion.action();
-                      } else {
-                        setInputText(suggestion.text);
-                      }
-                    }}
-                    className="bg-black/40 backdrop-blur-md border border-white/10 hover:border-[#00f5ff] rounded-xl p-4 flex flex-col items-start gap-3 text-left transition-all hover:bg-[#00f5ff]/5 hover:shadow-[inset_0_0_20px_rgba(0,245,255,0.1),_0_0_15px_rgba(0,245,255,0.2)] group relative overflow-hidden cursor-pointer"
-                  >
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 group-hover:via-[#00f5ff]/50 to-transparent" />
-                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00f5ff]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    
-                    <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-cyber-muted group-hover:text-[#00f5ff] group-hover:bg-[#00f5ff]/10 group-hover:border-[#00f5ff]/30 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]">
-                      <suggestion.icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white mb-1 uppercase tracking-widest group-hover:text-[#00f5ff] transition-colors">{suggestion.label}</div>
-                      <div className="text-[10px] text-[#8a99af] line-clamp-2 leading-relaxed">{suggestion.text}</div>
-                    </div>
-                  </motion.button>
-                ))}
+              {/* Single Demo Action Bar */}
+              <div className="w-full max-w-4xl mx-auto mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1 relative z-30">
+                <div className="flex items-center gap-2 text-xs font-mono text-gray-400">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="text-gray-300 font-bold uppercase tracking-wider text-[11px]">Payload Target Terminal</span>
+                  <span className="text-gray-600 hidden sm:inline">•</span>
+                  <span className="text-[11px] text-gray-400 hidden sm:inline">Paste email headers, URL, code, or click demo</span>
+                </div>
+
+                <div ref={demoMenuRef} className="relative flex items-center shrink-0 self-end sm:self-auto">
+                  <div className="flex items-stretch rounded-xl shadow-lg border border-cyan-500/40 bg-cyan-950/60 backdrop-blur-md overflow-hidden hover:border-cyan-400 transition-all hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]">
+                    <button
+                      type="button"
+                      onClick={() => handleLoadDemo(selectedDemoIndex)}
+                      className="min-h-[38px] px-4 py-2 text-cyan-300 hover:text-white hover:bg-cyan-500/20 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
+                      title="Click to load sample threat payload"
+                    >
+                      <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/30" />
+                      <span>Load Demo Payload</span>
+                      {demoFeedback && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-normal flex items-center gap-1 animate-pulse">
+                          <Check className="w-3 h-3" />
+                          <span>{demoFeedback}</span>
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowDemoMenu(!showDemoMenu)}
+                      className="px-2.5 py-2 border-l border-cyan-500/30 text-cyan-300 hover:text-white hover:bg-cyan-500/20 font-mono text-xs font-bold flex items-center justify-center transition-all cursor-pointer"
+                      title="Select attack vector sample"
+                      aria-label="Select demo sample"
+                    >
+                      <ChevronDown className={cn("w-3.5 h-3.5 text-cyan-400 transition-transform duration-200", showDemoMenu && "rotate-180")} />
+                    </button>
+                  </div>
+
+                  {/* Dropdown Menu */}
+                  <AnimatePresence>
+                    {showDemoMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-72 bg-[#060a14] border border-cyan-500/40 rounded-xl shadow-2xl p-1.5 z-50 backdrop-blur-xl"
+                      >
+                        <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-gray-400 border-b border-white/5 font-bold flex items-center justify-between">
+                          <span>Threat Vector Samples</span>
+                          <span className="text-cyan-400">{demoOptions.length} Vectors</span>
+                        </div>
+                        <div className="py-1 space-y-0.5 max-h-60 overflow-y-auto custom-scrollbar">
+                          {demoOptions.map((demo, idx) => (
+                            <button
+                              key={demo.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedDemoIndex(idx);
+                                handleLoadDemo(idx);
+                                setShowDemoMenu(false);
+                              }}
+                              className={cn(
+                                "w-full text-left px-2.5 py-2 rounded-lg text-xs font-mono flex items-center justify-between transition-colors group cursor-pointer",
+                                selectedDemoIndex === idx 
+                                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" 
+                                  : "text-gray-300 hover:bg-white/5 hover:text-white"
+                              )}
+                            >
+                              <div className="flex items-center gap-2 truncate mr-2">
+                                <demo.icon className="w-3.5 h-3.5 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
+                                <span className="truncate">{demo.label}</span>
+                              </div>
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-gray-400 shrink-0 font-mono">
+                                {demo.badge}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               <div className="relative group w-full max-w-4xl mx-auto mb-auto z-20">
@@ -794,6 +929,16 @@ export function LiveScanner() {
                       >
                         <Paperclip className="w-4 h-4" />
                         <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline-block">{t('attach_file')}</span>
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => handleLoadDemo(selectedDemoIndex)}
+                        className="text-[#8a99af] hover:text-[#00f5ff] transition-colors p-2 rounded-lg bg-white/5 hover:bg-[#00f5ff]/10 border border-transparent hover:border-[#00f5ff]/30 relative group shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        title="Load demo attack payload"
+                      >
+                        <Zap className="w-4 h-4 text-cyan-400" />
+                        <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline-block">DEMO PAYLOAD</span>
                       </button>
                       
                       {attachedFile && !previewUrl && (

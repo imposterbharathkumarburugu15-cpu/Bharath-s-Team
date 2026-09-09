@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { 
   FileText, Download, Share2, Globe, Terminal, 
-  X, Check, Copy, ArrowUpRight, Compass, ShieldAlert, Sparkles, Printer, Award,
+  X, Check, Copy, ArrowUpRight, Compass, ShieldAlert, Sparkles, Printer,
   Brain, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { ForensicDossier } from '@/services/forensicsEngine';
@@ -11,7 +11,6 @@ import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import { Forensic3DGeoMap } from '@/components/Forensic3DGeoMap';
 
 // Sub-components for the 22-point Forensic Investigation Report
-import { ChainOfCustodySeal } from './forensics/ChainOfCustodySeal';
 import { ForensicCaseHeader } from './forensics/ForensicCaseHeader';
 import { PlainEnglishThreatExplainer } from './forensics/PlainEnglishThreatExplainer';
 import { NeuralProfile } from './forensics/NeuralProfile';
@@ -44,8 +43,7 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
   const [copiedSocReport, setCopiedSocReport] = useState<boolean>(false);
   const [showGeoRadar, setShowGeoRadar] = useState<boolean>(false);
   const [copiedPlaybookKey, setCopiedPlaybookKey] = useState<string | null>(null);
-  const [showCustodySeal, setShowCustodySeal] = useState<boolean>(true);
-  const [showNeuralProfile, setShowNeuralProfile] = useState<boolean>(false);
+  const [showNeuralProfile, setShowNeuralProfile] = useState<boolean>(true);
 
   const targetDomain = dossier.senderIdentity.fromDomain || dossier.authentication.dmarc.headerFromDomain || 'domain.com';
 
@@ -147,8 +145,8 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
   };
 
   const navSections = [
-    { id: 'plain-english-explainer', label: '1. Plain-English' },
-    { id: 'neural-profile', label: '2. Neural Profile' },
+    { id: 'neural-profile', label: '1. Neural Profile' },
+    { id: 'plain-english-explainer', label: '2. Plain-English' },
     { id: 'executive-forensic-summary', label: '3. Summary' },
     { id: 'email-forensic-anatomy-visualization', label: '4. Anatomy' },
     { id: 'sender-identity-graph', label: '5. Identity' },
@@ -169,14 +167,6 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6 text-white font-mono"
     >
-      {/* 0. OFFICIAL TIMESTAMPED CHAIN OF CUSTODY SEAL (Always captured in Print to PDF) */}
-      <div className={showCustodySeal ? 'block' : 'hidden print:block'}>
-        <ChainOfCustodySeal 
-          dossier={dossier}
-          onPrint={handlePrintPdf}
-        />
-      </div>
-
       {/* 1. FORENSIC CASE HEADER */}
       <ForensicCaseHeader
         dossier={dossier}
@@ -184,8 +174,6 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
         onExportJson={downloadJsonDossier}
         onExportStix={exportSTIX21}
         onPrintPdf={handlePrintPdf}
-        onToggleChainOfCustody={() => setShowCustodySeal(!showCustodySeal)}
-        isCustodyOpen={showCustodySeal}
       />
 
       {/* AUDIENCE PRESENTATION MODE SWITCHER (Plain-English User View vs SOC Analyst View) */}
@@ -332,15 +320,7 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
         </div>
       )}
 
-      {/* 1b. PLAIN-ENGLISH USER EXPLAINER (Rendered in Plain-English and Unified views) */}
-      {(viewMode === 'plain-english' || viewMode === 'unified') && (
-        <PlainEnglishThreatExplainer 
-          dossier={dossier}
-          onSwitchToTechnicalView={() => setViewMode('technical')}
-        />
-      )}
-
-      {/* 2. NEURAL PROFILE SEPARATE BUTTON & EXPANDABLE CARD */}
+      {/* 1. NEURAL PROFILE SEPARATE BUTTON & EXPANDABLE CARD (SHOWN FIRST) */}
       <div id="neural-profile" className="bg-[#0a0f1c] border border-purple-500/30 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -350,7 +330,7 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                  2. Neural Profile & Behavioral Sender Analysis
+                  1. Neural Profile & Behavioral Sender Analysis
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
                   Layer 2 Engine
@@ -385,6 +365,14 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
           </div>
         )}
       </div>
+
+      {/* 2. PLAIN-ENGLISH USER EXPLAINER (Rendered in Plain-English and Unified views) */}
+      {(viewMode === 'plain-english' || viewMode === 'unified') && (
+        <PlainEnglishThreatExplainer 
+          dossier={dossier}
+          onSwitchToTechnicalView={() => setViewMode('technical')}
+        />
+      )}
 
       {/* 3. EXECUTIVE FORENSIC SUMMARY */}
       <ForensicExecutiveSummary
