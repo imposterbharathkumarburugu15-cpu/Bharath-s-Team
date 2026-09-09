@@ -840,7 +840,7 @@ export default function EmailPhishing() {
               }`}
             >
               <Mail className="w-3.5 h-3.5 text-cyan-400" />
-              <span>INBOX SHIELD</span>
+              <span>{t('inbox_shield_tab')}</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold">
                 {emails.length > 0 ? emails.length : (isAuthenticated ? '0' : 'LIVE')}
               </span>
@@ -861,7 +861,7 @@ export default function EmailPhishing() {
               }`}
             >
               <Cpu className="w-4 h-4 text-purple-400" />
-              <span>1. NEURAL PROFILE</span>
+              <span>{t('neural_profile_tab')}</span>
               <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
             </button>
 
@@ -875,7 +875,7 @@ export default function EmailPhishing() {
               }`}
             >
               <Terminal className="w-4 h-4 text-cyan-400" />
-              <span>2. EMAIL FORENSICS</span>
+              <span>{t('email_forensics_tab')}</span>
             </button>
 
             {/* 4. DOMAIN LOOKUP */}
@@ -888,7 +888,7 @@ export default function EmailPhishing() {
               }`}
             >
               <Globe className="w-3.5 h-3.5" />
-              <span>SPF/DKIM/DMARC LOOKUP</span>
+              <span>{t('domain_lookup_tab')}</span>
             </button>
           </div>
         </div>
@@ -908,14 +908,14 @@ export default function EmailPhishing() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                      STEP 1: NEURAL PROFILE & COGNITIVE BEHAVIORAL ANALYSIS
+                      {t('step1_neural_profile_title')}
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
-                      Layer 2 Engine
+                      {t('layer2_engine')}
                     </span>
                   </div>
                   <p className="text-xs text-gray-300 font-sans mt-0.5 max-w-2xl leading-relaxed">
-                    Evaluates temporal urgency (Amygdala hijack), executive authority mimicry, loss aversion coercion, and synthetic AI/LLM text perplexity before detailed protocol forensics.
+                    {t('step1_neural_desc')}
                   </p>
                 </div>
               </div>
@@ -926,7 +926,7 @@ export default function EmailPhishing() {
                   className="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm w-full sm:w-auto"
                 >
                   <Terminal className="w-4 h-4 text-cyan-400" />
-                  <span>Proceed to Step 2: Email Forensics →</span>
+                  <span>{t('proceed_to_step2_forensics')}</span>
                 </button>
               </div>
             </div>
@@ -934,14 +934,14 @@ export default function EmailPhishing() {
             {/* Quick Threat Scenario Selector Toolbar */}
             <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-4 shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <span className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">Target Threat:</span>
+                <span className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">{t('target_threat')}</span>
                 <span className="text-xs font-mono font-bold text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2.5 py-1 rounded-lg">
                   {uploadedFileName || (selectedScenario ? TEST_SCENARIOS.find(s => s.id === selectedScenario)?.title : 'Custom Analyzed Email')}
                 </span>
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5 w-full lg:w-auto">
-                <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider mr-1">Switch Scenario:</span>
+                <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider mr-1">{t('switch_scenario')}</span>
                 {TEST_SCENARIOS.map(s => (
                   <button
                     key={s.id}
@@ -959,7 +959,7 @@ export default function EmailPhishing() {
                   onClick={() => setActiveTab('forensics')}
                   className="px-2.5 py-1.5 rounded-lg text-[11px] font-mono bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-all cursor-pointer ml-1"
                 >
-                  + Custom Header / .EML
+                  {t('custom_header_eml_btn')}
                 </button>
               </div>
             </div>
@@ -1040,7 +1040,7 @@ export default function EmailPhishing() {
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    Custom / Real Data
+                    {t('custom_real_data')}
                   </button>
                   <button
                     onClick={() => {
@@ -1055,7 +1055,7 @@ export default function EmailPhishing() {
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    Demo Presets
+                    {t('demo_presets')}
                   </button>
                 </div>
               </div>
@@ -1063,7 +1063,7 @@ export default function EmailPhishing() {
               {/* Demo Scenario Badges (visible in demo mode) */}
               {inputMode === 'demo' && (
                 <div className="pt-3 pb-1 border-b border-white/5 flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] font-mono text-gray-400">Select Preset:</span>
+                  <span className="text-[11px] font-mono text-gray-400">{t('select_preset')}</span>
                   {TEST_SCENARIOS.map(sc => (
                     <button
                       key={sc.id}
@@ -1086,7 +1086,7 @@ export default function EmailPhishing() {
                   {/* .EML Upload Button */}
                   <label className="cursor-pointer px-3.5 py-1.5 rounded-lg text-xs font-mono bg-cyber-blue/15 hover:bg-cyber-blue/25 text-cyber-blue border border-cyber-blue/40 flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.3)] font-bold active:scale-95">
                     <UploadCloud className="w-3.5 h-3.5" />
-                    <span>Upload .EML / .MSG</span>
+                    <span>{t('upload_eml_msg')}</span>
                     <input 
                       ref={fileInputRef}
                       type="file" 
@@ -1103,7 +1103,7 @@ export default function EmailPhishing() {
                     className="px-3 py-1.5 rounded-lg text-xs font-mono bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 flex items-center gap-1.5 transition-all"
                   >
                     <Copy className="w-3.5 h-3.5 text-cyber-blue" />
-                    <span>Paste Clipboard</span>
+                    <span>{t('paste_clipboard')}</span>
                   </button>
 
                   {/* Connect Gmail Shortcut */}
@@ -1112,7 +1112,7 @@ export default function EmailPhishing() {
                     className="px-3 py-1.5 rounded-lg text-xs font-mono bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 flex items-center gap-1.5 transition-all"
                   >
                     <Mail className="w-3.5 h-3.5 text-red-400" />
-                    <span>Connect Gmail Inbox</span>
+                    <span>{t('connect_gmail_inbox')}</span>
                   </button>
 
                   {/* Run Zero-Trust Regression Test Suite */}
@@ -1122,7 +1122,7 @@ export default function EmailPhishing() {
                     title="Test evasion attack where intelligence is missing and prompt injection is present"
                   >
                     <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Run Zero-Trust Regression Test</span>
+                    <span>{t('run_zerotrust_regression')}</span>
                   </button>
                 </div>
 
@@ -1132,7 +1132,7 @@ export default function EmailPhishing() {
                     className="px-3 py-1.5 rounded-lg text-xs font-mono text-gray-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 flex items-center gap-1 transition-all"
                   >
                     <X className="w-3.5 h-3.5" />
-                    <span>Clear All</span>
+                    <span>{t('clear_all')}</span>
                   </button>
                 )}
               </div>
@@ -1146,11 +1146,11 @@ export default function EmailPhishing() {
                 }`}>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span className="font-bold text-white uppercase tracking-wider">REGRESSION TEST PASSED:</span>
+                    <span className="font-bold text-white uppercase tracking-wider">{t('regression_test_passed')}</span>
                     <span>{regressionResult.details}</span>
                   </div>
                   <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold uppercase">
-                    Zero-Trust Rule Enforced
+                    {t('zero_trust_enforced')}
                   </span>
                 </div>
               )}
@@ -1160,16 +1160,16 @@ export default function EmailPhishing() {
                 <div className="mt-3 flex items-center justify-between bg-cyber-blue/10 border border-cyber-blue/30 rounded-xl px-3.5 py-2 text-xs font-mono text-cyber-blue">
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-cyber-blue" />
-                    <span className="text-white font-bold">Active Ingestion:</span>
+                    <span className="text-white font-bold">{t('active_ingestion')}</span>
                     <span>{uploadedFileName}</span>
-                    <span className="text-[10px] bg-cyber-blue/20 text-cyber-blue px-2 py-0.5 rounded-md uppercase tracking-wider font-bold">Live Data</span>
+                    <span className="text-[10px] bg-cyber-blue/20 text-cyber-blue px-2 py-0.5 rounded-md uppercase tracking-wider font-bold">{t('live_data_badge')}</span>
                   </div>
                   <button 
                     onClick={handleClearAll}
                     className="text-gray-400 hover:text-white flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-white/5 hover:bg-white/10 transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
-                    <span>Clear</span>
+                    <span>{t('clear_btn')}</span>
                   </button>
                 </div>
               )}
@@ -1179,9 +1179,9 @@ export default function EmailPhishing() {
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
-                      RFC 5322 Raw Message Headers
+                      {t('rfc_raw_headers_label')}
                     </label>
-                    <span className="text-[10px] text-gray-500 font-mono">Unfolded & Multi-Hop Capable</span>
+                    <span className="text-[10px] text-gray-500 font-mono">{t('unfolded_multihop')}</span>
                   </div>
                   <textarea
                     rows={6}
@@ -1191,7 +1191,7 @@ export default function EmailPhishing() {
                       setSelectedScenario(null);
                       setRawHeaderText(e.target.value);
                     }}
-                    placeholder="Paste real email headers (From:, Received:, Authentication-Results:, DKIM-Signature:)..."
+                    placeholder={t('paste_headers_placeholder')}
                     className="w-full bg-[#05080f] border border-white/10 rounded-xl p-3 font-mono text-xs text-gray-300 focus:outline-none focus:border-cyber-blue/50 custom-scrollbar resize-none"
                   />
                 </div>
@@ -1199,9 +1199,9 @@ export default function EmailPhishing() {
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
-                      Email Body & Embedded Content
+                      {t('email_body_embedded_label')}
                     </label>
-                    <span className="text-[10px] text-gray-500 font-mono">NLP, Phishing & URL Extraction</span>
+                    <span className="text-[10px] text-gray-500 font-mono">{t('nlp_phishing_url_label')}</span>
                   </div>
                   <textarea
                     rows={6}
@@ -1211,7 +1211,7 @@ export default function EmailPhishing() {
                       setSelectedScenario(null);
                       setBodyText(e.target.value);
                     }}
-                    placeholder="Paste email body or leave blank if combined above..."
+                    placeholder={t('paste_body_placeholder')}
                     className="w-full bg-[#05080f] border border-white/10 rounded-xl p-3 font-mono text-xs text-gray-300 focus:outline-none focus:border-cyber-blue/50 custom-scrollbar resize-none"
                   />
                 </div>

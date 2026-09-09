@@ -5,6 +5,7 @@ import {
   ExternalLink, Terminal, Globe, Filter, LogIn
 } from 'lucide-react';
 import { InboxEmailItem } from '@/data/inboxEmails';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface InboxShieldViewProps {
   emails: InboxEmailItem[];
@@ -35,6 +36,7 @@ export function InboxShieldView({
   isLoadingMore = false,
   onLoadMore
 }: InboxShieldViewProps) {
+  const { t } = useLanguage();
   const [filterTab, setFilterTab] = useState<'all' | 'high' | 'suspicious' | 'safe'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'highest' | 'lowest' | 'oldest'>('newest');
   const [searchQuery, setSearchQuery] = useState('');
@@ -107,10 +109,10 @@ export function InboxShieldView({
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono">
-              Inbox Shield
+              {t('inbox_shield_title')}
             </h1>
             <p className="text-xs sm:text-sm text-cyan-400/80 font-sans mt-0.5">
-              AI-powered scanning of your Gmail inbox
+              {t('inbox_shield_subtitle')}
             </p>
           </div>
         </div>
@@ -127,20 +129,20 @@ export function InboxShieldView({
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <h3 className="text-xs sm:text-sm font-bold text-white font-mono">
-                  Gmail Scanner Pipeline
+                  {t('gmail_scanner_pipeline')}
                 </h3>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 font-bold tracking-wider flex items-center gap-1.5 animate-pulse">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                  2 / 2 ANALYSIS ACTIVE
+                  {t('analysis_active_badge')}
                 </span>
               </div>
               <p className="text-[11px] text-gray-400 font-sans">
-                Every email is analyzed automatically using 2 layers
+                {t('pipeline_desc')}
               </p>
               <div className="text-[11px] font-mono text-cyan-300/90 flex items-center gap-2 pt-0.5">
-                <span className="text-emerald-400">✓</span> Protocol Forensics
+                <span className="text-emerald-400">✓</span> {t('protocol_forensics_label')}
                 <span className="text-gray-500">+</span>
-                <span className="text-purple-400">✓</span> Neuro Profile
+                <span className="text-purple-400">✓</span> {t('neuro_profile_label')}
               </div>
             </div>
           </div>
@@ -152,19 +154,19 @@ export function InboxShieldView({
           <div className="grid grid-cols-4 gap-3 sm:gap-5 shrink-0 text-center font-mono pt-2 md:pt-0 border-t md:border-t-0 border-white/5">
             <div>
               <div className="text-base sm:text-lg font-black text-white leading-tight">{displayTotal}</div>
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider">Total Emails</div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider">{t('stat_total_emails')}</div>
             </div>
             <div>
               <div className="text-base sm:text-lg font-black text-red-400 leading-tight">{displayHigh}</div>
-              <div className="text-[10px] text-red-400/80 uppercase tracking-wider font-bold">High Risk</div>
+              <div className="text-[10px] text-red-400/80 uppercase tracking-wider font-bold">{t('stat_high_risk')}</div>
             </div>
             <div>
               <div className="text-base sm:text-lg font-black text-amber-400 leading-tight">{displaySuspicious}</div>
-              <div className="text-[10px] text-amber-400/80 uppercase tracking-wider font-bold">Suspicious</div>
+              <div className="text-[10px] text-amber-400/80 uppercase tracking-wider font-bold">{t('stat_suspicious')}</div>
             </div>
             <div>
               <div className="text-base sm:text-lg font-black text-emerald-400 leading-tight">{displaySafe}</div>
-              <div className="text-[10px] text-emerald-400/80 uppercase tracking-wider font-bold">Safe</div>
+              <div className="text-[10px] text-emerald-400/80 uppercase tracking-wider font-bold">{t('stat_safe')}</div>
             </div>
           </div>
         </div>
@@ -184,7 +186,7 @@ export function InboxShieldView({
             }`}
           >
             <Mail className="w-3.5 h-3.5 text-cyan-400" />
-            <span>All Emails ({displayTotal})</span>
+            <span>{t('all_emails_tab')} ({displayTotal})</span>
           </button>
 
           {/* High Risk */}
@@ -196,7 +198,7 @@ export function InboxShieldView({
                 : 'bg-white/5 text-gray-400 hover:text-red-300 border border-white/5'
             }`}
           >
-            <span>🔥 High Risk ({displayHigh})</span>
+            <span>{t('high_risk_tab')} ({displayHigh})</span>
           </button>
 
           {/* Suspicious */}
@@ -208,7 +210,7 @@ export function InboxShieldView({
                 : 'bg-white/5 text-gray-400 hover:text-amber-300 border border-white/5'
             }`}
           >
-            <span>⚠️ Suspicious ({displaySuspicious})</span>
+            <span>{t('suspicious_tab')} ({displaySuspicious})</span>
           </button>
 
           {/* Safe */}
@@ -220,7 +222,7 @@ export function InboxShieldView({
                 : 'bg-white/5 text-gray-400 hover:text-emerald-300 border border-white/5'
             }`}
           >
-            <span>🛡️ Safe ({displaySafe})</span>
+            <span>{t('safe_tab')} ({displaySafe})</span>
           </button>
         </div>
 
@@ -234,7 +236,7 @@ export function InboxShieldView({
               title="Open Manual RFC Header Analysis Lab"
             >
               <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">RFC Lab</span>
+              <span className="hidden sm:inline">{t('rfc_lab_btn')}</span>
             </button>
           )}
 
@@ -245,7 +247,7 @@ export function InboxShieldView({
               title="Lookup SPF, DKIM, and DMARC DNS Records"
             >
               <Globe className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">DNS Lookup</span>
+              <span className="hidden sm:inline">{t('dns_lookup_btn')}</span>
             </button>
           )}
 
@@ -256,7 +258,7 @@ export function InboxShieldView({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search emails, senders..."
+              placeholder={t('search_emails_placeholder')}
               className="w-full bg-[#080d1a] border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 font-mono"
             />
           </div>
@@ -268,10 +270,10 @@ export function InboxShieldView({
               onChange={(e) => setSortBy(e.target.value as any)}
               className="bg-[#080d1a] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-gray-300 font-mono focus:outline-none focus:border-cyan-500/50 cursor-pointer appearance-none pr-7"
             >
-              <option value="newest">Newest First</option>
-              <option value="highest">Highest Risk</option>
-              <option value="lowest">Lowest Risk</option>
-              <option value="oldest">Oldest First</option>
+              <option value="newest">{t('sort_newest')}</option>
+              <option value="highest">{t('sort_highest')}</option>
+              <option value="lowest">{t('sort_lowest')}</option>
+              <option value="oldest">{t('sort_oldest')}</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
@@ -280,7 +282,7 @@ export function InboxShieldView({
           <button
             onClick={onRefresh}
             className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-cyan-400 transition-all cursor-pointer"
-            title="Refresh Inbox"
+            title={t('refresh_inbox_title')}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -296,10 +298,10 @@ export function InboxShieldView({
             </div>
             <div>
               <h4 className="text-sm font-bold text-white font-mono">
-                Connect Real Gmail Account
+                {t('connect_real_gmail_title')}
               </h4>
               <p className="text-xs text-gray-400 font-sans mt-0.5">
-                Ingest real emails and headers directly via Gmail API to compute authentic NeuroShield threat scores.
+                {t('connect_real_gmail_desc')}
               </p>
             </div>
           </div>
@@ -308,7 +310,7 @@ export function InboxShieldView({
             className="min-h-[44px] px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all active:scale-95 whitespace-nowrap"
           >
             <LogIn className="w-4 h-4" />
-            <span>Connect Gmail</span>
+            <span>{t('connect_gmail_btn')}</span>
           </button>
         </div>
       )}
@@ -318,10 +320,10 @@ export function InboxShieldView({
         <div className="bg-[#09101d] border border-white/5 rounded-2xl p-12 text-center space-y-3">
           <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin mx-auto" />
           <h4 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
-            Scanning Connected Inbox Messages...
+            {t('scanning_inbox_title')}
           </h4>
           <p className="text-xs text-gray-400 font-sans max-w-md mx-auto">
-            Ingesting RFC headers, analyzing cognitive urgency cues, and computing NeuroShield risk ratings.
+            {t('scanning_inbox_desc')}
           </p>
         </div>
       ) : filteredEmails.length === 0 ? (
@@ -330,48 +332,48 @@ export function InboxShieldView({
           {!isAuthenticated ? (
             <>
               <h4 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
-                Gmail Not Connected
+                {t('gmail_not_connected_title')}
               </h4>
               <p className="text-xs text-gray-400 font-sans max-w-md mx-auto">
-                Connect your real Gmail inbox to scan and evaluate your incoming emails with NeuroShield.
+                {t('gmail_not_connected_desc')}
               </p>
               <button
                 onClick={onConnectGmail}
                 className="min-h-[44px] px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer shadow-md transition-all active:scale-95"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Connect Gmail</span>
+                <span>{t('connect_gmail_btn')}</span>
               </button>
             </>
           ) : emails.length === 0 ? (
             <>
               <h4 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
-                No Messages Found in Connected Gmail
+                {t('no_messages_gmail_title')}
               </h4>
               <p className="text-xs text-gray-400 font-sans max-w-md mx-auto">
-                Connected as <span className="text-white font-mono">{userEmail || 'Active User'}</span>. Click below to fetch recent inbox messages via the Gmail API.
+                {t('connected_as')} <span className="text-white font-mono">{userEmail || 'Active User'}</span>. {t('click_to_fetch_gmail')}
               </p>
               <button
                 onClick={onRefresh}
                 className="min-h-[44px] px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer shadow-md transition-all active:scale-95"
               >
                 <RefreshCw className="w-4 h-4" />
-                <span>Fetch Gmail Messages</span>
+                <span>{t('fetch_gmail_btn')}</span>
               </button>
             </>
           ) : (
             <>
               <h4 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
-                No Messages Match Filter
+                {t('no_messages_match_filter')}
               </h4>
               <p className="text-xs text-gray-400 font-sans max-w-md mx-auto">
-                No emails matched the current search query or category filter.
+                {t('no_messages_match_desc')}
               </p>
               <button
                 onClick={() => { setFilterTab('all'); setSearchQuery(''); }}
                 className="min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-cyan-300 cursor-pointer"
               >
-                Reset Filters
+                {t('reset_filters_btn')}
               </button>
             </>
           )}
@@ -420,7 +422,7 @@ export function InboxShieldView({
                         {item.senderName}
                       </span>
                       {item.isVerified && (
-                        <span className="w-3.5 h-3.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center text-[9px] shrink-0 font-bold" title="Cryptographically Verified Sender">
+                        <span className="w-3.5 h-3.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center text-[9px] shrink-0 font-bold" title={t('verified_sender_tooltip')}>
                           ✓
                         </span>
                       )}
@@ -479,7 +481,7 @@ export function InboxShieldView({
                       <span className="text-[11px] text-gray-400 font-normal"> / 100</span>
                     </div>
                     <div className="text-[10px] font-black tracking-widest uppercase mt-0.5">
-                      {isHigh ? 'HIGH RISK' : isSuspicious ? 'SUSPICIOUS' : 'LOW RISK'}
+                      {isHigh ? t('risk_label_high') : isSuspicious ? t('risk_label_suspicious') : t('risk_label_low')}
                     </div>
                   </div>
 
@@ -488,7 +490,7 @@ export function InboxShieldView({
                     onClick={() => onSelectEmailForAnalysis(item)}
                     className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-mono font-bold bg-[#0c1424] hover:bg-cyan-500/20 text-white hover:text-cyan-300 border border-white/10 hover:border-cyan-500/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
                   >
-                    <span>View Analysis</span>
+                    <span>{t('view_analysis_btn')}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
                   </button>
 
@@ -497,7 +499,7 @@ export function InboxShieldView({
                     <button
                       onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
                       className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-gray-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
-                      title="More Options"
+                      title={t('more_options_title')}
                     >
                       <MoreVertical className="w-3.5 h-3.5" />
                     </button>
@@ -508,13 +510,13 @@ export function InboxShieldView({
                           onClick={() => { setOpenMenuId(null); }}
                           className="w-full text-left px-2.5 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/5 cursor-pointer"
                         >
-                          Mark as Read
+                          {t('mark_as_read')}
                         </button>
                         <button
                           onClick={() => { setOpenMenuId(null); }}
                           className="w-full text-left px-2.5 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/5 cursor-pointer"
                         >
-                          Move to Quarantine
+                          {t('move_to_quarantine')}
                         </button>
                         <button
                           onClick={() => { 
@@ -523,16 +525,16 @@ export function InboxShieldView({
                           }}
                           className="w-full text-left px-2.5 py-1.5 rounded-lg text-cyan-400 hover:bg-white/5 cursor-pointer"
                         >
-                          Copy RFC Headers
+                          {t('copy_rfc_headers')}
                         </button>
                         <button
-                          onClick={() => {
+                          onClick={() => { 
                             setOpenMenuId(null);
                             onSelectEmailForAnalysis(item);
                           }}
                           className="w-full text-left px-2.5 py-1.5 rounded-lg text-purple-400 hover:bg-white/5 cursor-pointer"
                         >
-                          Inspect Neuro Profile
+                          {t('inspect_neuro_profile')}
                         </button>
                       </div>
                     )}
@@ -548,7 +550,7 @@ export function InboxShieldView({
       {filteredEmails.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/5 font-mono text-xs text-gray-400">
           <div>
-            Showing <span className="text-white font-bold">1–{filteredEmails.length}</span> of <span className="text-white font-bold">{displayTotal}</span> scanned emails
+            {t('showing_label')} <span className="text-white font-bold">1–{filteredEmails.length}</span> {t('of_label')} <span className="text-white font-bold">{displayTotal}</span> {t('scanned_emails_label')}
           </div>
 
           <div className="flex items-center gap-2">
@@ -561,12 +563,12 @@ export function InboxShieldView({
                 {isLoadingMore ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-                    <span>Loading +30 Emails...</span>
+                    <span>{t('loading_more_emails')}</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Load More (+30 Emails)</span>
+                    <span>{t('load_more_btn')}</span>
                   </>
                 )}
               </button>

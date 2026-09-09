@@ -66,10 +66,10 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
           <div className="space-y-1 text-xs">
             <div className="font-bold text-cyber-red tracking-wider uppercase flex items-center gap-2">
               <Radio className="w-4 h-4 animate-pulse" />
-              Critical Threat: Ephemeral Reverse Tunnel Evasion Vector (*.trycloudflare.com)
+              {t('critical_reverse_tunnel')}
             </div>
             <p className="text-gray-300 leading-relaxed">
-              Threat actors weaponize Cloudflare Quick Tunnels (<span className="font-mono text-purple-300">trycloudflare.com</span>) as disposable reverse proxies. This technique bypasses traditional domain-age reputation filters, exploits trusted Cloudflare Anycast SSL certificates, and proxies victim credentials to hidden C2 harvesting infrastructure.
+              {t('reverse_tunnel_desc')}
             </p>
           </div>
         </motion.div>
@@ -143,10 +143,10 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
               </h3>
               <p className="text-xs text-cyber-muted mt-3 max-w-[200px] mx-auto leading-relaxed">
                 {isReverseTunnel 
-                  ? "Ephemeral reverse tunnel proxy detected. Hostile credential harvesting risk."
+                  ? t('reverse_tunnel_risk_summary')
                   : isHighRisk 
-                  ? "Domain exhibits multiple indicators of compromise." 
-                  : "Domain appears clean with no significant threat indicators."}
+                  ? t('high_risk_domain_summary')
+                  : t('low_risk_domain_summary')}
               </p>
             </div>
           </div>
@@ -161,7 +161,7 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
           
           <div className="space-y-1 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {[
-              ...(isReverseTunnel ? [{ label: "Tunnel Proxy", value: "Cloudflare Quick Tunnel (AS13335)", isBad: true }] : []),
+              ...(isReverseTunnel ? [{ label: t('tunnel_proxy_label'), value: "Cloudflare Quick Tunnel (AS13335)", isBad: true }] : []),
               { label: t('domain_age'), value: metrics?.domainAge || (isReverseTunnel ? 'Ephemeral (< 1 Hour)' : 'N/A'), isBad: isReverseTunnel || metrics?.domainAge.includes('day') || metrics?.domainAge.includes('week') || metrics?.domainAge.includes('Ephemeral') },
               { label: t('ssl_cert'), value: metrics?.sslCertificate || (isReverseTunnel ? 'Cloudflare Proxy TLS' : 'N/A'), isBad: isReverseTunnel || metrics?.sslCertificate.toLowerCase().includes('invalid') || metrics?.sslCertificate.toLowerCase().includes('none') || metrics?.sslCertificate.includes('Proxy') },
               { label: t('url_domain'), value: inputText ? getHostname(inputText) : 'N/A', isBad: isReverseTunnel },
@@ -211,7 +211,7 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
               </ResponsiveContainer>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-xs text-cyber-muted">
-                Insufficient data for risk profile.
+                {t('insufficient_radar_data')}
               </div>
             )}
           </div>

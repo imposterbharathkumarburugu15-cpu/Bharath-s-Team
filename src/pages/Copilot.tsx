@@ -62,7 +62,7 @@ export function Copilot() {
         </h1>
         <div className="flex items-center gap-2 border border-cyber-blue/30 bg-cyber-blue/10 px-3 py-1.5 rounded-full">
            <Cpu className="w-4 h-4 text-cyber-blue animate-pulse" />
-           <span className="text-xs text-cyber-blue uppercase tracking-widest font-bold">GPT-4 OVERRIDE / GEMINI ONLINE</span>
+           <span className="text-xs text-cyber-blue uppercase tracking-widest font-bold">{t('engine_override_online')}</span>
         </div>
       </div>
 
@@ -78,7 +78,7 @@ export function Copilot() {
                  {t('copilot_intro')}
                </p>
                <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-                 {['Analyze a suspicious email', 'What is an attack graph?', 'Explain XSS vulnerability'].map(query => (
+                 {[t('sample_query_1'), t('sample_query_2'), t('sample_query_3')].map(query => (
                    <button 
                      key={query}
                      onClick={() => setInputValue(query)}

@@ -719,14 +719,14 @@ export function LiveScanner() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] font-mono font-bold tracking-widest text-white uppercase">
-                          SCANNER ENGINE PIPELINE
+                          {t('scanner_pipeline')}
                         </span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
-                          2 / 2 LAYERS ACTIVE
+                          {t('layers_active_count')}
                         </span>
                       </div>
                       <span className="text-[10px] text-gray-400 font-sans block">
-                        Multi-dimensional payload deconstruction running across technical and cognitive vectors.
+                        {t('scanner_pipeline_desc')}
                       </span>
                     </div>
                   </div>
@@ -739,10 +739,10 @@ export function LiveScanner() {
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-cyan-300 text-[11px]">Layer 1: Protocol Forensics</span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">ACTIVE</span>
+                          <span className="font-bold text-cyan-300 text-[11px]">{t('layer1_protocol_forensics')}</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">{t('active_status')}</span>
                         </div>
-                        <span className="text-[10px] text-gray-300 font-sans block">RFC 5322 • SPF/DKIM • Reverse Tunnels</span>
+                        <span className="text-[10px] text-gray-300 font-sans block">{t('layer1_desc')}</span>
                       </div>
                     </div>
 
@@ -753,10 +753,10 @@ export function LiveScanner() {
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-purple-300 text-[11px]">Layer 2: Neural Profile</span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">ACTIVE</span>
+                          <span className="font-bold text-purple-300 text-[11px]">{t('layer2_neural_profile')}</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">{t('active_status')}</span>
                         </div>
-                        <span className="text-[10px] text-gray-300 font-sans block">Cognitive Urgency • AI Text • Mimicry</span>
+                        <span className="text-[10px] text-gray-300 font-sans block">{t('layer2_desc')}</span>
                       </div>
                     </div>
                   </div>
@@ -773,9 +773,9 @@ export function LiveScanner() {
               <div className="w-full max-w-4xl mx-auto mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1 relative z-30">
                 <div className="flex items-center gap-2 text-xs font-mono text-gray-400">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                  <span className="text-gray-300 font-bold uppercase tracking-wider text-[11px]">Payload Target Terminal</span>
+                  <span className="text-gray-300 font-bold uppercase tracking-wider text-[11px]">{t('payload_terminal')}</span>
                   <span className="text-gray-600 hidden sm:inline">•</span>
-                  <span className="text-[11px] text-gray-400 hidden sm:inline">Paste email headers, URL, code, or click demo</span>
+                  <span className="text-[11px] text-gray-400 hidden sm:inline">{t('payload_terminal_hint')}</span>
                 </div>
 
                 <div ref={demoMenuRef} className="relative flex items-center shrink-0 self-end sm:self-auto">
@@ -787,7 +787,7 @@ export function LiveScanner() {
                       title="Click to load sample threat payload"
                     >
                       <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/30" />
-                      <span>Load Demo Payload</span>
+                      <span>{t('load_demo_payload')}</span>
                       {demoFeedback && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-normal flex items-center gap-1 animate-pulse">
                           <Check className="w-3 h-3" />
@@ -818,8 +818,8 @@ export function LiveScanner() {
                         className="absolute right-0 top-full mt-2 w-72 bg-[#060a14] border border-cyan-500/40 rounded-xl shadow-2xl p-1.5 z-50 backdrop-blur-xl"
                       >
                         <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-gray-400 border-b border-white/5 font-bold flex items-center justify-between">
-                          <span>Threat Vector Samples</span>
-                          <span className="text-cyan-400">{demoOptions.length} Vectors</span>
+                          <span>{t('threat_vector_samples')}</span>
+                          <span className="text-cyan-400">{demoOptions.length} {t('vectors_count')}</span>
                         </div>
                         <div className="py-1 space-y-0.5 max-h-60 overflow-y-auto custom-scrollbar">
                           {demoOptions.map((demo, idx) => (
@@ -935,10 +935,10 @@ export function LiveScanner() {
                         type="button"
                         onClick={() => handleLoadDemo(selectedDemoIndex)}
                         className="text-[#8a99af] hover:text-[#00f5ff] transition-colors p-2 rounded-lg bg-white/5 hover:bg-[#00f5ff]/10 border border-transparent hover:border-[#00f5ff]/30 relative group shadow-sm flex items-center gap-1.5 cursor-pointer"
-                        title="Load demo attack payload"
+                        title={t('load_demo_payload')}
                       >
                         <Zap className="w-4 h-4 text-cyan-400" />
-                        <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline-block">DEMO PAYLOAD</span>
+                        <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline-block">{t('demo_payload_btn')}</span>
                       </button>
                       
                       {attachedFile && !previewUrl && (
@@ -1092,15 +1092,15 @@ export function LiveScanner() {
                   
                   <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5 text-[10px] font-mono text-[#8a99af] text-left uppercase tracking-widest">
                      <div>
-                        <span className="block opacity-50 mb-1">Target Engine</span>
+                        <span className="block opacity-50 mb-1">{t('target_engine')}</span>
                         <span className="text-[#00f5ff] font-bold">NEUROSHIELD-CORE-V2</span>
                      </div>
                      <div className="text-center">
-                        <span className="block opacity-50 mb-1">Status</span>
-                        <span className="text-[#ffea00] font-bold animate-pulse">ACTIVE_SCANNING</span>
+                        <span className="block opacity-50 mb-1">{t('status_label')}</span>
+                        <span className="text-[#ffea00] font-bold animate-pulse">{t('active_scanning')}</span>
                      </div>
                      <div className="text-right">
-                        <span className="block opacity-50 mb-1">Memory Allocation</span>
+                        <span className="block opacity-50 mb-1">{t('memory_allocation')}</span>
                         <span className="text-white font-bold">{(128 + scanProgress * 5).toFixed(0)} MB</span>
                      </div>
                   </div>

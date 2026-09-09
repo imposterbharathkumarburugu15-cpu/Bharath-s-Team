@@ -18,6 +18,7 @@ interface TextScannerResultProps {
 }
 
 const ScrambleText = ({ original, masked, type, delayParams }: { original: string, masked: string, type: string, delayParams: number }) => {
+  const { t } = useLanguage();
   const [text, setText] = useState(original);
   const [phase, setPhase] = useState<'original' | 'scrambling' | 'masked'>('original');
 
@@ -62,7 +63,7 @@ const ScrambleText = ({ original, masked, type, delayParams }: { original: strin
     <div className="flex flex-col items-center w-full">
        <div className="flex items-center justify-between w-full mb-2 px-1">
          <span className={`text-[9px] uppercase tracking-widest transition-colors duration-500 font-bold bg-white/5 px-2 py-0.5 rounded ${phase === 'masked' ? 'text-[#00ff66]' : 'text-[#8a99af]'}`}>
-           {phase === 'masked' ? 'Secured Format' : type || 'Target string'}
+           {phase === 'masked' ? t('secured_format') : type || 'Target string'}
          </span>
          {phase === 'masked' && (
            <motion.span 
@@ -186,7 +187,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               {t('threat_analysis')}
             </h2>
             <span className="text-xs text-cyber-muted font-mono">
-              Target: <span className="text-white">{scanResult.target || 'Live Payload'}</span> • Type: <span className="text-cyber-blue">{scanResult.detectedType}</span>
+              {t('target_label')}: <span className="text-white">{scanResult.target || 'Live Payload'}</span> • {t('type_label')}: <span className="text-cyber-blue">{scanResult.detectedType}</span>
             </span>
           </div>
         </div>
@@ -204,7 +205,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               )}
             >
               <Cpu className="w-3.5 h-3.5 text-purple-400" />
-              <span>LAYER 2: NEURAL PROFILE</span>
+              <span>{t('layer2_neural_profile_tab')}</span>
             </button>
             <button
               onClick={handleSwitchToForensics}
@@ -216,7 +217,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               )}
             >
               <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-              <span>LAYER 1: PROTOCOL FORENSICS</span>
+              <span>{t('layer1_protocol_forensics_tab')}</span>
               {isEmailOrHeaders && (
                 <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
               )}
@@ -231,14 +232,14 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               )}
             >
               <Globe className="w-3.5 h-3.5 text-cyber-blue" />
-              <span>SPF/DKIM/DMARC LOOKUP</span>
+              <span>{t('spf_dkim_dmarc_lookup_tab')}</span>
             </button>
           </div>
 
           <button 
             onClick={onReset}
             className="p-2 bg-[#0a0d1a]/50 text-cyber-muted hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
-            title="Close / New Scan"
+            title={t('close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -255,19 +256,19 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
           {isGeneratingForensics ? (
             <div className="flex flex-col items-center justify-center p-12 bg-[#0a0f1c]/50 rounded-2xl border border-white/5">
               <Sparkles className="w-8 h-8 text-cyber-blue animate-spin mb-4" />
-              <p className="text-sm font-mono text-white">Reconstructing RFC 5322 Email Relay & SPF/DKIM/DMARC matrix...</p>
+              <p className="text-sm font-mono text-white">{t('reconstructing_rfc')}</p>
             </div>
           ) : dynamicDossier ? (
             <EmailForensicsPanel dossier={dynamicDossier} />
           ) : (
             <div className="p-8 text-center bg-[#0a0f1c]/50 rounded-2xl border border-white/5">
               <Mail className="w-8 h-8 text-gray-500 mx-auto mb-3" />
-              <p className="text-sm text-gray-400 font-mono mb-4">No email headers found in this scan payload.</p>
+              <p className="text-sm text-gray-400 font-mono mb-4">{t('no_email_headers_payload')}</p>
               <button
                 onClick={() => handleSwitchToForensics()}
                 className="px-4 py-2 bg-cyber-blue text-black font-mono text-xs font-bold rounded-xl"
               >
-                Force Forensic Parser Run
+                {t('force_forensic_run')}
               </button>
             </div>
           )}
@@ -312,7 +313,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                 >
                   {scanResult.riskScore}
                 </motion.span>
-                <span className="text-[9px] text-cyber-muted uppercase tracking-widest mt-0.5">Score</span>
+                <span className="text-[9px] text-cyber-muted uppercase tracking-widest mt-0.5">{t('score_label')}</span>
               </div>
             </div>
 
@@ -321,7 +322,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                 "text-2xl font-bold tracking-widest uppercase", 
                 scanResult.riskScore > 75 ? "text-cyber-red" : scanResult.riskScore > 40 ? "text-[#ffb703]" : "text-cyber-green"
               )}>
-                {scanResult.riskScore > 75 ? "Critically High" : scanResult.riskScore > 40 ? "Moderate Risk" : "System Safe"}
+                {scanResult.riskScore > 75 ? t('critically_high') : scanResult.riskScore > 40 ? t('moderate_risk') : t('system_safe')}
               </h3>
               {scanResult.threatName && (
                 <div className="flex items-center gap-2 mt-2 text-[#ffb703] font-semibold text-sm">
@@ -343,7 +344,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                   className="text-[11px] font-mono font-bold text-cyber-blue hover:text-white flex items-center gap-1.5 px-2.5 py-1 rounded bg-cyber-blue/10 hover:bg-cyber-blue/20 border border-cyber-blue/30 transition-all cursor-pointer"
                 >
                   <FileText className="w-3 h-3 text-cyber-blue" />
-                  <span>Full SOC Incident Report</span>
+                  <span>{t('full_soc_report_btn')}</span>
                 </button>
               )}
             </div>
@@ -359,7 +360,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
           {/* Keywords and Signals */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase">Threat Signals</div>
+              <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase">{t('threat_signals')}</div>
               <div className="flex flex-col gap-2">
                 {scanResult.signals && scanResult.signals.length > 0 ? (
                   scanResult.signals.map((sig, i) => {
@@ -389,7 +390,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
             </div>
 
             <div className="flex flex-col gap-2">
-              <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase">Suspicious Keywords</div>
+              <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase">{t('suspicious_keywords')}</div>
               <div className="flex flex-col gap-2">
                 {scanResult.suspiciousKeywords && scanResult.suspiciousKeywords.length > 0 ? (
                   scanResult.suspiciousKeywords.map((kw, i) => (
@@ -445,7 +446,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#00f5ff] shadow-[0_0_10px_#00f5ff]" />
                <Shield className="w-5 h-5 text-[#00f5ff]" />
                <h3 className="font-bold tracking-widest text-white uppercase flex items-center gap-2">
-                 🔐 Privacy Protection
+                 🔐 {t('privacy_protection')}
                </h3>
                {scanResult.maskedData && scanResult.maskedData.length > 0 && (
                  <span className="ml-auto flex h-2 w-2 relative">
@@ -457,7 +458,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
             
             <div className="p-6 relative z-10 max-h-[300px] overflow-y-auto custom-scrollbar">
               <div className="text-[10px] font-bold tracking-[0.2em] text-[#8a99af] uppercase mb-5">
-                Sensitive Data Detected
+                {t('sensitive_data_detected')}
               </div>
               
               {scanResult.maskedData && scanResult.maskedData.length > 0 ? (
@@ -479,7 +480,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               ) : (
                  <div className="flex flex-col items-center justify-center py-6 border border-dashed border-white/10 rounded-xl bg-white/5">
                    <Shield className="w-8 h-8 text-[#8a99af] mb-3 opacity-50" />
-                   <div className="text-xs text-[#8a99af] uppercase tracking-widest">No sensitive data detected</div>
+                   <div className="text-xs text-[#8a99af] uppercase tracking-widest">{t('no_sensitive_data')}</div>
                  </div>
               )}
             </div>
@@ -527,10 +528,10 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white font-mono uppercase tracking-wider">
-                      SOC Incident Response Report (Tier-2)
+                      {t('soc_modal_title')}
                     </h3>
                     <p className="text-xs text-cyber-muted font-mono">
-                      Automated Forensic Summary & RFC Compliance Audit
+                      {t('soc_modal_subtitle')}
                     </p>
                   </div>
                 </div>
@@ -544,12 +545,12 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                     {copiedReport ? (
                       <>
                         <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-emerald-400">Copied!</span>
+                        <span className="text-emerald-400">{t('copied_text')}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5 text-cyber-blue" />
-                        <span>Copy Markdown</span>
+                        <span>{t('copy_markdown')}</span>
                       </>
                     )}
                   </button>
@@ -560,7 +561,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                     className="px-3 py-1.5 rounded-lg text-xs font-mono bg-cyber-blue/10 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Download (.md)</span>
+                    <span>{t('download_md')}</span>
                   </button>
 
                   <button
@@ -591,13 +592,13 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
 
               {/* Footer */}
               <div className="p-4 border-t border-white/10 bg-[#05080f] flex justify-between items-center text-xs font-mono text-gray-500">
-                <span>NeuroShield Real-time RFC Forensics & Threat Synthesis</span>
+                <span>{t('soc_footer_tag')}</span>
                 <button
                   type="button"
                   onClick={() => setShowSocModal(false)}
                   className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold transition-colors cursor-pointer"
                 >
-                  Close
+                  {t('close')}
                 </button>
               </div>
             </motion.div>
