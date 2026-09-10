@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { EmailForensicsPanel } from '@/components/EmailForensicsPanel';
 import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
 import { DomainAuthLookup } from '@/components/DomainAuthLookup';
+import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 
 interface TextScannerResultProps {
   scanResult: ScanResult;
@@ -412,7 +413,20 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
             </div>
           </div>
 
-
+          {/* Human-in-the-Loop Adaptive Feedback */}
+          <AdaptiveFeedbackSection
+            targetId={scanResult.target || `scan-${Date.now()}`}
+            modelPrediction={scanResult.threatName || (scanResult.riskScore > 50 ? 'High Risk Threat Detected' : 'Safe Communication')}
+            riskScore={scanResult.riskScore}
+            predictedAttackType={scanResult.detectedType || 'PAYLOAD'}
+            extractedFeatures={{
+              signals: scanResult.signals,
+              keywords: scanResult.suspiciousKeywords,
+              target: scanResult.target,
+              source: scanResult.source,
+              snippet: inputText?.substring(0, 300)
+            }}
+          />
 
         </div>
 

@@ -26,6 +26,7 @@ import { SocialEngineeringAndNlp } from './forensics/SocialEngineeringAndNlp';
 import { UrlAndAttachmentForensics } from './forensics/UrlAndAttachmentForensics';
 import { CorrelationAndChain } from './forensics/CorrelationAndChain';
 import { FinalVerdictAndRawEvidence } from './forensics/FinalVerdictAndRawEvidence';
+import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 
 interface EmailForensicsPanelProps {
   dossier: ForensicDossier;
@@ -379,6 +380,24 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
         dossier={dossier}
         onDrillDown={(target) => setDrillDownTarget(target)}
       />
+
+      {/* HUMAN-IN-THE-LOOP ADAPTIVE FEEDBACK LEARNING SECTION */}
+      <div id="hitl-feedback-section" className="print:hidden">
+        <AdaptiveFeedbackSection
+          targetId={`case-${dossier.chainOfCustody.caseId}`}
+          modelPrediction={`${dossier.scoreBreakdown.riskCategory}: ${dossier.headerFields.subject || 'Analyzed Email'}`}
+          riskScore={dossier.scoreBreakdown.totalRiskScore}
+          predictedAttackType="EMAIL"
+          extractedFeatures={{
+            signals: dossier.allThreatSignals?.map(s => s.name || s.id) || [],
+            sender: dossier.headerFields.from,
+            subject: dossier.headerFields.subject,
+            detectedLinks: dossier.urlForensics?.map(u => u.rawUrl) || dossier.iocs?.urls?.map(u => u.url) || [],
+            source: dossier.senderIdentity.fromDomain,
+            target: dossier.headerFields.to
+          }}
+        />
+      </div>
 
       {/* 4. EMAIL FORENSIC ANATOMY VISUALIZATION */}
       {(viewMode !== 'plain-english') && (

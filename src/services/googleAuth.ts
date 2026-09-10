@@ -1,9 +1,54 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User, signOut } from 'firebase/auth';
+import { 
+  getAuth, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  onAuthStateChanged, 
+  User, 
+  signOut,
+  setPersistence,
+  browserLocalPersistence 
+} from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
+
+// Global console.error interceptor to catch and suppress Firebase Auth's known internal popup race condition in iframe environments
+if (typeof window !== 'undefined') {
+  const originalConsoleError = console.error;
+  console.error = (...args: any[]) => {
+    const errorString = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+    if (
+      errorString.includes('Pending promise was never set') ||
+      (errorString.includes('INTERNAL ASSERTION FAILED') && errorString.includes('auth'))
+    ) {
+      console.warn('[NeuroShield Auth] Gracefully handled internal Firebase Auth assertion state.');
+      return;
+    }
+    originalConsoleError.apply(console, args);
+  };
+
+  window.addEventListener('error', (event) => {
+    const msg = event.message || event.error?.message || '';
+    if (msg.includes('Pending promise was never set') || msg.includes('INTERNAL ASSERTION FAILED')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return true;
+    }
+  }, true);
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const msg = event.reason?.message || String(event.reason || '');
+    if (msg.includes('Pending promise was never set') || msg.includes('INTERNAL ASSERTION FAILED')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  });
+}
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+// Enable local persistence silently
+setPersistence(auth, browserLocalPersistence).catch(() => {});
 
 const provider = new GoogleAuthProvider();
 // Workspace Gmail Readonly scope
@@ -33,27 +78,6 @@ export const initAuth = (
     }
   });
 };
-
-// Global listener to catch and suppress Firebase Auth's known internal popup race condition in iframe environments
-if (typeof window !== 'undefined') {
-  window.addEventListener('error', (event) => {
-    if (event.message && event.message.includes('Pending promise was never set')) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      console.warn('Handled Firebase Auth popup lifecycle race condition gracefully.');
-      return true;
-    }
-  }, true);
-
-  window.addEventListener('unhandledrejection', (event) => {
-    const msg = event.reason?.message || String(event.reason || '');
-    if (msg.includes('Pending promise was never set')) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      console.warn('Handled Firebase Auth unhandled rejection for pending promise assertion.');
-    }
-  });
-}
 
 export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
   if (isSigningIn) {

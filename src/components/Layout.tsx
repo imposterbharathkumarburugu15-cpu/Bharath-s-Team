@@ -62,6 +62,7 @@ export const navItems: NavItem[] = [
   { name: 'wave', id: 'wave', icon: Waves, category: 'AI_INTEL', badge: 'RADAR', shortcut: '6', description: 'Radio frequency & wireless anomaly detection' },
   { name: 'graph', id: 'graph', icon: Network, category: 'AI_INTEL', shortcut: '7', description: 'Interactive kill-chain & topology mapper' },
   { name: 'copilot', id: 'copilot', icon: Bot, category: 'AI_INTEL', badge: 'COPILOT', shortcut: '8', description: 'Automated SOC forensic investigator' },
+  { name: 'feedback', id: 'feedback', icon: Cpu, category: 'AI_INTEL', badge: 'HITL', shortcut: 'F', description: 'Human-in-the-loop adaptive feedback learning' },
   
   // PLATFORM & SETTINGS
   { name: 'api', id: 'api', icon: Terminal, category: 'PLATFORM', shortcut: '9', description: 'Enterprise REST / WebSocket API keys' },

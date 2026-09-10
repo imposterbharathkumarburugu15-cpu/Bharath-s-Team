@@ -5,6 +5,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Pola
 import { ScanResult } from '@/services/geminiService';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 
 interface UrlScannerResultProps {
   scanResult: ScanResult;
@@ -217,6 +218,23 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
           </div>
         </div>
         
+      </div>
+
+      {/* Human-in-the-Loop Adaptive Feedback */}
+      <div className="mt-4">
+        <AdaptiveFeedbackSection
+          targetId={`url-${getHostname(inputText)}`}
+          modelPrediction={scanResult.threatName || (scanResult.riskScore > 50 ? 'Malicious / Phishing URL' : 'Safe Domain')}
+          riskScore={scanResult.riskScore}
+          predictedAttackType="URL"
+          extractedFeatures={{
+            signals: scanResult.signals,
+            detectedLinks: [inputText],
+            source: getHostname(inputText),
+            domainAge: metrics?.domainAge,
+            sslCertificate: metrics?.sslCertificate
+          }}
+        />
       </div>
     </div>
   );

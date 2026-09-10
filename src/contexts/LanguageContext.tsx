@@ -23,6 +23,7 @@ const translations: Translations = {
   settings: { en: 'Settings', hi: 'सेटिंग्स', te: 'సెట్టింగ్‌లు' },
   api: { en: 'API Access', hi: 'एपीआई एक्सेस', te: 'API యాక్సెస్' },
   copilot: { en: 'AI Investigator', hi: 'एआई अन्वेषक', te: 'AI పరిశోధకుడు' },
+  feedback: { en: 'Adaptive Learning', hi: 'अनुकूली शिक्षा', te: 'అడాప్టివ్ లెర్నింగ్' },
   api_usage: { en: 'API Usage Analytics', hi: 'एपीआई उपयोग एनालिटिक्स', te: 'API వినియోగం విశ్లేషణలు' },
   api_keys: { en: 'Enterprise API Keys', hi: 'एंटरप्राइज एपीआई कुंजियाँ', te: 'ఎంటర్‌ప్రైజ్ API కీలు' },
   operations: { en: 'OPERATIONS', hi: 'संचालन', te: 'కార్యకలాపాలు' },

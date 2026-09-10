@@ -11,6 +11,7 @@ import SentinelWaveModule from './pages/NetworkScanner';
 import { ApiAccess } from './pages/ApiAccess';
 import { Copilot } from './pages/Copilot';
 import { Settings } from './pages/Settings';
+import { FeedbackDashboard } from './pages/FeedbackDashboard';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -35,6 +36,8 @@ function App() {
         setActiveTab('voice');
       } else if (hash === 'wave') {
         setActiveTab('wave');
+      } else if (hash === 'feedback' || hash === 'hitl' || hash === 'learning') {
+        setActiveTab('feedback');
       } else if (hash === 'api') {
         setActiveTab('api');
       } else if (hash === 'settings') {
@@ -81,6 +84,8 @@ function App() {
         return <Alerts />;
       case 'graph':
         return <AttackGraph />;
+      case 'feedback':
+        return <FeedbackDashboard />;
       case 'api':
         return <ApiAccess />;
       case 'settings':
