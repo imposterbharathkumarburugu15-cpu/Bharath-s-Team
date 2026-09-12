@@ -1,241 +1,175 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-cyber-bg: #03060a;
-  --color-cyber-panel: rgba(8, 14, 23, 0.85);
-  --color-cyber-blue: #00f3ff;
-  --color-cyber-blue-glow: rgba(0, 243, 255, 0.6);
-  --color-cyber-red: #ff2a55;
-  --color-cyber-green: #00ff66;
-  --color-cyber-border: rgba(0, 243, 255, 0.25);
-  --color-cyber-text: #e0e6ed;
-  --color-cyber-muted: #5e738c;
+  --color-kits-bg: #080b10;
+  --color-kits-surface: #10151d;
+  --color-kits-surface-elevated: #161d27;
+  --color-kits-surface-hover: #1c2533;
+  --color-kits-border: rgba(255, 255, 255, 0.08);
+  --color-kits-border-strong: rgba(0, 240, 255, 0.25);
+  --color-kits-text-primary: #f1f5f9;
+  --color-kits-text-secondary: #8995a5;
+  --color-kits-text-muted: #64748b;
+  
+  --color-kits-cyan: #00f0ff;
+  --color-kits-teal: #06b6d4;
+  --color-kits-emerald: #10b981;
+  --color-kits-amber: #f59e0b;
+  --color-kits-crimson: #f43f5e;
+  --color-kits-purple: #8b5cf6;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-cyber-bg: #080b10;
+  --color-cyber-card: #10151d;
+  --color-cyber-card-hover: #161d27;
+  --color-cyber-panel: rgba(16, 21, 29, 0.92);
+  --color-cyber-blue: #00f0ff;
+  --color-cyber-blue-glow: rgba(0, 240, 255, 0.35);
+  --color-cyber-cyan: #06b6d4;
+  --color-cyber-sky: #0284c7;
+  --color-cyber-red: #f43f5e;
+  --color-cyber-red-glow: rgba(244, 63, 94, 0.3);
+  --color-cyber-green: #10b981;
+  --color-cyber-green-glow: rgba(16, 185, 129, 0.3);
+  --color-cyber-amber: #f59e0b;
+  --color-cyber-purple: #8b5cf6;
+  --color-cyber-indigo: #6366f1;
+  --color-cyber-border: rgba(255, 255, 255, 0.08);
+  --color-cyber-border-strong: rgba(0, 240, 255, 0.3);
+  --color-cyber-text: #f1f5f9;
+  --color-cyber-text-dim: #cbd5e1;
+  --color-cyber-muted: #8995a5;
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer base {
   body {
-    @apply bg-cyber-bg text-cyber-text font-sans antialiased overflow-x-hidden;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-}
-
-/* Responsive screen scaling and readability */
-@media (min-width: 1280px) {
-  .forensic-scalable {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 640px) {
-  body {
+    background-color: #080b10;
+    color: #f1f5f9;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.55;
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 240, 255, 0.07), transparent),
+      radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.04), transparent 50%),
+      radial-gradient(circle at 10% 80%, rgba(16, 185, 129, 0.03), transparent 50%);
+    background-attachment: fixed;
   }
 }
 
-/* Hexagon Grid Background */
+/* Background Cyber Mesh */
 .bg-grid {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: linear-gradient(var(--color-cyber-border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-cyber-border) 1px, transparent 1px);
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 40px 40px;
   background-position: center center;
   z-index: -1;
-  opacity: 0.15;
   pointer-events: none;
 }
+
 .bg-grid::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 0%, var(--color-cyber-bg) 80%);
+  background: radial-gradient(circle at center, transparent 30%, #080b10 85%);
 }
 
+/* Premium Linear / Vercel Glass & Surfaces */
 .glass-panel {
-  background: var(--color-cyber-panel);
+  background: rgba(16, 21, 29, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(16, 21, 29, 0.95) 0%, rgba(12, 16, 23, 0.98) 100%);
   backdrop-filter: blur(16px);
-  border: 1px solid var(--color-cyber-border);
-  border-radius: 8px;
-  box-shadow: inset 0 0 20px rgba(0,243,255,0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.7), 0 0 20px -5px rgba(0, 240, 255, 0.12);
 }
 
 .cyber-glow-blue {
-  box-shadow: 0 0 15px var(--color-cyber-blue-glow), inset 0 0 10px var(--color-cyber-blue-glow);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.08);
 }
 
 .cyber-glow-red {
-  box-shadow: 0 0 15px rgba(255, 42, 85, 0.6), inset 0 0 10px rgba(255, 42, 85, 0.3);
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.3), inset 0 0 15px rgba(244, 63, 94, 0.1);
 }
 
-/* Scanline Effect */
+.cyber-glow-green {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.25), inset 0 0 15px rgba(16, 185, 129, 0.08);
+}
+
+/* Subtle Scanline */
 .scanline {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.2) 51%);
+  background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.15) 51%);
   background-size: 100% 4px;
   z-index: 100;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.3;
 }
 
+/* Sleek Scrollbars */
 ::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(8, 11, 16, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(137, 149, 165, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-cyber-border);
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(137, 149, 165, 0.25);
   border-radius: 4px;
 }
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.5);
 }
 
-/* ==========================================================================
-   FORENSIC INVESTIGATION REPORT — PRINT TO PDF STYLESHEET
-   Preserves dark forensic aesthetic, ensures all SVGs/graphs render,
-   forces exact color contrast, prevents awkward pagination splits.
-   ========================================================================== */
+/* Beam Animation for Scanning */
+@keyframes scanBeam {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
 
-@media print {
-  /* Enforce exact background colors and graphics */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    color-adjust: exact !important;
-  }
-
-  @page {
-    size: portrait;
-    margin: 8mm 8mm 10mm 8mm;
-  }
-
-  /* Force dark forensic background across canvas */
-  html, body {
-    background: #03060a !important;
-    background-color: #03060a !important;
-    color: #e0e6ed !important;
-    width: 100% !important;
-    height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    font-size: 11px !important;
-  }
-
-  /* Reset outer application containers that use overflow or fixed heights */
-  #root,
-  .app-container,
-  main,
-  .flex-1,
-  div[class*="overflow-y-auto"],
-  div[class*="overflow-x-hidden"],
-  div[class*="h-full"],
-  div[class*="h-screen"],
-  div[class*="min-h-screen"] {
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
-    width: 100% !important;
-    position: static !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Hide navigation, toolbars, sidebars, interactive controls */
-  aside,
-  header,
-  nav,
-  button,
-  .print\:hidden,
-  .scanline,
-  .bg-grid,
-  #forensic-report-navigation,
-  .modal-backdrop {
-    display: none !important;
-  }
-
-  /* Always display the Chain of Custody Seal at top of printed report */
-  #chain-of-custody-seal {
-    display: block !important;
-    margin-bottom: 16px !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    background-color: #060b17 !important;
-    border: 1.5px solid #00f3ff !important;
-  }
-
-  /* Maintain dark theme backgrounds and glowing borders on forensic sections */
-  #forensic-case-header,
-  #executive-forensic-summary,
-  #email-forensic-anatomy-visualization,
-  #sender-identity-graph,
-  #smtp-hop-route-graph,
-  #email-timeline-section,
-  #authentication-visual-matrix,
-  #authentication-flow-diagram,
-  #ioc-intelligence-section,
-  #social-engineering-analysis,
-  #url-forensics-section,
-  #attachment-forensics-section,
-  #threat-correlation-graph,
-  #final-forensic-verdict,
-  #raw-rfc-evidence-section,
-  #soc-playbooks-section {
-    background-color: #080d1a !important;
-    border: 1px solid rgba(0, 243, 255, 0.4) !important;
-    border-radius: 12px !important;
-    margin-bottom: 14px !important;
-    padding: 14px !important;
-    box-shadow: none !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  /* Ensure cards within grids stay intact */
-  .grid > div {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  /* Ensure SVGs and icons render cleanly */
-  svg {
-    display: inline-block !important;
-    overflow: visible !important;
-  }
-
-  /* Ensure tables render completely without horizontal scrollbars */
-  table {
-    width: 100% !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  /* Ensure preformatted text wraps cleanly */
-  pre, code {
-    white-space: pre-wrap !important;
-    word-break: break-all !important;
-  }
-
-  /* Links should not output URLs in parentheses */
-  a[href]:after {
-    content: none !important;
-  }
+.animate-scan-beam {
+  animation: scanBeam 2.5s ease-in-out infinite;
 }

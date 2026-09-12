@@ -50,17 +50,17 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  // CORE OPERATIONS
-  { name: 'dashboard', id: 'dashboard', icon: LayoutDashboard, category: 'CORE', shortcut: '1', description: 'SOC telemetry, threat feed & KPIs' },
-  { name: 'phishing', id: 'phishing', icon: Mail, category: 'CORE', badge: 'GMAIL', shortcut: '2', description: 'Unified email phishing protection & incident analysis' },
-  { name: 'guard', id: 'guard', icon: ShieldCheck, category: 'CORE', badge: 'GUARD', shortcut: '3', description: 'Proactive browser & interaction action interceptor' },
-  { name: 'scanner', id: 'scanner', icon: ShieldAlert, category: 'CORE', badge: 'BROWSER', shortcut: '4', description: 'Browser protection & URL vulnerability scanner' },
-  { name: 'alerts', id: 'alerts', icon: Bell, category: 'CORE', shortcut: '5', description: 'Real-time incident response & triage' },
+  // OPERATIONS
+  { name: 'dashboard', id: 'dashboard', icon: LayoutDashboard, category: 'CORE', shortcut: '1', description: 'Real-time defense console & threat telemetry matrix' },
+  { name: 'phishing', id: 'phishing', icon: Mail, category: 'CORE', badge: 'GMAIL', shortcut: '2', description: 'Gmail live threat sync, RFC 5322 header forensics & quarantine' },
+  { name: 'guard', id: 'guard', icon: ShieldCheck, category: 'CORE', badge: 'GUARD', shortcut: '3', description: 'Real-time telemetry interception & runtime defense' },
+  { name: 'scanner', id: 'scanner', icon: ShieldAlert, category: 'CORE', badge: 'BROWSER', shortcut: '4', description: 'Multi-vector payload & reverse tunnel scanner' },
+  { name: 'alerts', id: 'alerts', icon: Bell, category: 'CORE', shortcut: '5', description: 'Real-time incident response & threat triage' },
   
-  // AI INTELLIGENCE & ADVANCED DEFENSE
+  // AI INTELLIGENCE
   { name: 'voice', id: 'voice', icon: Mic, category: 'AI_INTEL', badge: 'VOICE AI', shortcut: '6', description: 'AI voice clone detection & synthetic speech analysis' },
   { name: 'copilot', id: 'copilot', icon: Bot, category: 'AI_INTEL', badge: 'AI SOC', shortcut: '7', description: 'Autonomous cybersecurity copilot & forensic queries' },
-  { name: 'feedback', id: 'feedback', icon: Sliders, category: 'AI_INTEL', shortcut: '8', description: 'Human-in-the-loop ML model calibration & feedback' },
+  { name: 'feedback', id: 'feedback', icon: Sliders, category: 'AI_INTEL', shortcut: '8', description: 'Human-in-the-loop ML model calibration & adaptive learning' },
 
   // SYSTEM & API
   { name: 'api', id: 'api', icon: Terminal, category: 'PLATFORM', description: 'Enterprise REST API access & token management' },
@@ -195,8 +195,12 @@ export function Layout({
     );
   });
 
+  if (activeTab === 'landing') {
+    return <>{children}</>;
+  }
+
   return (
-    <div className="flex h-screen w-full bg-[#050811] text-white overflow-hidden relative selection:bg-cyber-blue selection:text-black font-sans print:h-auto print:overflow-visible print:bg-[#050811]">
+    <div className="flex h-screen w-full bg-[#080b10] text-white overflow-hidden relative selection:bg-cyber-blue selection:text-black font-sans print:h-auto print:overflow-visible print:bg-[#080b10]">
       {/* Background Cyber Grid */}
       <div className="bg-grid absolute inset-0 opacity-30 pointer-events-none print:hidden" />
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyber-blue/5 rounded-full blur-[140px] pointer-events-none print:hidden" />
@@ -208,7 +212,7 @@ export function Layout({
          ======================================================== */}
       <aside 
         className={cn(
-          "hidden md:flex h-full flex-shrink-0 border-r border-cyber-border/40 bg-[#070b14]/95 backdrop-blur-2xl z-30 flex-col py-4 box-border shadow-[10px_0_30px_rgba(0,0,0,0.6)] transition-all duration-300 relative print:hidden",
+          "hidden md:flex h-full flex-shrink-0 border-r border-cyber-border/40 bg-[#0c1017]/95 backdrop-blur-2xl z-30 flex-col py-4 box-border shadow-[10px_0_30px_rgba(0,0,0,0.6)] transition-all duration-300 relative print:hidden",
           isSidebarCollapsed ? "w-20 px-2.5 items-center" : "w-64 xl:w-72 px-4"
         )}
       >
@@ -218,7 +222,7 @@ export function Layout({
           isSidebarCollapsed ? "justify-center px-0" : "px-2 justify-between"
         )}>
           <div 
-            onClick={() => handleNavClick('dashboard')} 
+            onClick={() => handleNavClick('landing')} 
             className="flex items-center gap-3 cursor-pointer group"
           >
             <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
@@ -663,6 +667,16 @@ export function Layout({
                 {t('ai_models_active')}
               </div>
             </div>
+
+            {/* Landing Page Preview Button */}
+            <button
+              onClick={() => handleNavClick('landing')}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-cyber-blue/15 text-gray-400 hover:text-cyber-blue border border-white/5 hover:border-cyber-blue/30 text-xs font-mono transition-all cursor-pointer"
+              title="View Product Landing Page"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>Landing Page</span>
+            </button>
 
             {/* Global Search Bar Trigger for Computers */}
             <button

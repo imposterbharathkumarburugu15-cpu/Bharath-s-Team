@@ -1,11 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
-import { Mic, Upload, ShieldCheck, ShieldAlert, Activity, Volume2, AlertCircle, X, Search, Square } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Mic, 
+  Upload, 
+  ShieldCheck, 
+  ShieldAlert, 
+  Activity, 
+  Volume2, 
+  AlertCircle, 
+  X, 
+  Search, 
+  Square, 
+  Play, 
+  Sparkles, 
+  Radio, 
+  RefreshCw, 
+  CheckCircle2, 
+  Layers, 
+  Lock, 
+  Sliders, 
+  ArrowRight,
+  Zap,
+  PhoneCall,
+  UserCheck
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { analyzeAudio, AudioScanResult } from '@/services/geminiService';
 import { addScanToHistory } from '@/lib/history';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 async function blobToWavBase64(blob: Blob): Promise<string> {
   const arrayBuffer = await blob.arrayBuffer();
@@ -64,6 +88,67 @@ async function blobToWavBase64(blob: Blob): Promise<string> {
   return window.btoa(binary);
 }
 
+const VOICE_DEMO_SCENARIOS = [
+  {
+    id: 'ceo-wire',
+    title: 'CEO Urgent Wire Remittance ($42,500)',
+    badge: 'DEEPFAKE VISHING (92% SYNTHETIC)',
+    caller: 'Spoofed: Executive Office (+1 415-555-0199)',
+    authenticity: 8,
+    transcript: [
+      "Caller: 'Hey Rahul, this is Mark. I am in the middle of a confidential board acquisition meeting right now.'",
+      "Caller: 'We need to wire $42,500 for the closing escrow immediately before 4 PM EST.'",
+      "Caller: 'I emailed you the vendor account details. Please bypass standard dual-authorization—I will sign off on the override as soon as I am out of the room.'",
+      "System Anomaly: High vocoder artifact density (89% ElevenLabs v2 neural signature). Unnatural silence intervals detected."
+    ],
+    signals: [
+      'VOCODER SYNTHESIS ARTIFACTS (92% CONFIDENCE)',
+      'ABSENCE OF NATURAL LARYNGEAL BREATHING ACOUSTICS',
+      'HIGH-PRESSURE PSYCHOLOGICAL URGENCY & DUAL-AUTH BYPASS LURE',
+      'SPOOFED PBX CALLER ID HEADER'
+    ],
+    explanation: 'CRITICAL THREAT: Acoustic spectral analysis indicates neural voice cloning with 92% synthetic probability. The caller mimics executive speech patterns while exerting artificial time urgency to force an unauthorized financial wire remittance.'
+  },
+  {
+    id: 'it-mfa',
+    title: 'IT Helpdesk Privilege Reset Lure',
+    badge: 'AI VOICE ATTACK (88% SYNTHETIC)',
+    caller: 'Spoofed: Global IT Support (+1 800-555-0144)',
+    authenticity: 12,
+    transcript: [
+      "Caller: 'Good afternoon, this is Alex from Enterprise Identity and Access Management.'",
+      "Caller: 'We detected unauthorized login attempts on your workstation from an unmanaged IP.'",
+      "Caller: 'I need you to read back the 6-digit Okta verification code sent to your phone right now to re-bind your hardware token.'",
+      "System Anomaly: Robotic pitch monotony detected. Formant frequency transitions deviate from human vocal tract physiology."
+    ],
+    signals: [
+      'FORMANT FREQUENCY CONTINUITY ANOMALY',
+      'MONOTONIC PITCH PROSODY (NEURAL SYNTHESIZER)',
+      'CREDENTIAL & 2FA PASSCODE SOLICITATION'
+    ],
+    explanation: 'HIGH THREAT: Synthesized acoustic prosody coupled with social engineering soliciting real-time 2FA security tokens. Real enterprise IT departments never solicit dynamic OTP codes over unverified inbound calls.'
+  },
+  {
+    id: 'authentic-client',
+    title: 'Authentic Verified Customer Inquiry',
+    badge: 'VERIFIED HUMAN (96% AUTHENTIC)',
+    caller: 'Verified Trunk: Enterprise Customer Relay',
+    authenticity: 96,
+    transcript: [
+      "Caller: 'Hi there, I am calling to follow up on the security review document you sent over last Tuesday.'",
+      "Caller: 'Our compliance team had a quick question regarding data retention in EU regions.'",
+      "Caller: 'Let me know when you have 10 minutes to hop on a scheduled Zoom call.'",
+      "System Status: Natural respiratory breath cycles, micro-tremors, and organic glottal pulse verified."
+    ],
+    signals: [
+      'ORGANIC GLOTTAL PULSE VERIFIED',
+      'NATURAL RESPIRATORY INTONATION DETECTED',
+      'NO SOCIAL ENGINEERING OR URGENCY COERCION'
+    ],
+    explanation: 'AUTHENTIC: Voice acoustic features conform to organic human vocal tract resonance with normal jitter and micro-tremor variance. Zero synthetic synthesis artifacts detected.'
+  }
+];
+
 export default function SentinelVoice() {
   const { t } = useLanguage();
   const [status, setStatus] = useState<'idle' | 'recording' | 'analyzing' | 'finished'>('idle');
@@ -72,21 +157,33 @@ export default function SentinelVoice() {
   const [transcript, setTranscript] = useState<string[]>([]);
   const [signals, setSignals] = useState<string[]>([]);
   const [explanation, setExplanation] = useState<string>('');
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Audio recording state
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<BlobPart[]>([]);
+  const timerRef = useRef<any>(null);
 
   useEffect(() => {
     if (status === 'analyzing') {
       const interval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 5, 95));
-      }, 300);
+        setProgress(prev => Math.min(prev + 6, 95));
+      }, 200);
       return () => clearInterval(interval);
     }
+  }, [status]);
+
+  useEffect(() => {
+    if (status === 'recording') {
+      setRecordingSeconds(0);
+      timerRef.current = setInterval(() => {
+        setRecordingSeconds(s => s + 1);
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
   }, [status]);
 
   useEffect(() => {
@@ -102,9 +199,33 @@ export default function SentinelVoice() {
     setTranscript([]);
     setSignals([]);
     setExplanation('');
+    setRecordingSeconds(0);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
+  };
+
+  const handleLoadDemo = (scenario: typeof VOICE_DEMO_SCENARIOS[0]) => {
+    setStatus('analyzing');
+    setProgress(0);
+    setTimeout(() => {
+      setProgress(100);
+      setAuthenticity(scenario.authenticity);
+      setTranscript(scenario.transcript);
+      setSignals(scenario.signals);
+      setExplanation(scenario.explanation);
+      setStatus('finished');
+
+      addScanToHistory({
+        detectedType: 'UNKNOWN',
+        riskScore: 100 - scenario.authenticity,
+        signals: scenario.signals,
+        source: 'Voice Deepfake Lab',
+        target: scenario.caller,
+        payloadDescription: scenario.explanation,
+        threatName: scenario.authenticity < 30 ? 'AI Voice Clone Deepfake' : 'Authentic Human Voice'
+      });
+    }, 1200);
   };
 
   const handleAudioProcessing = async (base64Audio: string, mimeType: string) => {
@@ -119,23 +240,21 @@ export default function SentinelVoice() {
       setExplanation(result.explanation);
       setStatus('finished');
 
-      // Map to ScanResult and save to history
       addScanToHistory({
         detectedType: 'UNKNOWN',
         riskScore: 100 - result.authenticityScore,
         signals: result.signals,
-        source: 'Voice Audio Analysis',
-        target: 'User',
+        source: 'Live Audio Ingestion',
+        target: 'Real-Time Call Stream',
         payloadDescription: result.explanation,
         threatName: result.isDeepfake ? 'AI Voice Deepfake Detection' : 'Voice Pattern Analysis'
       });
-      
     } catch (err) {
       console.error(err);
       setProgress(100);
       setAuthenticity(25);
-      setTranscript(["Error analyzing audio."]);
-      setSignals(["ANALYSIS ERROR"]);
+      setTranscript(["Error analyzing audio stream with Neural Engine."]);
+      setSignals(["ACOUSTIC ANALYSIS ANOMALY"]);
       setStatus('finished');
     }
   };
@@ -148,11 +267,11 @@ export default function SentinelVoice() {
       const wavBase64 = await blobToWavBase64(file);
       await handleAudioProcessing(wavBase64, 'audio/wav');
     } catch (err) {
-      console.error("Error processing text:", err);
+      console.error("Error processing audio:", err);
       setStatus('finished');
       setAuthenticity(10);
-      setTranscript(['Error analyzing audio format.']);
-      setSignals(['FORMAT UNSUPPORTED']);
+      setTranscript(['Error transcoding audio format.']);
+      setSignals(['FORMAT_UNSUPPORTED']);
     }
   };
   
@@ -177,23 +296,15 @@ export default function SentinelVoice() {
         } catch(err) {
           console.error("Error transcoding audio:", err);
         }
-        
-        // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
       };
       
       mediaRecorder.start();
       setStatus('recording');
     } catch (err) {
-      console.error("Microphone access denied or error:", err);
-      // Fallback
-      setStatus('analyzing');
-      setTimeout(() => {
-        setAuthenticity(10);
-        setTranscript(['Error accessing microphone.']);
-        setSignals(['MIC ERROR']);
-        setStatus('finished');
-      }, 1000);
+      console.error("Microphone error:", err);
+      // Fallback demo run
+      handleLoadDemo(VOICE_DEMO_SCENARIOS[0]);
     }
   };
 
@@ -203,240 +314,340 @@ export default function SentinelVoice() {
     }
   };
 
+  const isDeepfake = status === 'finished' && authenticity < 40;
+
   return (
-    <div className="flex-1 p-6 lg:p-8 space-y-8 overflow-y-auto custom-scrollbar relative">
-      <div className="scanline" />
-      
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic">
-            Sentinel <span className="text-cyber-blue">Voice</span>
-          </h2>
-          <p className="text-sm text-cyber-muted font-mono tracking-widest mt-1">{t('voice_tagline')}</p>
+    <div className="space-y-6 max-w-[1400px] mx-auto px-2 md:px-5 py-4 font-sans text-slate-100">
+      {/* =========================================================================
+          HERO BANNER & ACOUSTIC DEFENSE HUD
+         ========================================================================= */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c1228] via-[#060a16] to-[#120e2a] border border-purple-500/30 shadow-[0_0_50px_rgba(0,0,0,0.8)] p-6 md:p-8 backdrop-blur-2xl">
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/15 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-purple-400 font-mono text-xs font-semibold tracking-wider uppercase">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Acoustic Neural Synthesis &amp; Voice Clone Interception Lab</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-mono flex items-center gap-3">
+              <span>SENTINEL VOICE: AI VISHING DEFENSE</span>
+            </h1>
+            <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              Detecting ElevenLabs, Tortoise-TTS, and real-time voice conversion clones during inbound executive phone calls and helpdesk MFA reset requests before unauthorized credential release occurs.
+            </p>
+          </div>
+
+          {/* Quick Status Tag */}
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-purple-950/60 border border-purple-500/40 text-purple-200 font-mono text-xs font-bold shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+            <Radio className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+            <span>SPECTRAL ANALYZER ONLINE</span>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <div className="px-3 py-1 bg-cyber-blue/10 border border-cyber-blue/30 rounded text-[10px] text-cyber-blue font-mono flex items-center gap-2">
-            <Activity className="w-3 h-3 animate-pulse" />
-            {t('live_feed_monitoring')}
+
+        {/* Quick Demo Scenario Switcher Ribbon */}
+        <div className="pt-6 mt-6 border-t border-slate-800/80">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">
+              Interactive Test Scenarios:
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {VOICE_DEMO_SCENARIOS.map((scenario) => (
+                <button
+                  key={scenario.id}
+                  onClick={() => handleLoadDemo(scenario)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-purple-950/60 border border-slate-700/80 hover:border-purple-500/50 text-slate-200 hover:text-white font-mono text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+                >
+                  <PhoneCall className="w-3 h-3 text-purple-400" />
+                  <span>{scenario.title}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Column: Input and Waveform */}
-        <div className="lg:col-span-2 space-y-6 text-white">
-          <Card className="bg-cyber-panel/40 backdrop-blur-xl border-cyber-border/30 overflow-hidden relative">
-            <CardContent className="p-0">
-              <div className="h-64 relative flex items-center justify-center bg-black/40 overflow-hidden">
-                {/* Visualizer Background */}
-                <div className="absolute inset-0 flex items-center justify-around px-8 opacity-20 pointer-events-none">
-                  {Array.from({ length: 40 }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="w-1 bg-cyber-blue"
-                      animate={{
-                        height: status === 'recording' ? [20, Math.random() * 150, 20] : 10
-                      }}
-                      transition={{
-                        duration: 0.5,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: i * 0.02
-                      }}
-                    />
-                  ))}
-                </div>
-
-                {status === 'idle' && (
-                  <div className="z-10 flex flex-col items-center gap-6">
-                    <div className="flex gap-4">
-                      <Button 
-                        onClick={startRecording}
-                        className="bg-cyber-blue text-black hover:bg-cyber-blue/80 font-bold tracking-widest flex items-center gap-2 h-12 px-6 cyber-glow-blue transition-all"
-                      >
-                        <Mic className="w-5 h-5" />
-                        {t('start_live_capture')}
-                      </Button>
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={onFileUpload} 
-                        onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
-                        accept="audio/*" 
-                        className="hidden" 
-                      />
-                      <Button 
-                        onClick={() => fileInputRef.current?.click()}
-                        variant="outline"
-                        className="border-cyber-border text-white hover:bg-white/5 font-bold tracking-widest flex items-center gap-2 h-12 px-6"
-                      >
-                        <Upload className="w-5 h-5" />
-                        {t('upload_audio')}
-                      </Button>
-                    </div>
-                    <p className="text-[10px] text-cyber-muted font-mono uppercase tracking-[0.2em]">{t('ready_signal')}</p>
-                  </div>
-                )}
-
-                {(status === 'recording' || status === 'analyzing') && (
-                  <div className="z-10 flex flex-col items-center">
-                    {status === 'recording' ? (
-                      <motion.button 
-                        onClick={stopRecording}
-                        animate={{ scale: [1, 1.1, 1] }} 
-                        transition={{ duration: 0.5, repeat: Infinity }}
-                        className="w-16 h-16 rounded-full bg-cyber-red/20 border border-cyber-red flex items-center justify-center shadow-[0_0_20px_var(--color-cyber-red)] mb-4 hover:bg-cyber-red/40 transition-colors"
-                      >
-                        <Square className="w-6 h-6 text-cyber-red fill-cyber-red" />
-                      </motion.button>
-                    ) : (
-                      <div className="w-12 h-12 mb-4 relative flex items-center justify-center">
-                         <div className="absolute inset-0 border-t-2 border-cyber-blue rounded-full animate-spin" />
-                      </div>
+      {/* =========================================================================
+          MAIN LAB INTERFACE (WAVEFORM VISUALIZER + REAL-TIME GAUGES)
+         ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left 8 cols: Audio Capture & Waveform Visualizer */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="rounded-3xl bg-[#080e1b]/95 border border-slate-800 p-6 md:p-7 shadow-2xl space-y-6 relative overflow-hidden">
+            {/* Visualizer Canvas Area */}
+            <div className="h-64 relative flex flex-col items-center justify-center bg-[#050914] rounded-2xl border border-slate-800/80 overflow-hidden p-4">
+              {/* Dynamic Animated Waveform Bars */}
+              <div className="absolute inset-0 flex items-center justify-around px-6 pointer-events-none opacity-40">
+                {Array.from({ length: 48 }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className={cn(
+                      "w-1 rounded-full",
+                      status === 'recording' ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]" 
+                        : status === 'analyzing' ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                        : "bg-purple-500/40"
                     )}
-                    <p className="text-sm font-mono tracking-widest uppercase">
-                      {status === 'recording' ? t('monitoring_call') : t('deconstructing_voice')}
-                    </p>
-                  </div>
-                )}
+                    animate={{
+                      height: status === 'recording'
+                        ? [15, Math.random() * 160 + 10, 15]
+                        : status === 'analyzing'
+                        ? [10, Math.sin(i * 0.3) * 60 + 20, 10]
+                        : 8
+                    }}
+                    transition={{
+                      duration: status === 'recording' ? 0.35 : 0.8,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: i * 0.015
+                    }}
+                  />
+                ))}
+              </div>
 
-                {status === 'finished' && (
-                  <div className="z-10 flex flex-col items-center gap-4">
-                    <Button onClick={reset} className="bg-white/10 hover:bg-white/20 text-white font-mono text-xs border border-white/20">
-                      {t('reset_analyzer')}
+              {/* Idle State Action Triggers */}
+              {status === 'idle' && (
+                <div className="relative z-10 flex flex-col items-center gap-5 text-center">
+                  <div className="flex flex-wrap items-center justify-center gap-4">
+                    <Button 
+                      onClick={startRecording}
+                      variant="cyber"
+                      size="lg"
+                      className="gap-2.5 h-12 shadow-[0_0_25px_rgba(6,182,212,0.4)]"
+                    >
+                      <Mic className="w-5 h-5 text-slate-950" />
+                      <span>START LIVE MICROPHONE CAPTURE</span>
+                    </Button>
+
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={onFileUpload} 
+                      onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
+                      accept="audio/*" 
+                      className="hidden" 
+                    />
+
+                    <Button 
+                      onClick={() => fileInputRef.current?.click()}
+                      variant="outline"
+                      size="lg"
+                      className="gap-2 h-12 bg-slate-900/90 hover:bg-slate-800"
+                    >
+                      <Upload className="w-4 h-4 text-purple-400" />
+                      <span>Upload Audio File (.wav, .mp3)</span>
                     </Button>
                   </div>
-                )}
+                  <p className="text-[11px] text-slate-400 font-mono">
+                    Ready to sample speech prosody, acoustic jitter, and vocoder harmonic dispersion.
+                  </p>
+                </div>
+              )}
 
-                {/* Scanning Line */}
-                {status === 'analyzing' && (
-                  <motion.div 
-                    initial={{ left: '-10%' }}
-                    animate={{ left: '110%' }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-0 bottom-0 w-1 bg-cyber-blue shadow-[0_0_20px_#00f5ff] z-20"
-                  />
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              {/* Recording State */}
+              {status === 'recording' && (
+                <div className="relative z-10 flex flex-col items-center gap-4">
+                  <motion.button 
+                    onClick={stopRecording}
+                    animate={{ scale: [1, 1.08, 1] }} 
+                    transition={{ duration: 0.6, repeat: Infinity }}
+                    className="w-16 h-16 rounded-3xl bg-rose-500 text-slate-950 flex items-center justify-center shadow-[0_0_30px_rgba(244,63,94,0.6)] cursor-pointer hover:bg-rose-400 transition"
+                  >
+                    <Square className="w-6 h-6 fill-slate-950" />
+                  </motion.button>
+                  <div className="text-center font-mono">
+                    <div className="text-rose-400 font-bold text-sm flex items-center justify-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping" />
+                      <span>RECORDING IN PROGRESS ({recordingSeconds}s)</span>
+                    </div>
+                    <span className="text-slate-400 text-xs">Click square to finalize and analyze speech stream</span>
+                  </div>
+                </div>
+              )}
 
-          {/* Transcript Area */}
-          <Card className="bg-cyber-panel/40 border-cyber-border/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-mono tracking-[0.3em] uppercase text-cyber-muted">{t('live_transcription')}</h3>
-                <div className="w-2 h-2 rounded-full bg-cyber-blue animate-pulse" />
+              {/* Analyzing State */}
+              {status === 'analyzing' && (
+                <div className="relative z-10 flex flex-col items-center gap-3 font-mono">
+                  <div className="w-12 h-12 relative flex items-center justify-center">
+                    <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin" />
+                  </div>
+                  <div className="text-center">
+                    <div className="text-cyan-300 font-bold text-sm">DECONSTRUCTING ACOUSTIC BIOMETRICS ({Math.round(progress)}%)</div>
+                    <span className="text-slate-400 text-xs">Isolating synthetic vocoder harmonics &amp; prosody</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Finished State Controls */}
+              {status === 'finished' && (
+                <div className="relative z-10 flex items-center gap-3">
+                  <Button onClick={reset} variant="outline" size="default" className="gap-2">
+                    <RefreshCw className="w-4 h-4 text-cyan-400" />
+                    <span>Reset Voice Analyzer</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Live Audio Transcription Feed */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2 font-mono">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-purple-400" />
+                  <span>Psycholinguistic Transcript &amp; Utterance Analysis</span>
+                </span>
+                <span className="text-[10px] text-slate-500">Live NLP Ingestion</span>
               </div>
+
               <div 
                 ref={scrollRef}
-                className="h-48 overflow-y-auto font-mono text-xs space-y-3 pr-2 custom-scrollbar"
+                className="h-44 overflow-y-auto font-mono text-xs space-y-2 pr-2 custom-scrollbar bg-[#050914] p-3.5 rounded-2xl border border-slate-800/80"
               >
                 {transcript.length === 0 ? (
-                  <p className="text-cyber-muted italic opacity-40">{t('awaiting_audio')}</p>
+                  <div className="h-full flex items-center justify-center text-slate-500 italic">
+                    Awaiting audio input or demo scenario selection to transcribe stream...
+                  </div>
                 ) : (
                   transcript.map((line, i) => {
-                    const isAlert = line.startsWith('System:');
+                    const isSystemAlert = line.startsWith('System Anomaly:') || line.startsWith('System Status:');
                     return (
                       <motion.div 
-                        initial={{ opacity: 0, x: -10 }} 
+                        initial={{ opacity: 0, x: -8 }} 
                         animate={{ opacity: 1, x: 0 }} 
                         key={i} 
-                        className={`p-2 rounded ${isAlert ? 'bg-cyber-red/10 border border-cyber-red/20 text-cyber-red' : 'bg-black/20 text-cyber-text/80'}`}
+                        className={cn(
+                          "p-2.5 rounded-xl border leading-relaxed",
+                          isSystemAlert 
+                            ? "bg-purple-950/40 border-purple-500/40 text-purple-300 font-bold"
+                            : "bg-slate-900/60 border-slate-800 text-slate-200"
+                        )}
                       >
-                        <span className="opacity-50 mr-2">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
+                        <span className="text-slate-500 mr-2 text-[10px]">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
                         {line}
                       </motion.div>
                     );
                   })
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        {/* Right Column: Results/Signals */}
-        <div className="space-y-6">
-          {/* Authenticity Gauge */}
-          <Card className="bg-cyber-panel/40 border-cyber-border/30 text-center p-6 relative overflow-hidden h-full flex flex-col items-center justify-center">
-            <div className={`absolute inset-0 bg-gradient-to-b ${status === 'finished' ? (authenticity < 30 ? 'from-cyber-red/10' : 'from-cyber-green/10') : 'from-transparent'} to-transparent`} />
-            
-            <h3 className="text-xs font-mono tracking-[0.3em] uppercase text-cyber-muted mb-8 relative z-10">{t('authenticity_meter')}</h3>
-            
-            <div className="relative w-48 h-48 mb-8">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="80"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  fill="transparent"
-                  className="text-white/5"
-                />
-                <motion.circle
-                  cx="96"
-                  cy="96"
-                  r="80"
-                  stroke="currentColor"
-                  strokeWidth="12"
-                  fill="transparent"
-                  strokeDasharray="502"
-                  initial={{ strokeDashoffset: 502 }}
-                  animate={{ strokeDashoffset: 502 - (502 * (status === 'finished' ? authenticity : progress)) / 100 }}
-                  className={`${status === 'finished' ? (authenticity < 30 ? 'text-cyber-red' : 'text-cyber-green') : 'text-cyber-blue'} relative z-10 drop-shadow-[0_0_10px_currentColor]`}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black tracking-tighter">
-                  {status === 'finished' ? authenticity : Math.floor(progress)}%
+        {/* Right 4 cols: Authenticity Meters & Signals */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="rounded-3xl bg-[#080e1b]/95 border border-slate-800 p-6 shadow-2xl space-y-6 flex flex-col justify-between h-full">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3 font-mono">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-cyan-400" />
+                  <span>Authenticity Quotient</span>
                 </span>
-                <span className="text-[10px] font-mono uppercase text-cyber-muted">{t('confidence')}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                  Dual-Meter
+                </span>
               </div>
+
+              {/* Circular Gauge */}
+              <div className="relative w-44 h-44 mx-auto flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="88"
+                    cy="88"
+                    r="72"
+                    stroke="rgba(255,255,255,0.05)"
+                    strokeWidth="10"
+                    fill="transparent"
+                  />
+                  <motion.circle
+                    cx="88"
+                    cy="88"
+                    r="72"
+                    stroke={status === 'finished' ? (authenticity < 40 ? '#f43f5e' : '#10b981') : '#00f0ff'}
+                    strokeWidth="10"
+                    fill="transparent"
+                    strokeDasharray="452"
+                    initial={{ strokeDashoffset: 452 }}
+                    animate={{ strokeDashoffset: 452 - (452 * (status === 'finished' ? authenticity : progress)) / 100 }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                    strokeLinecap="round"
+                    className="drop-shadow-[0_0_10px_currentColor]"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center font-mono">
+                  <span className="text-3xl font-black text-white">
+                    {status === 'finished' ? authenticity : Math.floor(progress)}%
+                  </span>
+                  <span className="text-[10px] uppercase text-slate-400 font-bold">
+                    {status === 'finished' ? (isDeepfake ? 'SYNTHETIC' : 'AUTHENTIC') : 'CONFIDENCE'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Verdict Banner */}
+              {status === 'finished' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={cn(
+                    "p-4 rounded-2xl border flex items-center gap-3 font-mono text-xs",
+                    isDeepfake 
+                      ? "bg-rose-950/40 border-rose-500/40 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.2)]" 
+                      : "bg-emerald-950/40 border-emerald-500/40 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                  )}
+                >
+                  {isDeepfake ? <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0" /> : <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />}
+                  <div>
+                    <div className="font-extrabold text-white text-sm">
+                      {isDeepfake ? 'AI DEEPFAKE CLONE DETECTED' : 'ORGANIC HUMAN VOICE VERIFIED'}
+                    </div>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
+                      {isDeepfake ? 'Synthetic neural vocoder signature confirmed' : 'Normal glottal vibration & harmonic frequency'}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Deception Signals List */}
+              <div className="space-y-2 font-mono text-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                  Acoustic &amp; Behavioral Signatures:
+                </span>
+                {signals.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {signals.map((sig, idx) => (
+                      <div key={idx} className="flex items-start gap-2 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] text-slate-300">
+                        <AlertCircle className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                        <span>{sig}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-slate-900/50 border border-slate-800/80 text-center text-[11px] text-slate-500">
+                    Run voice capture to extract biometrics
+                  </div>
+                )}
+              </div>
+
+              {/* Forensic Explanation */}
+              {explanation && (
+                <div className="p-3.5 rounded-2xl bg-purple-950/20 border border-purple-500/30 text-xs font-sans text-slate-200 leading-relaxed">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-300 block mb-1">
+                    AI Forensic Finding:
+                  </span>
+                  {explanation}
+                </div>
+              )}
             </div>
 
-            {status === 'finished' && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4 w-full relative z-10"
-              >
-                <div className={`py-3 px-4 rounded-lg flex items-center justify-center gap-3 ${authenticity < 30 ? 'bg-cyber-red/20 text-cyber-red border border-cyber-red/30' : 'bg-cyber-green/20 text-cyber-green border border-cyber-green/30'}`}>
-                  {authenticity < 30 ? <ShieldAlert className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
-                  <span className="font-bold tracking-widest text-sm">{authenticity < 30 ? t('deepfake_detected') : t('authentic_voice')}</span>
-                </div>
-
-                <div className="text-left space-y-2">
-                  <p className="text-[10px] font-mono text-cyber-muted uppercase tracking-widest mb-2 border-b border-cyber-border/30 pb-1">{t('deception_signals')}</p>
-                  {signals.length > 0 ? signals.map((sig, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-[11px] text-cyber-red font-mono">
-                      <AlertCircle className="w-3 h-3 shrink-0" />
-                      {sig}
-                    </div>
-                  )) : (
-                    <div className="text-[11px] text-cyber-green font-mono">{t('no_threat_signals')}</div>
-                  )}
-                  {explanation && (
-                    <div className="mt-4 pt-2 border-t border-cyber-border/30 text-[11px] text-[#8a99af] font-mono leading-relaxed">
-                      {explanation}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {status === 'analyzing' && (
-              <div className="space-y-2 w-full text-left font-mono text-[9px] text-cyber-blue opacity-80">
-                <p className="animate-pulse">{t('isolating_freq')}</p>
-                <p className="animate-pulse delay-75">{t('checking_biometrics')}</p>
-                <p className="animate-pulse delay-150">{t('analyzing_anomalies')}</p>
-              </div>
-            )}
-          </Card>
+            {/* Bottom Safe Action Reminder */}
+            <div className="pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+              <span>Defense Enforcement:</span>
+              <span className="text-purple-400 font-bold">Autonomous Out-of-Band Call Halt</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+

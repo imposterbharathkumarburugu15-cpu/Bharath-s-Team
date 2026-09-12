@@ -43,10 +43,10 @@ export function SihForensicSuite({
   const primaryUrl = dossier.urlForensics?.[0]?.domain || (dossier.iocs?.urls?.[0]?.url ? new URL(dossier.iocs.urls[0].url).hostname : 'secure-verify-auth.workers.dev');
 
   // Mutation signals derivation
-  const hasHomoglyphs = Boolean(dossier.domainAnalysis?.senderDomain?.isLookalike || dossier.urlForensics?.some(u => u.hasPunycode));
+  const hasHomoglyphs = Boolean(dossier.domainAnalysis?.senderDomain?.isTyposquat || dossier.urlForensics?.some(u => (u as any).hasPunycode || u.hasAnchorMismatch || u.isReverseTunnel));
   const hasReverseTunnel = Boolean(
-    dossier.urlForensics?.some(u => u.rawUrl.includes('trycloudflare') || u.rawUrl.includes('ngrok') || u.rawUrl.includes('workers.dev')) ||
-    dossier.headerFields?.received?.some(r => r.includes('tunnel') || r.includes('cloudflare'))
+    dossier.urlForensics?.some(u => u.rawUrl.includes('trycloudflare') || u.rawUrl.includes('ngrok') || u.rawUrl.includes('workers.dev') || u.isReverseTunnel) ||
+    dossier.relayReconstruction?.chronologicalHops?.some(r => r.rawHeader?.includes('tunnel') || r.rawHeader?.includes('cloudflare'))
   );
   const hasPromptInjection = dossier.contentAnalysis?.promptInjection === 'DETECTED';
   const hasHiddenText = Boolean(dossier.contentAnalysis?.hiddenHtmlElementsDetected || dossier.contentAnalysis?.suspiciousFormsDetected);
@@ -248,9 +248,9 @@ export function SihForensicSuite({
                     <div className="flex items-center gap-2 text-[11px] text-gray-400">
                       <Clock className="w-3 h-3 text-cyan-400" />
                       <span>{hop.timestamp || 'Recorded upon delivery'}</span>
-                      {hop.delaySeconds !== undefined && hop.delaySeconds > 0 && (
+                      {((hop as any).delaySeconds !== undefined || hop.delayToNextHopSeconds !== undefined) && (
                         <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[10px]">
-                          +{hop.delaySeconds}s delay
+                          +{hop.delayToNextHopSeconds ?? (hop as any).delaySeconds}s delay
                         </span>
                       )}
                     </div>
@@ -269,9 +269,9 @@ export function SihForensicSuite({
                     </div>
                     <div>
                       <span className="text-gray-500 block text-[10px] uppercase">Cryptographic Authentication</span>
-                      <span className={hop.forged ? "text-red-400 font-bold flex items-center gap-1" : "text-emerald-400 flex items-center gap-1"}>
-                        {hop.forged ? <AlertTriangle className="w-3 h-3 text-red-400" /> : <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
-                        <span>{hop.forged ? 'Anomalous / Forged Header' : 'Valid Transmission Protocol'}</span>
+                      <span className={(hop.isAnomalous || (hop as any).forged) ? "text-red-400 font-bold flex items-center gap-1" : "text-emerald-400 flex items-center gap-1"}>
+                        {(hop.isAnomalous || (hop as any).forged) ? <AlertTriangle className="w-3 h-3 text-red-400" /> : <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+                        <span>{(hop.isAnomalous || (hop as any).forged) ? 'Anomalous / Forged Header' : 'Valid Transmission Protocol'}</span>
                       </span>
                     </div>
                   </div>
@@ -352,7 +352,7 @@ export function SihForensicSuite({
             <div className="p-3.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
               <span className="text-[10px] text-gray-500 uppercase">Infrastructure Type</span>
               <div className="text-sm font-black text-amber-300">
-                {dossier.originIP?.isDatacenter ? 'DATACENTER / CLOUD' : dossier.originIP?.isVpn ? 'COMMERCIAL VPN' : 'HOSTING FACILITY'}
+                {(dossier.originIP as any)?.isDatacenter ? 'DATACENTER / CLOUD' : (dossier.originIP as any)?.isVpn ? 'COMMERCIAL VPN' : 'HOSTING FACILITY'}
               </div>
               <span className="text-[10px] text-gray-400 block">Non-Residential Origin (MTA Server)</span>
             </div>
@@ -366,7 +366,7 @@ export function SihForensicSuite({
             <div className="p-3.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
               <span className="text-[10px] text-gray-500 uppercase">Abuse / Threat Rating</span>
               <div className="text-sm font-black text-red-400">
-                {dossier.originIP?.reputationScore ? `${dossier.originIP.reputationScore}/100 Risk` : 'ELEVATED (88/100)'}
+                {(dossier.originIP as any)?.reputationScore ? `${(dossier.originIP as any).reputationScore}/100 Risk` : dossier.originIP?.threatReputation || 'ELEVATED (88/100)'}
               </div>
               <span className="text-[10px] text-red-300/80 block">Known Relay in Spamhaus / AbuseIPDB</span>
             </div>
@@ -575,7 +575,7 @@ export function SihForensicSuite({
                 Cryptographic Evidence Seal (SHA-256 Hash):
               </span>
               <span className="font-mono text-cyan-200 text-[11px] break-all select-all">
-                {dossier.chainOfCustody?.sha256Hash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}
+                {dossier.chainOfCustody?.sha256EvidenceHash || (dossier.chainOfCustody as any)?.sha256Hash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}
               </span>
             </div>
             <span className="px-2.5 py-1 rounded bg-blue-500/20 text-blue-300 font-bold text-[10px] border border-blue-500/40 shrink-0">

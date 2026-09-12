@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Layout } from './components/Layout';
-import { LiveScanner } from './pages/Scanner';
-import EmailPhishing from './pages/EmailPhishing';
+import { LandingPage } from './pages/LandingPage';
 import { Dashboard } from './pages/Dashboard';
+import EmailPhishing from './pages/EmailPhishing';
+import { LiveScanner } from './pages/Scanner';
 import { Alerts } from './pages/Alerts';
 import SentinelVoice from './pages/SentinelVoice';
 import { ApiAccess } from './pages/ApiAccess';
@@ -13,33 +14,49 @@ import { FeedbackDashboard } from './pages/FeedbackDashboard';
 import { GuardPage } from './pages/Guard';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
+      if (hash === 'landing' || hash === 'home') return 'landing';
+      if (hash === 'dashboard' || hash === 'overview') return 'dashboard';
+      if (hash === 'phishing' || hash === 'email' || hash === 'inbox') return 'phishing';
+      if (hash === 'guard') return 'guard';
+      if (hash === 'scanner' || hash === 'network') return 'scanner';
+      if (hash === 'alerts') return 'alerts';
+      if (hash === 'copilot') return 'copilot';
+      if (hash === 'voice') return 'voice';
+      if (hash === 'feedback') return 'feedback';
+      if (hash === 'api') return 'api';
+      if (hash === 'settings') return 'settings';
+    }
+    return 'landing';
+  });
 
   useEffect(() => {
     // Sync with location hash
     const handleHashChange = () => {
-      const hash = window.location.hash.replace(/^#\/?/, '').trim();
-      if (hash === 'attack-graph' || hash === 'graph' || hash === 'wave') {
+      const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
+      if (hash === 'landing' || hash === 'home') {
+        setActiveTab('landing');
+      } else if (hash === 'dashboard' || hash === 'overview' || hash === 'attack-graph' || hash === 'graph' || hash === 'wave') {
         setActiveTab('dashboard');
+      } else if (hash === 'phishing' || hash === 'email' || hash === 'inbox' || hash === 'analyze') {
+        setActiveTab('phishing');
       } else if (hash === 'guard') {
         setActiveTab('guard');
-      } else if (hash === 'scanner') {
+      } else if (hash === 'scanner' || hash === 'network' || hash === 'tunnel') {
         setActiveTab('scanner');
-      } else if (hash === 'phishing') {
-        setActiveTab('phishing');
-      } else if (hash === 'alerts') {
+      } else if (hash === 'alerts' || hash === 'incidents') {
         setActiveTab('alerts');
-      } else if (hash === 'dashboard') {
-        setActiveTab('dashboard');
-      } else if (hash === 'copilot') {
+      } else if (hash === 'copilot' || hash === 'soc') {
         setActiveTab('copilot');
-      } else if (hash === 'voice') {
+      } else if (hash === 'voice' || hash === 'deepfake') {
         setActiveTab('voice');
       } else if (hash === 'feedback' || hash === 'hitl' || hash === 'learning') {
         setActiveTab('feedback');
-      } else if (hash === 'api') {
+      } else if (hash === 'api' || hash === 'tokens' || hash === 'developer') {
         setActiveTab('api');
-      } else if (hash === 'settings') {
+      } else if (hash === 'settings' || hash === 'config') {
         setActiveTab('settings');
       }
     };
@@ -54,32 +71,41 @@ function App() {
     window.addEventListener('hashchange', handleHashChange);
     window.addEventListener('neuroshield:navigate', handleCustomNavigate);
 
-    // Initial check
-    if (window.location.hash) {
-      handleHashChange();
-    }
-
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('neuroshield:navigate', handleCustomNavigate);
     };
   }, []);
 
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    window.location.hash = newTab;
+  };
+
   const renderContent = () => {
     switch (activeTab) {
+      case 'landing':
+        return (
+          <LandingPage 
+            onNavigateToDashboard={() => handleTabChange('dashboard')} 
+            onNavigateToInboxShield={() => handleTabChange('phishing')} 
+            onNavigateToScanner={() => handleTabChange('scanner')} 
+          />
+        );
       case 'dashboard':
         return <Dashboard />;
+      case 'phishing':
+      case 'analyze':
+        return <EmailPhishing />;
       case 'guard':
         return (
           <GuardPage
-            onNavigateToForensics={() => setActiveTab('copilot')}
-            onNavigateTab={(tab) => setActiveTab(tab)}
+            onNavigateToForensics={() => handleTabChange('copilot')}
+            onNavigateTab={(tab) => handleTabChange(tab)}
           />
         );
       case 'scanner':
         return <LiveScanner />;
-      case 'phishing':
-        return <EmailPhishing />;
       case 'copilot':
         return <Copilot />;
       case 'voice':
@@ -93,27 +119,19 @@ function App() {
       case 'settings':
         return <Settings />;
       default:
-        return (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center space-y-4">
-              <div className="text-cyber-blue/50 text-6xl font-mono mb-4">404</div>
-              <h2 className="text-xl font-mono text-cyber-muted">MODULE_NOT_FOUND</h2>
-              <p className="text-sm text-cyber-muted/50">The requested interface is under construction.</p>
-            </div>
-          </div>
-        );
+        return <Dashboard />;
     }
   };
 
   return (
-    <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+    <Layout activeTab={activeTab} setActiveTab={handleTabChange}>
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 15, filter: 'blur(8px)' }}
+          initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -15, filter: 'blur(8px)' }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          exit={{ opacity: 0, y: -12, filter: 'blur(6px)' }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
           className="h-full w-full flex flex-col"
         >
           {renderContent()}
