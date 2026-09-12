@@ -11,7 +11,7 @@ interface InboxShieldViewProps {
   emails: InboxEmailItem[];
   isLoading?: boolean;
   onRefresh?: () => void;
-  onSelectEmailForAnalysis: (email: InboxEmailItem) => void;
+  onSelectEmailForAnalysis: (email: InboxEmailItem, initialTab?: 'forensics' | 'neural') => void;
   onOpenRfcLab?: () => void;
   onOpenDnsLookup?: () => void;
   onConnectGmail?: () => void;
@@ -467,7 +467,7 @@ export function InboxShieldView({
 
                   {/* View Analysis Button */}
                   <button
-                    onClick={() => onSelectEmailForAnalysis(item)}
+                    onClick={() => onSelectEmailForAnalysis(item, 'forensics')}
                     className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-mono font-bold bg-[#0c1424] hover:bg-cyan-500/20 text-white hover:text-cyan-300 border border-white/10 hover:border-cyan-500/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
                   >
                     <span>{t('view_analysis_btn')}</span>
@@ -500,7 +500,7 @@ export function InboxShieldView({
                         </button>
                         <button
                           onClick={() => { 
-                            setOpenMenuId(null);
+                            setOpenMenuId(null); 
                             navigator.clipboard.writeText(item.rawHeaders);
                           }}
                           className="w-full text-left px-2.5 py-1.5 rounded-lg text-cyan-400 hover:bg-white/5 cursor-pointer"
@@ -509,8 +509,8 @@ export function InboxShieldView({
                         </button>
                         <button
                           onClick={() => { 
-                            setOpenMenuId(null);
-                            onSelectEmailForAnalysis(item);
+                            setOpenMenuId(null); 
+                            onSelectEmailForAnalysis(item, 'neural');
                           }}
                           className="w-full text-left px-2.5 py-1.5 rounded-lg text-purple-400 hover:bg-white/5 cursor-pointer"
                         >

@@ -31,9 +31,10 @@ import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 interface EmailForensicsPanelProps {
   dossier: ForensicDossier;
   compact?: boolean;
+  hideNeuralProfile?: boolean;
 }
 
-export function EmailForensicsPanel({ dossier, compact = false }: EmailForensicsPanelProps) {
+export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfile = false }: EmailForensicsPanelProps) {
   // Audience View Mode: 'unified' (default), 'plain-english' (for regular users), 'technical' (deep SOC)
   const [viewMode, setViewMode] = useState<'unified' | 'plain-english' | 'technical'>('unified');
 
@@ -44,7 +45,7 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
   const [copiedSocReport, setCopiedSocReport] = useState<boolean>(false);
   const [showGeoRadar, setShowGeoRadar] = useState<boolean>(false);
   const [copiedPlaybookKey, setCopiedPlaybookKey] = useState<string | null>(null);
-  const [showNeuralProfile, setShowNeuralProfile] = useState<boolean>(true);
+  const [showNeuralProfile, setShowNeuralProfile] = useState<boolean>(!hideNeuralProfile);
 
   const targetDomain = dossier.senderIdentity.fromDomain || dossier.authentication.dmarc.headerFromDomain || 'domain.com';
 
@@ -146,7 +147,7 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
   };
 
   const navSections = [
-    { id: 'neural-profile', label: '1. Neural Profile' },
+    ...(!hideNeuralProfile ? [{ id: 'neural-profile', label: '1. Neural Profile' }] : []),
     { id: 'plain-english-explainer', label: '2. Plain-English' },
     { id: 'executive-forensic-summary', label: '3. Summary' },
     { id: 'email-forensic-anatomy-visualization', label: '4. Anatomy' },
@@ -279,24 +280,26 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
             <span className="hidden sm:inline">Live DNS</span>
           </button>
 
-          <button
-            onClick={() => {
-              const next = !showNeuralProfile;
-              setShowNeuralProfile(next);
-              if (next) {
-                setTimeout(() => scrollToSection('neural-profile'), 80);
-              }
-            }}
-            className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-              showNeuralProfile 
-                ? 'bg-purple-500 text-white shadow-[0_0_12px_rgba(168,85,247,0.5)] border border-purple-400' 
-                : 'bg-white/10 hover:bg-white/20 text-purple-300 border border-purple-500/30'
-            }`}
-            title="Inspect Neural Profile & Cognitive Threat Telemetry"
-          >
-            <Brain className="w-4 h-4 text-purple-400" />
-            <span className="hidden sm:inline">Neural Profile</span>
-          </button>
+          {!hideNeuralProfile && (
+            <button
+              onClick={() => {
+                const next = !showNeuralProfile;
+                setShowNeuralProfile(next);
+                if (next) {
+                  setTimeout(() => scrollToSection('neural-profile'), 80);
+                }
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                showNeuralProfile 
+                  ? 'bg-purple-500 text-white shadow-[0_0_12px_rgba(168,85,247,0.5)] border border-purple-400' 
+                  : 'bg-white/10 hover:bg-white/20 text-purple-300 border border-purple-500/30'
+              }`}
+              title="Inspect Neural Profile & Cognitive Threat Telemetry"
+            >
+              <Brain className="w-4 h-4 text-purple-400" />
+              <span className="hidden sm:inline">Neural Profile</span>
+            </button>
+          )}
         </div>
       </nav>
 
@@ -322,50 +325,52 @@ export function EmailForensicsPanel({ dossier, compact = false }: EmailForensics
       )}
 
       {/* 1. NEURAL PROFILE SEPARATE BUTTON & EXPANDABLE CARD (SHOWN FIRST) */}
-      <div id="neural-profile" className="bg-[#0a0f1c] border border-purple-500/30 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.25)]">
-              <Brain className="w-5 h-5 text-purple-300 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                  1. Neural Profile & Behavioral Sender Analysis
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
-                  Layer 2 Engine
-                </span>
+      {!hideNeuralProfile && (
+        <div id="neural-profile" className="bg-[#0a0f1c] border border-purple-500/30 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.25)]">
+                <Brain className="w-5 h-5 text-purple-300 animate-pulse" />
               </div>
-              <p className="text-[11px] text-gray-300 font-sans mt-0.5">
-                Cognitive urgency scoring, Amygdala hijack detection, and executive impersonation mimicry.
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                    1. Neural Profile & Behavioral Sender Analysis
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
+                    Layer 2 Engine
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-300 font-sans mt-0.5">
+                  Cognitive urgency scoring, Amygdala hijack detection, and executive impersonation mimicry.
+                </p>
+              </div>
             </div>
+
+            <button
+              onClick={() => setShowNeuralProfile(!showNeuralProfile)}
+              className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap shadow-md active:scale-95 w-full sm:w-auto ${
+                showNeuralProfile
+                  ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+                  : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40'
+              }`}
+            >
+              <Brain className="w-4 h-4" />
+              <span>{showNeuralProfile ? 'Hide Neural Profile' : 'Inspect Neural Profile'}</span>
+              {showNeuralProfile ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
           </div>
 
-          <button
-            onClick={() => setShowNeuralProfile(!showNeuralProfile)}
-            className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap shadow-md active:scale-95 w-full sm:w-auto ${
-              showNeuralProfile
-                ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
-                : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40'
-            }`}
-          >
-            <Brain className="w-4 h-4" />
-            <span>{showNeuralProfile ? 'Hide Neural Profile' : 'Inspect Neural Profile'}</span>
-            {showNeuralProfile ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+          {showNeuralProfile && (
+            <div className="pt-4 mt-4 border-t border-purple-500/20">
+              <NeuralProfile
+                dossier={dossier}
+                onOpenFullForensics={() => scrollToSection('executive-forensic-summary')}
+              />
+            </div>
+          )}
         </div>
-
-        {showNeuralProfile && (
-          <div className="pt-4 mt-4 border-t border-purple-500/20">
-            <NeuralProfile
-              dossier={dossier}
-              onOpenFullForensics={() => scrollToSection('executive-forensic-summary')}
-            />
-          </div>
-        )}
-      </div>
+      )}
 
       {/* 2. PLAIN-ENGLISH USER EXPLAINER (Rendered in Plain-English and Unified views) */}
       {(viewMode === 'plain-english' || viewMode === 'unified') && (

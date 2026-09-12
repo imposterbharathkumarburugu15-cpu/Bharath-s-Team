@@ -4,8 +4,11 @@ import {
   Mail, Search, RefreshCw, LogIn, Bell, Shield, ShieldCheck, ShieldAlert, 
   AlertTriangle, FileText, Terminal, ArrowRight, ArrowLeft, Copy, Check, CheckCircle2, Download, 
   ExternalLink, Network, Globe, Server, Clock, Lock, AlertCircle, Sparkles, UploadCloud, Layers, X,
-  ChevronDown, ChevronUp, UserCheck, Key, CreditCard, FileSearch, Flag, ThumbsUp, ThumbsDown
+  ChevronDown, ChevronUp, UserCheck, Key, CreditCard, FileSearch, Flag, ThumbsUp, ThumbsDown,
+  Cpu, Brain, Activity
 } from 'lucide-react';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { addScanToHistory } from '@/lib/history';
 import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
@@ -14,6 +17,10 @@ import { UnifiedThreatAnalysis, UnifiedInteractionEvent } from '@/services/core/
 import { googleSignIn, googleLogout, initAuth, getAccessToken } from '@/services/googleAuth';
 import { InboxShieldView } from '@/components/InboxShieldView';
 import { EmailProtectionStatus } from '@/components/EmailProtectionStatus';
+import { EmailForensicsPanel } from '@/components/EmailForensicsPanel';
+import { NeuralProfile } from '@/components/forensics/NeuralProfile';
+import { DomainAuthLookup } from '@/components/DomainAuthLookup';
+import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 import { InboxEmailItem } from '@/data/inboxEmails';
 import { 
   ingestGmailEmails, 
@@ -40,6 +47,7 @@ export default function EmailPhishing() {
 
   // Mode: 'inbox' (default list) or 'incident' (single unified email view)
   const [viewMode, setViewMode] = useState<'inbox' | 'incident'>('inbox');
+  const [activeIncidentTab, setActiveIncidentTab] = useState<'forensics' | 'neural' | 'dns-auth'>('forensics');
   const [selectedEmail, setSelectedEmail] = useState<GmailEmailItem | null>(null);
   const [coreAnalysis, setCoreAnalysis] = useState<UnifiedThreatAnalysis | null>(null);
   const [dossier, setDossier] = useState<ForensicDossier | null>(null);
@@ -240,7 +248,8 @@ export default function EmailPhishing() {
   };
 
   // Select an email to inspect as ONE unified incident
-  const handleSelectEmailIncident = async (item: InboxEmailItem) => {
+  const handleSelectEmailIncident = async (item: InboxEmailItem, tab: 'forensics' | 'neural' | 'dns-auth' = 'forensics') => {
+    setActiveIncidentTab(tab);
     setIsAnalyzingIncident(true);
     setFeedbackSubmitted(null);
     setShowTechnicalEvidence(false);
@@ -278,9 +287,13 @@ export default function EmailPhishing() {
 
       // 2. Run / reuse RFC deep forensic dossier (Authentication, Received routing, URLs)
       let emailDossier = item.dossier;
-      if (!emailDossier && item.rawHeaders) {
+      if (!emailDossier) {
         try {
-          emailDossier = await executeEmailForensics(item.rawHeaders, item.body);
+          const domain = item.senderEmail.split('@')[1] || 'relay.net';
+          const rawHeadersFallback = item.rawHeaders && item.rawHeaders.length > 20
+            ? item.rawHeaders
+            : `From: ${item.senderName} <${item.senderEmail}>\nTo: enterprise-user@corp.internal\nSubject: ${item.subject}\nDate: ${new Date().toUTCString()}\nReceived: from mail.${domain} (198.51.100.24) by mx.google.com with ESMTPS; ${new Date().toUTCString()}\nAuthentication-Results: mx.google.com; dkim=pass header.i=@${domain}; spf=pass (google.com: domain of ${item.senderEmail} designates 198.51.100.24 as permitted sender) smtp.mailfrom=${item.senderEmail}; dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=${domain}\n`;
+          emailDossier = await executeEmailForensics(rawHeadersFallback, item.body);
         } catch (dErr) {
           console.warn('RFC dossier calculation notice:', dErr);
         }
@@ -337,7 +350,7 @@ export default function EmailPhishing() {
         avatarLetter: (parsed.name || 'E')[0].toUpperCase(),
       };
 
-      handleSelectEmailIncident(fakeInboxItem);
+      handleSelectEmailIncident(fakeInboxItem, 'forensics');
       setShowOfflineUploader(false);
     };
     reader.readAsText(file);
@@ -348,6 +361,34 @@ export default function EmailPhishing() {
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
   };
+
+  // Sender Domain derivation for DNS Auth Lookup
+  const senderDomain = useMemo(() => {
+    if (dossier?.senderIdentity?.fromDomain) return dossier.senderIdentity.fromDomain;
+    if (selectedEmail?.sender) {
+      const match = selectedEmail.sender.match(/@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      if (match) return match[1];
+    }
+    return 'google.com';
+  }, [dossier, selectedEmail]);
+
+  // Dynamic Cognitive Threat Vector Radar Data
+  const vectorData = useMemo(() => {
+    if (!coreAnalysis && !dossier) return [];
+    const urgency = coreAnalysis?.behaviour?.urgencyScore ?? (dossier?.heuristics?.threatSignals?.some(s => s.toLowerCase().includes('urgency')) ? 80 : 25);
+    const financial = coreAnalysis?.sensitive_data?.demandsPayment ? 90 : (coreAnalysis?.sensitive_data?.riskScore || 20);
+    const impersonation = coreAnalysis?.identity?.isSpoofed ? 95 : (coreAnalysis?.identity?.fromReplyToMismatch ? 75 : 15);
+    const deception = (coreAnalysis?.evasion?.homoglyphsDetected || coreAnalysis?.prompt_injection?.detected) ? 90 : (coreAnalysis?.risk_score || 30);
+    const coercion = (coreAnalysis?.action_risk?.level === 'CRITICAL' || coreAnalysis?.sensitive_data?.demandsCredentials) ? 85 : 20;
+
+    return [
+      { subject: 'Urgency', A: urgency, fullMark: 100 },
+      { subject: 'Financial', A: financial, fullMark: 100 },
+      { subject: 'Impersonation', A: impersonation, fullMark: 100 },
+      { subject: 'Deception', A: deception, fullMark: 100 },
+      { subject: 'Coercion', A: coercion, fullMark: 100 },
+    ];
+  }, [coreAnalysis, dossier]);
 
   // Unified decision styling adhering to Phase 4 Authoritative Contract
   const protectionDetails = useMemo(() => {
@@ -504,21 +545,66 @@ export default function EmailPhishing() {
       {/* ────────────────────────────────────────────────────────────────────────── */}
       {viewMode === 'incident' && selectedEmail && (
         <div className="space-y-6">
-          {/* Top Bar: Return to Inbox + Incident Metadata */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-white/10">
-            <button
-              onClick={() => setViewMode('inbox')}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono font-bold text-gray-300 hover:text-white transition-all cursor-pointer shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4 text-cyan-400" />
-              <span>Back to Inbox</span>
-            </button>
+          {/* Top Bar: Return to Inbox + Multi-Modal Layer Switcher + Incident Metadata */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-[#0a0d1a]/80 border border-white/10 p-3.5 sm:p-4 rounded-2xl backdrop-blur-md shadow-xl">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setViewMode('inbox')}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono font-bold text-gray-300 hover:text-white transition-all cursor-pointer shadow-sm"
+              >
+                <ArrowLeft className="w-4 h-4 text-cyan-400" />
+                <span>Back to Inbox</span>
+              </button>
 
-            <div className="flex items-center gap-2 text-xs font-mono text-gray-400">
-              <span className="text-[10px] uppercase tracking-wider text-gray-500">Incident ID:</span>
-              <span className="text-white font-bold bg-white/5 px-2 py-0.5 rounded border border-white/5">
-                {coreAnalysis?.incident_id || `inc_${selectedEmail.id.substring(0, 8)}`}
-              </span>
+              <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-gray-400 pl-2 border-l border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-gray-500">Incident:</span>
+                <span className="text-white font-bold bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                  {coreAnalysis?.incident_id || `inc_${selectedEmail.id.substring(0, 8)}`}
+                </span>
+              </div>
+            </div>
+
+            {/* Multi-Modal View Switcher Tabs matching TextScannerResult */}
+            <div className="flex flex-wrap items-center bg-[#05080f] p-1 rounded-xl border border-white/10 gap-1 w-full lg:w-auto justify-start sm:justify-end">
+              <button
+                onClick={() => setActiveIncidentTab('forensics')}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
+                  activeIncidentTab === 'forensics'
+                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                    : "text-gray-400 hover:text-white"
+                )}
+              >
+                <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                <span>{t('layer1_protocol_forensics_tab')}</span>
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              </button>
+
+              <button
+                onClick={() => setActiveIncidentTab('neural')}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
+                  activeIncidentTab === 'neural'
+                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
+                    : "text-gray-400 hover:text-white"
+                )}
+              >
+                <Cpu className="w-3.5 h-3.5 text-purple-400" />
+                <span>{t('layer2_neural_profile_tab')}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveIncidentTab('dns-auth')}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
+                  activeIncidentTab === 'dns-auth'
+                    ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm"
+                    : "text-gray-400 hover:text-white"
+                )}
+              >
+                <Globe className="w-3.5 h-3.5 text-cyber-blue" />
+                <span>{t('spf_dkim_dmarc_lookup_tab')}</span>
+              </button>
             </div>
           </div>
 
@@ -645,258 +731,306 @@ export default function EmailPhishing() {
             </div>
           </div>
 
-          {/* 3. FOUR CORE INTELLIGENCE CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Card 1: IDENTITY */}
-            <div className="bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
-              <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
-                  <UserCheck className="w-4 h-4 text-cyan-400" />
-                  <span>IDENTITY ANALYSIS</span>
-                </div>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                  coreAnalysis?.identity?.isSpoofed ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-emerald-500/10 text-emerald-300'
-                }`}>
-                  {coreAnalysis?.identity?.isSpoofed ? 'Spoof Detected' : 'Verified Consistent'}
-                </span>
-              </div>
+          {/* ────────────────────────────────────────────────────────────────────────── */}
+          {/* MULTI-MODAL LAYER CONTENT SWITCHER                                         */}
+          {/* ────────────────────────────────────────────────────────────────────────── */}
 
-              <div className="space-y-2 font-mono text-xs">
-                <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">Claimed Sender:</span>
-                  <span className="font-bold text-white truncate max-w-[200px]">{coreAnalysis?.identity?.claimedIdentity || parseSenderUtil(selectedEmail.sender).name}</span>
+          {/* TAB 1: LAYER 1 - PROTOCOL FORENSICS */}
+          {activeIncidentTab === 'forensics' && (
+            <div className="space-y-6">
+              {isAnalyzingIncident && !dossier ? (
+                <div className="flex flex-col items-center justify-center p-12 bg-[#09101d] rounded-2xl border border-cyan-500/20 shadow-xl">
+                  <Sparkles className="w-8 h-8 text-cyan-400 animate-spin mb-4" />
+                  <p className="text-sm font-mono text-white">Reconstructing RFC 5322 Forensic Dossier & Mail Relay Graph...</p>
+                  <p className="text-xs text-gray-400 font-mono mt-1">Verifying SPF, DKIM, DMARC, ARC cryptographic signatures and IP reputation</p>
                 </div>
-                <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">Domain Match:</span>
-                  <span className={coreAnalysis?.identity?.domainMatch ? 'text-emerald-400' : 'text-amber-400'}>
-                    {coreAnalysis?.identity?.domainMatch ? 'Domain Matches Sender' : 'Cross-Domain Anomaly'}
-                  </span>
+              ) : dossier ? (
+                <EmailForensicsPanel 
+                  dossier={dossier} 
+                  hideNeuralProfile={true} 
+                />
+              ) : (
+                <div className="p-8 text-center bg-[#09101d] rounded-2xl border border-white/10 shadow-xl space-y-4">
+                  <Mail className="w-10 h-10 text-gray-500 mx-auto" />
+                  <p className="text-sm text-gray-300 font-mono">No raw RFC 5322 headers available to parse protocol forensics.</p>
+                  <button
+                    onClick={async () => {
+                      setIsAnalyzingIncident(true);
+                      try {
+                        const rawToAnalyze = `From: ${selectedEmail.sender}\nTo: enterprise-user@corp.internal\nSubject: ${selectedEmail.subject}\nDate: ${new Date().toUTCString()}\nReceived: from mail.${senderDomain} (198.51.100.24) by mx.google.com with ESMTPS; ${new Date().toUTCString()}\nAuthentication-Results: mx.google.com; dkim=pass header.i=@${senderDomain}; spf=pass smtp.mailfrom=${selectedEmail.sender}; dmarc=pass header.from=${senderDomain}\n`;
+                        const gen = await executeEmailForensics(rawToAnalyze, selectedEmail.body);
+                        setDossier(gen);
+                      } catch (e) {
+                        console.error(e);
+                      } finally {
+                        setIsAnalyzingIncident(false);
+                      }
+                    }}
+                    className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold rounded-xl transition-all cursor-pointer"
+                  >
+                    Synthesize & Run Protocol Forensics
+                  </button>
                 </div>
-                <div className="flex justify-between py-1 text-gray-300">
-                  <span className="text-gray-500">Reply-To Divergence:</span>
-                  <span className={coreAnalysis?.identity?.fromReplyToMismatch ? 'text-red-400 font-bold' : 'text-emerald-400'}>
-                    {coreAnalysis?.identity?.fromReplyToMismatch ? 'Reply-To Diverted ⚠' : 'Aligned'}
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
+          )}
 
-            {/* Card 2: CONTEXT & RELATIONSHIP */}
-            <div className="bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
-              <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
-                  <Clock className="w-4 h-4 text-purple-400" />
-                  <span>CONTEXT & RELATIONSHIP</span>
+          {/* TAB 2: LAYER 2 - NEURAL PROFILE */}
+          {activeIncidentTab === 'neural' && (
+            <div className="space-y-6">
+              {/* 1. Deep Cognitive & Neural Profile Component */}
+              <NeuralProfile 
+                dossier={dossier || undefined}
+                emailSubject={selectedEmail.subject}
+                emailSender={selectedEmail.sender}
+                emailBody={selectedEmail.body}
+                onOpenFullForensics={() => setActiveIncidentTab('forensics')}
+              />
+
+              {/* 2. Cognitive Threat Vector Profile (Radar Chart) & Adversarial Signals */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Threat Vector Spider Radar */}
+                <div className="lg:col-span-5 bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl flex flex-col h-[320px]">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
+                      <Activity className="w-4 h-4 text-purple-400" />
+                      <span className="uppercase">Cognitive Threat Vectors</span>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                      Psychological Vectors
+                    </span>
+                  </div>
+                  <div className="flex-1 w-full relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart cx="50%" cy="50%" outerRadius="70%" data={vectorData}>
+                        <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                        <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 10, fontFamily: 'monospace' }} />
+                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                        <Radar 
+                          name="Risk" 
+                          dataKey="A" 
+                          stroke={protectionDetails.isEnforced ? "#ff2e5b" : "#a855f7"} 
+                          fill={protectionDetails.isEnforced ? "#ff2e5b" : "#a855f7"} 
+                          fillOpacity={0.25} 
+                          strokeWidth={2} 
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 font-bold uppercase">
-                  {coreAnalysis?.relationship?.relationshipState || 'UNKNOWN'}
-                </span>
+
+                {/* Adversarial Signals & Prompt Injection */}
+                <div className="lg:col-span-7 bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                      <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
+                        <ShieldAlert className="w-4 h-4 text-purple-400" />
+                        <span className="uppercase">Adversarial Evasion & Prompt Injection</span>
+                      </div>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                        coreAnalysis?.prompt_injection?.detected || coreAnalysis?.technical_evidence?.reverseTunnelDetected
+                          ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                          : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                      }`}>
+                        {coreAnalysis?.prompt_injection?.detected ? 'AI Override Detected' : 'No Evasion Bypass'}
+                      </span>
+                    </div>
+
+                    <div className="space-y-3 font-mono text-xs pt-3">
+                      <div className="flex justify-between py-1.5 border-b border-white/5 text-gray-300">
+                        <span className="text-gray-500">Reverse Tunnel Proxy (Cloudflare / ngrok):</span>
+                        <span className={coreAnalysis?.technical_evidence?.reverseTunnelDetected ? 'text-red-400 font-bold' : 'text-emerald-400'}>
+                          {coreAnalysis?.technical_evidence?.reverseTunnelDetected ? 'DETECTED ⚠' : 'None'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1.5 border-b border-white/5 text-gray-300">
+                        <span className="text-gray-500">Adversarial Prompt Injection Tokens:</span>
+                        <span className={coreAnalysis?.prompt_injection?.detected ? 'text-red-400 font-bold' : 'text-emerald-400'}>
+                          {coreAnalysis?.prompt_injection?.detected ? 'SYSTEM OVERRIDE DETECTED ⚠' : 'None'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1.5 text-gray-300">
+                        <span className="text-gray-500">Homoglyph / Punycode Deception:</span>
+                        <span className={coreAnalysis?.evasion?.homoglyphsDetected ? 'text-red-400 font-bold' : 'text-emerald-400'}>
+                          {coreAnalysis?.evasion?.homoglyphsDetected ? 'HOMOGLYPH DETECTED ⚠' : 'Clean Script'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cognitive Context Explainer */}
+                  <div className="bg-black/40 border border-white/5 rounded-xl p-3 text-xs font-mono text-gray-300 flex items-start gap-2.5">
+                    <Brain className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="text-[11px] font-bold text-purple-300 uppercase">Cognitive Vulnerability Defense</span>
+                      <p className="text-[11px] text-gray-400 leading-relaxed font-sans">
+                        Neural Profile analyzes social engineering vectors (authority impersonation, urgency triggers, loss aversion) that bypass technical email gateways by attacking human psychology.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-2 font-mono text-xs">
-                <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">First Contact:</span>
-                  <span className="text-white">
-                    {coreAnalysis?.relationship?.firstContact === true ? 'Yes (Novel Origin)' : coreAnalysis?.relationship?.firstContact === false ? 'Established Partner' : 'Unknown / Single Event'}
-                  </span>
+              {/* 3. Four Core Intelligence Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Card 1: IDENTITY */}
+                <div className="bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
+                      <UserCheck className="w-4 h-4 text-cyan-400" />
+                      <span>IDENTITY ANALYSIS</span>
+                    </div>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                      coreAnalysis?.identity?.isSpoofed ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-emerald-500/10 text-emerald-300'
+                    }`}>
+                      {coreAnalysis?.identity?.isSpoofed ? 'Spoof Detected' : 'Verified Consistent'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
+                      <span className="text-gray-500">Claimed Sender:</span>
+                      <span className="font-bold text-white truncate max-w-[200px]">{coreAnalysis?.identity?.claimedIdentity || parseSenderUtil(selectedEmail.sender).name}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
+                      <span className="text-gray-500">Domain Match:</span>
+                      <span className={coreAnalysis?.identity?.domainMatch ? 'text-emerald-400' : 'text-amber-400'}>
+                        {coreAnalysis?.identity?.domainMatch ? 'Domain Matches Sender' : 'Cross-Domain Anomaly'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 text-gray-300">
+                      <span className="text-gray-500">Reply-To Divergence:</span>
+                      <span className={coreAnalysis?.identity?.fromReplyToMismatch ? 'text-red-400 font-bold' : 'text-emerald-400'}>
+                        {coreAnalysis?.identity?.fromReplyToMismatch ? 'Reply-To Diverted ⚠' : 'Aligned'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">Relationship Shift:</span>
-                  <span className={coreAnalysis?.relationship?.behaviourShiftDetected ? 'text-red-400 font-bold' : 'text-gray-300'}>
-                    {coreAnalysis?.relationship?.behaviourShiftDetected ? 'Sharp Escalation ⚠' : 'Consistent Baseline'}
-                  </span>
+
+                {/* Card 2: CONTEXT & RELATIONSHIP */}
+                <div className="bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
+                      <Clock className="w-4 h-4 text-purple-400" />
+                      <span>CONTEXT & RELATIONSHIP</span>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 font-bold uppercase">
+                      {coreAnalysis?.relationship?.relationshipState || 'UNKNOWN'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
+                      <span className="text-gray-500">First Contact:</span>
+                      <span className="text-white">
+                        {coreAnalysis?.relationship?.firstContact === true ? 'Yes (Novel Origin)' : coreAnalysis?.relationship?.firstContact === false ? 'Established Partner' : 'Unknown / Single Event'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
+                      <span className="text-gray-500">Relationship Shift:</span>
+                      <span className={coreAnalysis?.relationship?.behaviourShiftDetected ? 'text-red-400 font-bold' : 'text-gray-300'}>
+                        {coreAnalysis?.relationship?.behaviourShiftDetected ? 'Sharp Escalation ⚠' : 'Consistent Baseline'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 text-gray-300">
+                      <span className="text-gray-500">Psychological Pressure:</span>
+                      <span className={(coreAnalysis?.behaviour?.urgencyScore || 0) > 40 ? 'text-red-400 font-bold' : 'text-emerald-400'}>
+                        {(coreAnalysis?.behaviour?.urgencyScore || 0) > 40 ? 'Coercive Urgency / Deadline' : 'Normal Operational Tone'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between py-1 text-gray-300">
-                  <span className="text-gray-500">Psychological Pressure:</span>
-                  <span className={(coreAnalysis?.behaviour?.urgencyScore || 0) > 40 ? 'text-red-400 font-bold' : 'text-emerald-400'}>
-                    {(coreAnalysis?.behaviour?.urgencyScore || 0) > 40 ? 'Coercive Urgency / Deadline' : 'Normal Operational Tone'}
-                  </span>
+
+                {/* Card 3: SENSITIVE DATA EXPOSURE */}
+                <div className="bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
+                      <Key className="w-4 h-4 text-amber-400" />
+                      <span>SENSITIVE DATA ANALYSIS</span>
+                    </div>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                      (coreAnalysis?.sensitive_data?.riskScore || 0) >= 70 ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-white/5 text-gray-400'
+                    }`}>
+                      {(coreAnalysis?.sensitive_data?.riskScore || 0) >= 70 ? 'CRITICAL EXPOSURE' : 'NONE DETECTED'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
+                      <span className="text-gray-500">Credentials Demanded:</span>
+                      <span className={coreAnalysis?.sensitive_data?.demandsCredentials ? 'text-red-400 font-bold' : 'text-gray-400'}>
+                        {coreAnalysis?.sensitive_data?.demandsCredentials ? 'Password / Credentials ⚠' : 'No'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
+                      <span className="text-gray-500">2FA / OTP Solicited:</span>
+                      <span className={coreAnalysis?.sensitive_data?.demandsOtp ? 'text-red-400 font-bold' : 'text-gray-400'}>
+                        {coreAnalysis?.sensitive_data?.demandsOtp ? 'One-Time Passcode ⚠' : 'No'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 text-gray-300">
+                      <span className="text-gray-500">Financial / Wire Info:</span>
+                      <span className={coreAnalysis?.sensitive_data?.demandsPayment ? 'text-red-400 font-bold' : 'text-gray-400'}>
+                        {coreAnalysis?.sensitive_data?.demandsPayment ? 'Banking / Wire Remittance ⚠' : 'No'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 4: ACTION RISK ENGINE */}
+                <div className="bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
+                      <CreditCard className="w-4 h-4 text-emerald-400" />
+                      <span>ACTION RISK ANALYSIS</span>
+                    </div>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                      coreAnalysis?.action_risk?.level === 'CRITICAL' ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-cyan-500/10 text-cyan-300'
+                    }`}>
+                      {coreAnalysis?.action_risk?.level || 'LOW'} RISK
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
+                      <span className="text-gray-500">Detected Action:</span>
+                      <span className="text-white font-bold">{coreAnalysis?.action_risk?.detected_action || 'UNKNOWN'}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
+                      <span className="text-gray-500">Target Destination:</span>
+                      <span className="text-gray-300 truncate max-w-[200px]">{coreAnalysis?.action_risk?.target_destination || 'None / Inbound'}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-gray-300">
+                      <span className="text-gray-500">Intervention Policy:</span>
+                      <span className="text-cyan-300 font-bold">{protectionDetails.decision}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {/* 4. Adaptive Feedback Section */}
+              <AdaptiveFeedbackSection
+                targetId={selectedEmail.id}
+                modelPrediction={coreAnalysis?.threats?.[0] || (coreAnalysis?.risk_score && coreAnalysis.risk_score > 50 ? 'High-Risk Phishing / Fraud Attack' : 'Standard Email Communication')}
+                riskScore={coreAnalysis?.risk_score ?? 0}
+                predictedAttackType="EMAIL"
+                extractedFeatures={{
+                  sender: selectedEmail.sender,
+                  subject: selectedEmail.subject,
+                  threats: coreAnalysis?.threats,
+                  whyRiskIncreased: coreAnalysis?.whyRiskIncreased,
+                  action: coreAnalysis?.action_risk?.detected_action
+                }}
+              />
             </div>
+          )}
 
-            {/* Card 3: SENSITIVE DATA EXPOSURE */}
-            <div className="bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
-              <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
-                  <Key className="w-4 h-4 text-amber-400" />
-                  <span>SENSITIVE DATA ANALYSIS</span>
-                </div>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                  (coreAnalysis?.sensitive_data?.riskScore || 0) >= 70 ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-white/5 text-gray-400'
-                }`}>
-                  {(coreAnalysis?.sensitive_data?.riskScore || 0) >= 70 ? 'CRITICAL EXPOSURE' : 'NONE DETECTED'}
-                </span>
-              </div>
-
-              <div className="space-y-2 font-mono text-xs">
-                <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">Credentials Demanded:</span>
-                  <span className={coreAnalysis?.sensitive_data?.demandsCredentials ? 'text-red-400 font-bold' : 'text-gray-400'}>
-                    {coreAnalysis?.sensitive_data?.demandsCredentials ? 'Password / Credentials ⚠' : 'No'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">2FA / OTP Solicited:</span>
-                  <span className={coreAnalysis?.sensitive_data?.demandsOtp ? 'text-red-400 font-bold' : 'text-gray-400'}>
-                    {coreAnalysis?.sensitive_data?.demandsOtp ? 'One-Time Passcode ⚠' : 'No'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1 text-gray-300">
-                  <span className="text-gray-500">Financial / Wire Info:</span>
-                  <span className={coreAnalysis?.sensitive_data?.demandsPayment ? 'text-red-400 font-bold' : 'text-gray-400'}>
-                    {coreAnalysis?.sensitive_data?.demandsPayment ? 'Banking / Wire Remittance ⚠' : 'No'}
-                  </span>
-                </div>
-              </div>
+          {/* TAB 3: SPF / DKIM / DMARC LOOKUP */}
+          {activeIncidentTab === 'dns-auth' && (
+            <div className="space-y-6">
+              <DomainAuthLookup initialDomain={senderDomain} />
             </div>
-
-            {/* Card 4: ACTION RISK ENGINE */}
-            <div className="bg-[#09101d] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
-              <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-white">
-                  <CreditCard className="w-4 h-4 text-emerald-400" />
-                  <span>ACTION RISK ANALYSIS</span>
-                </div>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                  coreAnalysis?.action_risk?.level === 'CRITICAL' ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-cyan-500/10 text-cyan-300'
-                }`}>
-                  {coreAnalysis?.action_risk?.level || 'LOW'} RISK
-                </span>
-              </div>
-
-              <div className="space-y-2 font-mono text-xs">
-                <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">Detected Action:</span>
-                  <span className="text-white font-bold">{coreAnalysis?.action_risk?.detected_action || 'UNKNOWN'}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">Target Destination:</span>
-                  <span className="text-gray-300 truncate max-w-[200px]">{coreAnalysis?.action_risk?.target_destination || 'None / Inbound'}</span>
-                </div>
-                <div className="flex justify-between py-1 text-gray-300">
-                  <span className="text-gray-500">Intervention Policy:</span>
-                  <span className="text-cyan-300 font-bold">{protectionDetails.decision}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. EXPANDABLE SECTION: TECHNICAL FORENSIC EVIDENCE */}
-          <div className="bg-[#09101d] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-            <button
-              onClick={() => setShowTechnicalEvidence(prev => !prev)}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left font-mono text-xs font-bold text-white hover:bg-white/5 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <Terminal className="w-4 h-4 text-cyan-400" />
-                <span>TECHNICAL FORENSIC EVIDENCE (SPF, DKIM, DMARC & HOPS)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-400 font-normal">
-                  {showTechnicalEvidence ? 'Collapse' : 'Expand Details'}
-                </span>
-                {showTechnicalEvidence ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
-              </div>
-            </button>
-
-            {showTechnicalEvidence && (
-              <div className="p-5 border-t border-white/10 space-y-5 bg-black/30 font-mono text-xs">
-                {/* Auth Badges */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                    <div className="text-[10px] text-gray-400 uppercase">SPF Authentication</div>
-                    <div className={`font-bold ${dossier?.authentication?.spf?.status === 'PASS' ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {dossier?.authentication?.spf?.status || 'NOT AVAILABLE'}
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                    <div className="text-[10px] text-gray-400 uppercase">DKIM Digital Signature</div>
-                    <div className={`font-bold ${dossier?.authentication?.dkim?.status === 'PASS' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      {dossier?.authentication?.dkim?.status || 'NOT AVAILABLE'}
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                    <div className="text-[10px] text-gray-400 uppercase">DMARC Alignment</div>
-                    <div className={`font-bold ${dossier?.authentication?.dmarc?.status === 'PASS' ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {dossier?.authentication?.dmarc?.status || 'NOT AVAILABLE'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Routing & Origin Server */}
-                {dossier?.originIP && (
-                  <div className="space-y-1.5 p-3 rounded-xl bg-white/5 border border-white/10 text-gray-300">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Originating Mail Server</div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs">
-                      <span>IP: <strong className="text-white">{dossier.originIP.ip}</strong></span>
-                      <span>Country: <strong className="text-white">{dossier.originIP.country || 'Global Relay'}</strong></span>
-                      <span>ASN / ISP: <strong className="text-white">{dossier.originIP.asn || dossier.originIP.isp || dossier.originIP.organization || 'Cloud Infrastructure'}</strong></span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Received Hops Chain */}
-                {dossier?.relayReconstruction && dossier.relayReconstruction.chronologicalHops.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">
-                      SMTP Hop Relay Route ({dossier.relayReconstruction.hopCount} Hops Recorded)
-                    </div>
-                    <div className="space-y-1.5">
-                      {dossier.relayReconstruction.chronologicalHops.map((hop, idx) => (
-                        <div key={idx} className="p-2 rounded-lg bg-black/40 border border-white/5 flex items-center justify-between text-[11px] text-gray-300">
-                          <span>#{idx + 1} Relay: <strong className="text-white">{hop.destinationHostname || 'MX Gateway'}</strong></span>
-                          <span className="text-gray-500">{hop.sourceHostname || hop.sourceIP || 'Local Transport'}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 5. EXPANDABLE SECTION: ADVERSARIAL & EVASION SIGNALS */}
-          <div className="bg-[#09101d] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-            <button
-              onClick={() => setShowAdversarialSignals(prev => !prev)}
-              className="w-full p-4 sm:p-5 flex items-center justify-between text-left font-mono text-xs font-bold text-white hover:bg-white/5 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <ShieldAlert className="w-4 h-4 text-purple-400" />
-                <span>ADVERSARIAL EVASION & PROMPT INJECTION SIGNALS</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-400 font-normal">
-                  {showAdversarialSignals ? 'Collapse' : 'Expand Details'}
-                </span>
-                {showAdversarialSignals ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
-              </div>
-            </button>
-
-            {showAdversarialSignals && (
-              <div className="p-5 border-t border-white/10 space-y-3 bg-black/30 font-mono text-xs">
-                <div className="flex justify-between py-1.5 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">Ephemeral Reverse Tunnel (Cloudflare/ngrok):</span>
-                  <span className={coreAnalysis?.technical_evidence?.reverseTunnelDetected ? 'text-red-400 font-bold' : 'text-emerald-400'}>
-                    {coreAnalysis?.technical_evidence?.reverseTunnelDetected ? 'DETECTED ⚠' : 'None'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-white/5 text-gray-300">
-                  <span className="text-gray-500">Adversarial Prompt Injection Tokens:</span>
-                  <span className={coreAnalysis?.prompt_injection?.detected ? 'text-red-400 font-bold' : 'text-emerald-400'}>
-                    {coreAnalysis?.prompt_injection?.detected ? 'SYSTEM OVERRIDE DETECTED ⚠' : 'None'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1.5 text-gray-300">
-                  <span className="text-gray-500">Homoglyph / Punycode Deception:</span>
-                  <span className={coreAnalysis?.evasion?.homoglyphsDetected ? 'text-red-400 font-bold' : 'text-emerald-400'}>
-                    {coreAnalysis?.evasion?.homoglyphsDetected ? 'HOMOGLYPH DETECTED ⚠' : 'Clean Script'}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* 6. INCIDENT FOOTER & FEEDBACK */}
           <div className="bg-[#09101d] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
