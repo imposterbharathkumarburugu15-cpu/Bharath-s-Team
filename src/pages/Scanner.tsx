@@ -246,7 +246,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
           };
         } else if (hasEmailHeaders) {
           res.detectedType = 'EMAIL';
-          res.riskScore = Math.max(res.riskScore || 0, dossier.classification.riskScore);
+          res.riskScore = Math.max(res.riskScore || 0, dossier.scoreBreakdown?.totalRiskScore || (dossier as any).classification?.riskScore || 85);
         }
         
         // Add specific forensic signals
@@ -257,7 +257,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
             'CLOUDFLARE_PROXY_BYPASS',
             'CRITICAL_PHISHING_VECTOR'
           ] : []),
-          `Forensic Verdict: ${dossier.classification.verdict} (${dossier.classification.threatType})`,
+          `Forensic Verdict: ${dossier.scoreBreakdown?.verdict || (dossier as any).classification?.verdict || 'MALICIOUS_PHISHING'}`,
           `SPF: ${dossier.authentication.spf.status} | DKIM: ${dossier.authentication.dkim.status} | DMARC: ${dossier.authentication.dmarc.status}`,
           ...dossier.senderIdentity.inconsistencies.map(inc => `Header Anomaly: ${inc.title}`),
           `Origin IP: ${dossier.originIP.ip} (${dossier.originIP.country || 'Public'})`

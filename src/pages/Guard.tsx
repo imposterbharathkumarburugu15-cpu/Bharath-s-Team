@@ -202,35 +202,35 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-2 font-sans text-slate-200">
       {/* Hero: Proactive Protection Layer (Part A & B) */}
-      <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6 md:p-8 space-y-6">
+      <div className="rounded-2xl bg-[#070d1e]/80 border border-cyber-border/40 p-6 md:p-8 space-y-6 backdrop-blur-xl shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2.5">
-              <span className="p-2 rounded-xl bg-sky-950/80 text-sky-400 border border-sky-800/60">
+              <span className="p-2 rounded-xl bg-cyber-blue/10 text-cyber-blue border border-cyber-blue/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
                 <ShieldCheck className="w-6 h-6" />
               </span>
-              <span className="text-xs font-mono font-bold tracking-widest uppercase text-sky-400">
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-cyber-blue">
                 Automatic Security Layer
               </span>
               <span className={`text-xs font-mono px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 ${
                 isBackendHealthy
-                  ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/60'
+                  ? 'bg-cyber-green/20 text-cyber-green border-cyber-green/40'
                   : isBackendHealthy === false
-                  ? 'bg-rose-950/40 text-rose-400 border-rose-800/60'
-                  : 'bg-amber-950/40 text-amber-400 border-amber-800/60'
+                  ? 'bg-cyber-red/20 text-cyber-red border-cyber-red/40'
+                  : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${
-                  isBackendHealthy ? 'bg-emerald-400' : 'bg-rose-400'
+                  isBackendHealthy ? 'bg-cyber-green' : 'bg-cyber-red'
                 }`} />
                 {isBackendHealthy ? 'Active Protection' : 'Service Degraded'}
               </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold font-mono text-white tracking-tight">
               NeuroShield Guard
             </h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Proactive enforcement client for <strong>NeuroShield Core</strong>. Automatically observes security-relevant browser events, evaluates intent, and intercepts credential theft and deceptive destinations before harm occurs.
+            <p className="text-sm text-slate-300 leading-relaxed font-sans">
+              Proactive enforcement client for <strong className="text-cyber-blue">NeuroShield Core</strong>. Automatically observes security-relevant browser events, evaluates intent, and intercepts credential theft and deceptive destinations before harm occurs.
             </p>
           </div>
 
@@ -238,14 +238,14 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setIsExtensionModalOpen(true)}
-              className="px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-2 cursor-pointer font-mono"
+              className="px-4 py-2.5 bg-cyber-blue hover:bg-cyber-blue/90 text-black text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all flex items-center gap-2 cursor-pointer font-mono active:scale-95"
             >
               <Chrome className="w-4 h-4" />
               Chrome Extension Settings
             </button>
             <button
               onClick={() => setIsQrModalOpen(true)}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg border border-slate-700 transition flex items-center gap-2 cursor-pointer font-mono"
+              className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-bold rounded-xl border border-white/10 transition-all flex items-center gap-2 cursor-pointer font-mono"
             >
               <QrCode className="w-4 h-4 text-amber-400" />
               Scan QR Image
@@ -254,19 +254,19 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
         </div>
 
         {/* Protection Channels Matrix (Part A1 & B1) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/5">
           {/* Channel 1: Chrome Browser */}
-          <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+          <div className="p-4 rounded-xl bg-[#050914]/80 border border-cyber-border/40 space-y-2 shadow-inner">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
-                <Chrome className="w-4 h-4 text-sky-400" />
+                <Chrome className="w-4 h-4 text-cyber-blue" />
                 Browser Protection
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/50 text-emerald-400 border border-emerald-800/60 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-green/20 text-cyber-green border border-cyber-green/40 font-bold">
                 ACTIVE
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-normal">
+            <p className="text-[11px] text-slate-400 leading-normal font-sans">
               Automatically observes navigation, redirects, credential forms, login attempts, downloads, and tunnel evasion.
             </p>
             <div className="text-[10px] font-mono text-slate-500 pt-1">
@@ -275,17 +275,17 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
           </div>
 
           {/* Channel 2: Email (Gmail) */}
-          <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+          <div className="p-4 rounded-xl bg-[#050914]/80 border border-cyber-border/40 space-y-2 shadow-inner">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
-                <Globe className="w-4 h-4 text-emerald-400" />
+                <Globe className="w-4 h-4 text-cyber-green" />
                 Email Ingestion (Gmail)
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/50 text-emerald-400 border border-emerald-800/60 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-green/20 text-cyber-green border border-cyber-green/40 font-bold">
                 AUTOMATED
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-normal">
+            <p className="text-[11px] text-slate-400 leading-normal font-sans">
               Continuous background inbox polling via authorized OAuth connector. Automatic risk analysis and sensitive-data detection.
             </p>
             <div className="text-[10px] font-mono text-slate-500 pt-1">
@@ -294,18 +294,18 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
           </div>
 
           {/* Channel 3: Mobile SMS (Part A1 Truthful Classification) */}
-          <div className="p-4 rounded-xl bg-slate-950/70 border border-amber-800/40 space-y-2">
+          <div className="p-4 rounded-xl bg-[#050914]/80 border border-amber-500/30 space-y-2 shadow-inner">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
                 <Smartphone className="w-4 h-4 text-amber-400" />
                 Mobile SMS Protection
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950/50 text-amber-300 border border-amber-800/60 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
                 INTEGRATION REQUIRED
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-normal">
-              Desktop Chrome extensions cannot access private mobile SMS applications. Automatic SMS protection requires the <strong>NeuroShield Android Agent</strong> or a carrier webhook integration.
+            <p className="text-[11px] text-slate-400 leading-normal font-sans">
+              Desktop Chrome extensions cannot access private mobile SMS applications. Automatic SMS protection requires the <strong className="text-white">NeuroShield Android Agent</strong> or a carrier webhook integration.
             </p>
             <div className="text-[10px] font-mono text-amber-400/90 pt-1">
               SMS Architecture: First-class channel ready for OS-level agent.
