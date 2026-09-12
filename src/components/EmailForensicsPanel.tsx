@@ -26,6 +26,7 @@ import { SocialEngineeringAndNlp } from './forensics/SocialEngineeringAndNlp';
 import { UrlAndAttachmentForensics } from './forensics/UrlAndAttachmentForensics';
 import { CorrelationAndChain } from './forensics/CorrelationAndChain';
 import { FinalVerdictAndRawEvidence } from './forensics/FinalVerdictAndRawEvidence';
+import { SihForensicSuite } from './forensics/SihForensicSuite';
 import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 
 interface EmailForensicsPanelProps {
@@ -147,6 +148,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
   };
 
   const navSections = [
+    { id: 'sih-forensic-suite', label: '🔥 SIH 5 Upgrades' },
     ...(!hideNeuralProfile ? [{ id: 'neural-profile', label: '1. Neural Profile' }] : []),
     { id: 'plain-english-explainer', label: '2. Plain-English' },
     { id: 'executive-forensic-summary', label: '3. Summary' },
@@ -371,6 +373,12 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
           )}
         </div>
       )}
+
+      {/* SIH26106 5-PILLAR FORENSIC SUITE UPGRADES */}
+      <SihForensicSuite 
+        dossier={dossier} 
+        onDrillDown={(target) => setDrillDownTarget(target)} 
+      />
 
       {/* 2. PLAIN-ENGLISH USER EXPLAINER (Rendered in Plain-English and Unified views) */}
       {(viewMode === 'plain-english' || viewMode === 'unified') && (

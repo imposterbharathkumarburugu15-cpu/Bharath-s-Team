@@ -19,6 +19,7 @@ import { InboxShieldView } from '@/components/InboxShieldView';
 import { EmailProtectionStatus } from '@/components/EmailProtectionStatus';
 import { EmailForensicsPanel } from '@/components/EmailForensicsPanel';
 import { NeuralProfile } from '@/components/forensics/NeuralProfile';
+import { SihForensicSuite } from '@/components/forensics/SihForensicSuite';
 import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 import { InboxEmailItem } from '@/data/inboxEmails';
@@ -47,7 +48,7 @@ export default function EmailPhishing() {
 
   // Mode: 'inbox' (default list) or 'incident' (single unified email view)
   const [viewMode, setViewMode] = useState<'inbox' | 'incident'>('inbox');
-  const [activeIncidentTab, setActiveIncidentTab] = useState<'forensics' | 'neural' | 'dns-auth'>('forensics');
+  const [activeIncidentTab, setActiveIncidentTab] = useState<'forensics' | 'neural' | 'sih-suite' | 'dns-auth'>('forensics');
   const [selectedEmail, setSelectedEmail] = useState<GmailEmailItem | null>(null);
   const [coreAnalysis, setCoreAnalysis] = useState<UnifiedThreatAnalysis | null>(null);
   const [dossier, setDossier] = useState<ForensicDossier | null>(null);
@@ -248,7 +249,7 @@ export default function EmailPhishing() {
   };
 
   // Select an email to inspect as ONE unified incident
-  const handleSelectEmailIncident = async (item: InboxEmailItem, tab: 'forensics' | 'neural' | 'dns-auth' = 'forensics') => {
+  const handleSelectEmailIncident = async (item: InboxEmailItem, tab: 'forensics' | 'neural' | 'sih-suite' | 'dns-auth' = 'forensics') => {
     setActiveIncidentTab(tab);
     setIsAnalyzingIncident(true);
     setFeedbackSubmitted(null);
@@ -591,6 +592,19 @@ export default function EmailPhishing() {
               >
                 <Cpu className="w-3.5 h-3.5 text-purple-400" />
                 <span>{t('layer2_neural_profile_tab')}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveIncidentTab('sih-suite')}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
+                  activeIncidentTab === 'sih-suite'
+                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]"
+                    : "text-gray-400 hover:text-white"
+                )}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                <span>🔥 SIH 5 UPGRADES</span>
               </button>
 
               <button
@@ -1029,6 +1043,20 @@ export default function EmailPhishing() {
           {activeIncidentTab === 'dns-auth' && (
             <div className="space-y-6">
               <DomainAuthLookup initialDomain={senderDomain} />
+            </div>
+          )}
+
+          {/* TAB 4: SIH26106 5-PILLAR FORENSIC SUITE UPGRADES */}
+          {activeIncidentTab === 'sih-suite' && (
+            <div className="space-y-6">
+              {dossier ? (
+                <SihForensicSuite dossier={dossier} />
+              ) : (
+                <div className="p-8 text-center bg-[#09101d] rounded-2xl border border-white/10 shadow-xl space-y-4">
+                  <Server className="w-10 h-10 text-cyan-400 mx-auto animate-pulse" />
+                  <p className="text-sm text-gray-300 font-mono">Synthesizing SIH26106 5-Pillar forensic dossier...</p>
+                </div>
+              )}
             </div>
           )}
 
