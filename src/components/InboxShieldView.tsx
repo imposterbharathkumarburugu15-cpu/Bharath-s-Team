@@ -467,7 +467,7 @@ export function InboxShieldView({
 
                   {/* View Analysis Button */}
                   <button
-                    onClick={() => onSelectEmailForAnalysis(item, 'forensics')}
+                    onClick={() => onSelectEmailForAnalysis(item, 'neural')}
                     className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-mono font-bold bg-[#0c1424] hover:bg-cyan-500/20 text-white hover:text-cyan-300 border border-white/10 hover:border-cyan-500/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
                   >
                     <span>{t('view_analysis_btn')}</span>

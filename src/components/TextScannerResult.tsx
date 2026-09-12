@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Shield, AlertTriangle, Link2, X, AlertCircle, Activity, Mail, Terminal, Sparkles, Cpu, Layers, Globe, FileText, Copy, Check, Download } from 'lucide-react';
+import { Shield, AlertTriangle, Link2, X, AlertCircle, Activity, Mail, Terminal, Sparkles, Cpu, Layers, Globe, FileText, Copy, Check, Download, ShieldCheck } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import Markdown from 'react-markdown';
 import { ScanResult } from '@/services/geminiService';
@@ -11,93 +11,14 @@ import { EmailForensicsPanel } from '@/components/EmailForensicsPanel';
 import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
 import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
+import { SihForensicSuite } from '@/components/forensics/SihForensicSuite';
+import { ScrambleText } from '@/components/ScrambleText';
 
 interface TextScannerResultProps {
   scanResult: ScanResult;
   inputText?: string;
   onReset: () => void;
 }
-
-const ScrambleText = ({ original, masked, type, delayParams }: { original: string, masked: string, type: string, delayParams: number }) => {
-  const { t } = useLanguage();
-  const [text, setText] = useState(original);
-  const [phase, setPhase] = useState<'original' | 'scrambling' | 'masked'>('original');
-
-  useEffect(() => {
-    let scrambleInterval: NodeJS.Timeout;
-    const timeout = setTimeout(() => {
-      setPhase('scrambling');
-      let iteration = 0;
-      const maxIterations = 20;
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-      
-      scrambleInterval = setInterval(() => {
-        setText(prev => {
-          const splitOriginal = original.split('');
-          const splitMasked = masked.split('');
-          const currentLength = Math.max(splitOriginal.length, splitMasked.length);
-          
-          return Array.from({ length: currentLength }).map((_, index) => {
-            if (index < (iteration / maxIterations) * currentLength) {
-              return splitMasked[index] || '';
-            }
-            return chars[Math.floor(Math.random() * chars.length)];
-          }).join('');
-        });
-        
-        iteration++;
-        if (iteration > maxIterations) {
-          clearInterval(scrambleInterval);
-          setText(masked);
-          setPhase('masked');
-        }
-      }, 50);
-    }, delayParams * 1000);
-
-    return () => {
-      clearTimeout(timeout);
-      clearInterval(scrambleInterval);
-    };
-  }, [original, masked, delayParams]);
-
-  return (
-    <div className="flex flex-col items-center w-full">
-       <div className="flex items-center justify-between w-full mb-2 px-1">
-         <span className={`text-[9px] uppercase tracking-widest transition-colors duration-500 font-bold bg-white/5 px-2 py-0.5 rounded ${phase === 'masked' ? 'text-[#00ff66]' : 'text-[#8a99af]'}`}>
-           {phase === 'masked' ? t('secured_format') : type || 'Target string'}
-         </span>
-         {phase === 'masked' && (
-           <motion.span 
-             initial={{ opacity: 0, scale: 0 }}
-             animate={{ opacity: 1, scale: 1 }}
-             className="text-[#00ff66]"
-           >
-             <Shield className="w-4 h-4" />
-           </motion.span>
-         )}
-       </div>
-       <motion.div 
-         initial={{ scale: 1 }}
-         animate={{ 
-            scale: phase === 'scrambling' ? [1, 1.02, 1] : 1,
-            filter: phase === 'scrambling' ? ['blur(0px)', 'blur(2px)', 'blur(0px)'] : 'blur(0px)',
-         }}
-         transition={{ duration: 0.1, repeat: phase === 'scrambling' ? Infinity : 0 }}
-         className={`font-mono text-sm sm:text-base font-bold break-all py-3 px-4 rounded-lg border w-full text-center transition-all duration-300 ${
-           phase === 'masked' 
-             ? 'text-[#00ff66] bg-[#00ff66]/10 border-[#00ff66]/40 shadow-[0_0_15px_rgba(0,255,102,0.15)]' 
-             : phase === 'scrambling'
-             ? 'text-[#00f5ff] bg-[#00f5ff]/10 border-[#00f5ff]/40 shadow-[0_0_15px_rgba(0,245,255,0.15)]'
-             : 'text-[#ff2a55] bg-[#ff2a55]/5 border-[#ff2a55]/20 shadow-[0_0_10px_rgba(255,42,85,0.05)]'
-         }`}
-       >
-         {phase === 'original' ? (
-            <span className="line-through decoration-[#ff2a55]/50">{text}</span>
-         ) : text}
-       </motion.div>
-    </div>
-  );
-};
 
 export function TextScannerResult({ scanResult, inputText = '', onReset }: TextScannerResultProps) {
   const { t } = useLanguage();
@@ -111,7 +32,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
     inputText.includes('From:') ||
     inputText.includes('SPF:');
 
-  const [activeTab, setActiveTab] = useState<'neural' | 'forensics' | 'dns-auth'>(
+  const [activeTab, setActiveTab] = useState<'neural' | 'forensics' | 'dns-auth' | 'sih-suite'>(
     scanResult.forensicDossier ? 'forensics' : 'neural'
   );
   const [dynamicDossier, setDynamicDossier] = useState<ForensicDossier | null>(
@@ -235,6 +156,23 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               <Globe className="w-3.5 h-3.5 text-cyber-blue" />
               <span>{t('spf_dkim_dmarc_lookup_tab')}</span>
             </button>
+            <button
+              onClick={() => {
+                setActiveTab('sih-suite');
+                if (!dynamicDossier) {
+                  handleSwitchToForensics();
+                }
+              }}
+              className={cn(
+                "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
+                activeTab === 'sih-suite'
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]"
+                  : "text-gray-400 hover:text-white"
+              )}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>🔥 SIH 5 UPGRADES</span>
+            </button>
           </div>
 
           <button 
@@ -248,7 +186,29 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
       </div>
 
       {/* RENDER ACTIVE TAB */}
-      {activeTab === 'dns-auth' ? (
+      {activeTab === 'sih-suite' ? (
+        <div className="flex-1 pb-6">
+          {isGeneratingForensics ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-[#0a0f1c]/50 rounded-2xl border border-white/5">
+              <Sparkles className="w-8 h-8 text-amber-400 animate-spin mb-4" />
+              <p className="text-sm font-mono text-white">Synthesizing SIH26106 5-Pillar Forensic Suite...</p>
+            </div>
+          ) : dynamicDossier ? (
+            <SihForensicSuite dossier={dynamicDossier} />
+          ) : (
+            <div className="p-8 text-center bg-[#0a0f1c]/50 rounded-2xl border border-white/5">
+              <Mail className="w-8 h-8 text-gray-500 mx-auto mb-3" />
+              <p className="text-sm text-gray-400 font-mono mb-4">{t('no_email_headers_payload')}</p>
+              <button
+                onClick={() => handleSwitchToForensics()}
+                className="px-4 py-2 bg-amber-500 text-black font-mono text-xs font-bold rounded-xl cursor-pointer"
+              >
+                {t('force_forensic_run')}
+              </button>
+            </div>
+          )}
+        </div>
+      ) : activeTab === 'dns-auth' ? (
         <div className="flex-1 pb-6">
           <DomainAuthLookup initialDomain={domainGuess} />
         </div>
