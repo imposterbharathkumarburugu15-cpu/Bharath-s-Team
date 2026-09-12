@@ -98,14 +98,14 @@ export function NeuralProfile({
                 GMAIL API THREAT INTELLIGENCE
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                1. Neuro Profile
+                1. Neural Profile
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                 Enterprise Active
               </span>
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2 mt-0.5">
-              1. Neuro Profile & Behavioral Sender Analysis
+              1. Neural Profile & Behavioral Sender Analysis
             </h2>
           </div>
         </div>

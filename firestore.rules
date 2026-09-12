@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isDocumentOwner() {
+      return isAuthenticated() && (
+        resource == null || 
+        resource.data.userId == request.auth.uid ||
+        !('userId' in resource.data)
+      );
+    }
+
+    // User profile and credentials isolation
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Canonical Security Incidents (Part C2 Schema)
+    match /incidents/{incidentId} {
+      allow read: if isDocumentOwner();
+      allow create: if isAuthenticated() && (
+        !('userId' in request.resource.data) || 
+        request.resource.data.userId == request.auth.uid
+      );
+      allow update, delete: if isDocumentOwner();
+    }
+
+    // Streamlined Dashboard Protection Events (Part G Contract)
+    match /protection_events/{eventId} {
+      allow read: if isDocumentOwner();
+      allow create: if isAuthenticated() && (
+        !('userId' in request.resource.data) || 
+        request.resource.data.userId == request.auth.uid
+      );
+      allow update, delete: if isDocumentOwner();
+    }
+
+    // System Metrics & Counters
+    match /system_metrics/{metricId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Analyst & User Feedback
+    match /feedback/{feedbackId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Default deny for all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

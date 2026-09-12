@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "Threat": {
+      "title": "Threat",
+      "description": "A detected security incident or scanned threat payload",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "detectedType": { "type": "string" },
+        "source": { "type": "string" },
+        "target": { "type": "string" },
+        "riskScore": { "type": "number" },
+        "threatName": { "type": "string" },
+        "payloadDescription": { "type": "string" },
+        "aiExplanation": { "type": "string" },
+        "signals": { "type": "array" },
+        "suspiciousKeywords": { "type": "array" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["detectedType", "riskScore", "timestamp"]
+    },
+    "DashboardMetrics": {
+      "title": "DashboardMetrics",
+      "description": "Aggregated SOC threat and platform telemetry",
+      "type": "object",
+      "properties": {
+        "totalThreats": { "type": "number" },
+        "blockedAttacks": { "type": "number" },
+        "maliciousDomains": { "type": "number" },
+        "activeEndpoints": { "type": "number" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/threats/{threatId}": {
+      "schema": "Threat",
+      "description": "Collection of real-time detected threat telemetry records"
+    },
+    "/dashboardMetrics/{metricId}": {
+      "schema": "DashboardMetrics",
+      "description": "Aggregated platform telemetry metrics"
+    }
+  }
+}

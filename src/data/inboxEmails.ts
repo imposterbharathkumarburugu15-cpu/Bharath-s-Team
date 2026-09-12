@@ -15,6 +15,7 @@ export interface InboxEmailItem {
   rawHeaders: string;
   body: string;
   dossier?: ForensicDossier;
+  analyzedAt?: string;
 }
 
 export const SHOWCASE_INBOX_EMAILS: InboxEmailItem[] = [

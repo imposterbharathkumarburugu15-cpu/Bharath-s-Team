@@ -2636,7 +2636,7 @@ export async function executeEmailForensics(
   }
 
   const confidenceScore = Math.min(Math.max(completenessPoints, 45), 98);
-  const forensicStatus: 'COMPLETE' | 'INCOMPLETE' = confidenceScore < 80 ? 'INCOMPLETE' : 'COMPLETE';
+  const forensicStatus: 'COMPLETE' | 'INCOMPLETE' = confidenceScore <= 80 ? 'INCOMPLETE' : 'COMPLETE';
 
   // 13. Final Verdict Mapping
   let finalVerdict: ForensicDossier['scoreBreakdown']['verdict'] = 'LOW';

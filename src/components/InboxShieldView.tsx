@@ -140,9 +140,11 @@ export function InboxShieldView({
                 {t('pipeline_desc')}
               </p>
               <div className="text-[11px] font-mono text-cyan-300/90 flex items-center gap-2 pt-0.5">
-                <span className="text-purple-400">✓</span> {t('neuro_profile_label')}
+                <span className="text-emerald-400">✓</span> Context & Intent
                 <span className="text-gray-500">+</span>
-                <span className="text-cyan-400">✓</span> {t('protocol_forensics_label')}
+                <span className="text-amber-400">✓</span> Sensitive Data
+                <span className="text-gray-500">+</span>
+                <span className="text-cyan-400">✓</span> Action Protection
               </div>
             </div>
           </div>
@@ -226,30 +228,8 @@ export function InboxShieldView({
           </button>
         </div>
 
-        {/* Right: Search, Sort, Quick Lab Tools & Refresh */}
+        {/* Right: Search, Sort & Refresh */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Quick Labs Navigation */}
-          {onOpenRfcLab && (
-            <button
-              onClick={onOpenRfcLab}
-              className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-cyan-300 border border-white/10 flex items-center gap-1.5 text-xs font-mono transition-all cursor-pointer"
-              title="Open Manual RFC Header Analysis Lab"
-            >
-              <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">{t('rfc_lab_btn')}</span>
-            </button>
-          )}
-
-          {onOpenDnsLookup && (
-            <button
-              onClick={onOpenDnsLookup}
-              className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-cyan-300 border border-white/10 flex items-center gap-1.5 text-xs font-mono transition-all cursor-pointer"
-              title="Lookup SPF, DKIM, and DMARC DNS Records"
-            >
-              <Globe className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">{t('dns_lookup_btn')}</span>
-            </button>
-          )}
 
           {/* Search Bar */}
           <div className="relative flex-1 sm:w-60">

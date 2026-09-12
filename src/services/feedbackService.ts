@@ -395,6 +395,82 @@ export async function reviewFeedbackRecord(
 }
 
 /**
+ * Submit structured Incident Feedback (Phase 5 Canonical Contract)
+ */
+export async function submitIncidentFeedback(feedback: {
+  incident_id: string;
+  feedback: 'TRUE_POSITIVE' | 'FALSE_POSITIVE' | 'MISSED_THREAT';
+  user_comment?: string;
+  timestamp?: string;
+  source?: string;
+  risk_score?: number;
+  threat_type?: string;
+}): Promise<{ success: boolean; recordId?: string }> {
+  const ts = feedback.timestamp || new Date().toISOString();
+  
+  // Post to backend API
+  try {
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        incident_id: feedback.incident_id,
+        feedback: feedback.feedback,
+        user_comment: feedback.user_comment || '',
+        timestamp: ts,
+        source: feedback.source || 'web',
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      console.info('[HITL Feedback] Incident feedback persisted to backend:', data);
+    }
+  } catch (err) {
+    console.warn('[HITL Feedback] Failed to submit to /api/feedback, saving locally:', err);
+  }
+
+  // Also map to local feedback dataset for instant reflection in HITL Feedback Dashboard
+  const label: FeedbackLabel =
+    feedback.feedback === 'TRUE_POSITIVE'
+      ? 'CORRECT'
+      : feedback.feedback === 'FALSE_POSITIVE'
+      ? 'MARK_SAFE'
+      : 'MARK_PHISHING';
+
+  const feedbackType: FeedbackType =
+    feedback.feedback === 'TRUE_POSITIVE'
+      ? 'CONFIRMATION'
+      : feedback.feedback === 'FALSE_POSITIVE'
+      ? 'FALSE_POSITIVE'
+      : 'FALSE_NEGATIVE';
+
+  const record: FeedbackRecord = {
+    id: `fb-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+    timestamp: ts,
+    targetId: feedback.incident_id,
+    modelPrediction: feedback.threat_type || 'NeuroShield Core Incident',
+    riskScore: feedback.risk_score || (feedback.feedback === 'FALSE_POSITIVE' ? 75 : feedback.feedback === 'MISSED_THREAT' ? 15 : 90),
+    predictedAttackType: (feedback.source?.toUpperCase() as any) || 'WEB',
+    userFeedbackLabel: label,
+    feedbackType,
+    extractedFeatures: {
+      source: feedback.source,
+      snippet: feedback.user_comment,
+    },
+    isVerified: false,
+    reviewStatus: 'PENDING',
+    calibrationEligible: false,
+    userNotes: feedback.user_comment,
+  };
+
+  const local = getStoredRecords();
+  local.unshift(record);
+  saveStoredRecords(local);
+
+  return { success: true, recordId: record.id };
+}
+
+/**
  * Trigger model calibration & retraining pipeline over verified samples
  */
 export async function triggerModelCalibration(): Promise<CalibrationResult> {

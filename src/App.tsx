@@ -5,13 +5,12 @@ import { LiveScanner } from './pages/Scanner';
 import EmailPhishing from './pages/EmailPhishing';
 import { Dashboard } from './pages/Dashboard';
 import { Alerts } from './pages/Alerts';
-import { AttackGraph } from './pages/AttackGraph';
 import SentinelVoice from './pages/SentinelVoice';
-import SentinelWaveModule from './pages/NetworkScanner';
 import { ApiAccess } from './pages/ApiAccess';
 import { Copilot } from './pages/Copilot';
 import { Settings } from './pages/Settings';
 import { FeedbackDashboard } from './pages/FeedbackDashboard';
+import { GuardPage } from './pages/Guard';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -20,8 +19,10 @@ function App() {
     // Sync with location hash
     const handleHashChange = () => {
       const hash = window.location.hash.replace(/^#\/?/, '').trim();
-      if (hash === 'attack-graph' || hash === 'graph') {
-        setActiveTab('graph');
+      if (hash === 'attack-graph' || hash === 'graph' || hash === 'wave') {
+        setActiveTab('dashboard');
+      } else if (hash === 'guard') {
+        setActiveTab('guard');
       } else if (hash === 'scanner') {
         setActiveTab('scanner');
       } else if (hash === 'phishing') {
@@ -34,8 +35,6 @@ function App() {
         setActiveTab('copilot');
       } else if (hash === 'voice') {
         setActiveTab('voice');
-      } else if (hash === 'wave') {
-        setActiveTab('wave');
       } else if (hash === 'feedback' || hash === 'hitl' || hash === 'learning') {
         setActiveTab('feedback');
       } else if (hash === 'api') {
@@ -70,6 +69,13 @@ function App() {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard />;
+      case 'guard':
+        return (
+          <GuardPage
+            onNavigateToForensics={() => setActiveTab('copilot')}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        );
       case 'scanner':
         return <LiveScanner />;
       case 'phishing':
@@ -78,12 +84,8 @@ function App() {
         return <Copilot />;
       case 'voice':
         return <SentinelVoice />;
-      case 'wave':
-        return <SentinelWaveModule />;
       case 'alerts':
         return <Alerts />;
-      case 'graph':
-        return <AttackGraph />;
       case 'feedback':
         return <FeedbackDashboard />;
       case 'api':

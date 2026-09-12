@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroShield — Page Blocked</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #0f172a;
+      --border: #ef4444;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #ef4444;
+      --btn-primary: #3b82f6;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .block-container {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25), 0 0 40px rgba(0, 0, 0, 0.8);
+      max-width: 640px;
+      width: 100%;
+      padding: 32px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+      padding-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #f87171;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-critical {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .badge-high {
+      background: rgba(249, 115, 22, 0.2);
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, 0.4);
+    }
+    .field-group {
+      margin-bottom: 18px;
+    }
+    .field-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .field-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    .evidence-list {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 6px;
+      list-style: none;
+    }
+    .evidence-item {
+      font-size: 13px;
+      color: #cbd5e1;
+      padding: 4px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .evidence-item::before {
+      content: "•";
+      color: var(--accent);
+      font-weight: bold;
+    }
+    .url-box {
+      background: #020617;
+      border: 1px dashed #334155;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #94a3b8;
+      word-break: break-all;
+      margin-top: 6px;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #1e293b;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: #3b82f6;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+    .btn-secondary:hover {
+      background: #334155;
+      color: #f8fafc;
+    }
+    .feedback-section {
+      margin-top: 20px;
+      padding: 14px;
+      background: #020617;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+    }
+    .feedback-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    .feedback-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-feedback {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 6px;
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-feedback:hover {
+      background: #334155;
+      color: #ffffff;
+    }
+    .btn-feedback.active {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: #ffffff;
+    }
+    .feedback-status {
+      font-size: 12px;
+      color: #10b981;
+      margin-top: 6px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="block-container">
+    <div class="header">
+      <h1>🚫 NEUROSHIELD BLOCKED THIS PAGE</h1>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Risk</div>
+      <div class="field-value">
+        <span id="risk-badge" class="badge badge-critical">CRITICAL</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Threat</div>
+      <div id="threat-val" class="field-value" style="color: #f87171;">Credential Theft</div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Requested Action</div>
+      <div id="action-val" class="field-value">LOGIN</div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Blocked Destination</div>
+      <div id="url-val" class="url-box">https://suspicious-destination.example/</div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Evidence</div>
+      <ul id="evidence-list" class="evidence-list">
+        <li class="evidence-item">Suspicious destination</li>
+        <li class="evidence-item">Identity mismatch</li>
+        <li class="evidence-item">Credential harvesting indicators</li>
+      </ul>
+    </div>
+
+    <div class="feedback-section">
+      <div class="feedback-title">Report / Calibrate Threat Assessment</div>
+      <div class="feedback-buttons">
+        <button id="fb-tp" class="btn-feedback">Threat Confirmed</button>
+        <button id="fb-fp" class="btn-feedback">False Alarm</button>
+        <button id="fb-fn" class="btn-feedback">Missed Threat</button>
+      </div>
+      <div id="fb-status" class="feedback-status">✓ Thank you! Feedback transmitted to SOC calibration engine.</div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-go-back" class="btn btn-primary">
+        ← Go Back
+      </button>
+      <button id="btn-close-tab" class="btn btn-secondary">
+        Close Tab
+      </button>
+    </div>
+  </div>
+
+  <script src="blocked.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
   getAuth, 
   signInWithPopup, 
@@ -44,7 +44,7 @@ if (typeof window !== 'undefined') {
   });
 }
 
-const app = initializeApp(firebaseConfig);
+export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 // Enable local persistence silently
@@ -107,6 +107,12 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     ) {
       throw new Error('Google sign-in popup was closed or blocked. If previewed in an iframe, try opening in a new tab.');
     }
+
+    if (errorMsg.includes('auth/unauthorized-domain') || error?.code === 'auth/unauthorized-domain') {
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+      throw new Error(`Unauthorized Domain (${hostname}): The current domain is not authorized in Firebase Auth. If you opened the app using 127.0.0.1:3000, open http://localhost:3000 instead. Otherwise, add "${hostname}" to Authorized Domains in Firebase Console.`);
+    }
+
     throw error;
   } finally {
     isSigningIn = false;

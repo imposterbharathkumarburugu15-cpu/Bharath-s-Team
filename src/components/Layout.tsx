@@ -3,7 +3,6 @@ import {
   ShieldAlert, 
   LayoutDashboard, 
   Mail, 
-  Network, 
   Bell, 
   Bot, 
   Settings, 
@@ -13,7 +12,6 @@ import {
   Languages, 
   Terminal, 
   Mic, 
-  Waves, 
   Menu, 
   ChevronRight, 
   ChevronLeft,
@@ -39,6 +37,7 @@ import {
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { initAuth } from '@/services/googleAuth';
 
 export interface NavItem {
   name: string;
@@ -51,22 +50,21 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  // CORE DEFENSE
+  // CORE OPERATIONS
   { name: 'dashboard', id: 'dashboard', icon: LayoutDashboard, category: 'CORE', shortcut: '1', description: 'SOC telemetry, threat feed & KPIs' },
-  { name: 'scanner', id: 'scanner', icon: ShieldAlert, category: 'CORE', badge: 'LIVE', shortcut: '2', description: 'Multimodal payload & URL vulnerability scanner' },
-  { name: 'phishing', id: 'phishing', icon: Mail, category: 'CORE', badge: '532', shortcut: '3', description: 'AI-powered scanning of your Gmail inbox' },
-  { name: 'alerts', id: 'alerts', icon: Bell, category: 'CORE', badge: '3', shortcut: '4', description: 'Real-time incident response & triage' },
+  { name: 'phishing', id: 'phishing', icon: Mail, category: 'CORE', badge: 'GMAIL', shortcut: '2', description: 'Unified email phishing protection & incident analysis' },
+  { name: 'guard', id: 'guard', icon: ShieldCheck, category: 'CORE', badge: 'GUARD', shortcut: '3', description: 'Proactive browser & interaction action interceptor' },
+  { name: 'scanner', id: 'scanner', icon: ShieldAlert, category: 'CORE', badge: 'BROWSER', shortcut: '4', description: 'Browser protection & URL vulnerability scanner' },
+  { name: 'alerts', id: 'alerts', icon: Bell, category: 'CORE', shortcut: '5', description: 'Real-time incident response & triage' },
   
-  // AI INTELLIGENCE
-  { name: 'voice', id: 'voice', icon: Mic, category: 'AI_INTEL', badge: 'VOICE', shortcut: '5', description: 'Conversational audio security assistant' },
-  { name: 'wave', id: 'wave', icon: Waves, category: 'AI_INTEL', badge: 'RADAR', shortcut: '6', description: 'Radio frequency & wireless anomaly detection' },
-  { name: 'graph', id: 'graph', icon: Network, category: 'AI_INTEL', shortcut: '7', description: 'Interactive kill-chain & topology mapper' },
-  { name: 'copilot', id: 'copilot', icon: Bot, category: 'AI_INTEL', badge: 'COPILOT', shortcut: '8', description: 'Automated SOC forensic investigator' },
-  { name: 'feedback', id: 'feedback', icon: Cpu, category: 'AI_INTEL', badge: 'HITL', shortcut: 'F', description: 'Human-in-the-loop adaptive feedback learning' },
-  
-  // PLATFORM & SETTINGS
-  { name: 'api', id: 'api', icon: Terminal, category: 'PLATFORM', shortcut: '9', description: 'Enterprise REST / WebSocket API keys' },
-  { name: 'settings', id: 'settings', icon: Settings, category: 'PLATFORM', shortcut: '0', description: 'Telemetry thresholds & system configuration' },
+  // AI INTELLIGENCE & ADVANCED DEFENSE
+  { name: 'voice', id: 'voice', icon: Mic, category: 'AI_INTEL', badge: 'VOICE AI', shortcut: '6', description: 'AI voice clone detection & synthetic speech analysis' },
+  { name: 'copilot', id: 'copilot', icon: Bot, category: 'AI_INTEL', badge: 'AI SOC', shortcut: '7', description: 'Autonomous cybersecurity copilot & forensic queries' },
+  { name: 'feedback', id: 'feedback', icon: Sliders, category: 'AI_INTEL', shortcut: '8', description: 'Human-in-the-loop ML model calibration & feedback' },
+
+  // SYSTEM & API
+  { name: 'api', id: 'api', icon: Terminal, category: 'PLATFORM', description: 'Enterprise REST API access & token management' },
+  { name: 'settings', id: 'settings', icon: Settings, category: 'PLATFORM', description: 'Telemetry thresholds & system configuration' },
 ];
 
 export function Layout({ 
@@ -100,6 +98,15 @@ export function Layout({
   
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { language, setLanguage, t } = useLanguage();
+  const [connectedUserEmail, setConnectedUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsub = initAuth(
+      (user) => setConnectedUserEmail(user.email || 'Connected'),
+      () => setConnectedUserEmail(null)
+    );
+    return () => unsub();
+  }, []);
 
   // Save collapsed state
   const toggleSidebar = () => {
@@ -537,11 +544,14 @@ export function Layout({
           </div>
         </div>
 
-        {/* Sidebar Footer Widgets (Matching Screenshot) */}
+        {/* Sidebar Footer Widgets (Dynamic Gmail Status) */}
         {!isSidebarCollapsed ? (
           <div className="mt-3 space-y-3 w-full">
-            {/* 1. Gmail Connected Widget */}
-            <div className="p-3 bg-[#0a0f1d] rounded-xl border border-white/5 relative overflow-hidden group">
+            {/* 1. Gmail Connected / Connect Widget */}
+            <div 
+              onClick={() => handleNavClick('phishing')}
+              className="p-3 bg-[#0a0f1d] rounded-xl border border-white/5 relative overflow-hidden group cursor-pointer hover:border-cyan-500/30 transition-all"
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0">
@@ -554,16 +564,23 @@ export function Layout({
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-white tracking-wide">Gmail Connected</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[11px] font-bold text-white tracking-wide">
+                        {connectedUserEmail ? 'Gmail Connected' : 'Connect Gmail'}
+                      </span>
+                      <span className={`w-1.5 h-1.5 rounded-full ${connectedUserEmail ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
                     </div>
-                    <p className="text-[10px] text-gray-400 font-mono truncate max-w-[130px]">bharathkumarburugu07@gmail.com</p>
+                    <p className="text-[10px] text-gray-400 font-mono truncate max-w-[130px]">
+                      {connectedUserEmail || 'Click to authorize'}
+                    </p>
                   </div>
                 </div>
                 <button
-                  onClick={() => handleNavClick('phishing')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNavClick('phishing');
+                  }}
                   className="text-gray-400 hover:text-cyan-400 transition-colors p-1"
-                  title="Sync Gmail"
+                  title="Open Inbox Shield"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
@@ -572,10 +589,13 @@ export function Layout({
           </div>
         ) : (
           <div 
-            title="Gmail Connected"
-            className="mt-3 w-10 h-10 rounded-xl bg-[#090e1c] border border-cyber-border/50 flex items-center justify-center cursor-help text-cyber-green relative group"
+            onClick={() => handleNavClick('phishing')}
+            title={connectedUserEmail ? `Gmail Connected (${connectedUserEmail})` : 'Connect Gmail'}
+            className={`mt-3 w-10 h-10 rounded-xl bg-[#090e1c] border border-cyber-border/50 flex items-center justify-center cursor-pointer relative group ${
+              connectedUserEmail ? 'text-cyber-green' : 'text-amber-400'
+            }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-cyber-green animate-pulse" />
+            <span className={`w-2.5 h-2.5 rounded-full ${connectedUserEmail ? 'bg-cyber-green animate-pulse' : 'bg-amber-400'}`} />
           </div>
         )}
       </aside>
@@ -1129,7 +1149,7 @@ export function Layout({
                     <span className="w-1.5 h-1.5 rounded-full bg-cyber-green animate-pulse" />
                     SOC ENGINES OPERATIONAL
                   </span>
-                  <span>99.9%</span>
+                  <span>ONLINE</span>
                 </div>
               </div>
             </motion.aside>
