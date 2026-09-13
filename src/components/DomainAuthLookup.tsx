@@ -33,8 +33,10 @@ import {
 import { 
   validateDomainEmailAuth, 
   DomainAuthHealthReport,
-  COMMON_DKIM_SELECTORS 
+  COMMON_DKIM_SELECTORS,
+  extractCleanDomain
 } from '@/services/dnsAuthValidator';
+import type { OSINTReport } from '../services/intelligence/osint';
 
 interface DomainAuthLookupProps {
   initialDomain?: string;
@@ -44,6 +46,7 @@ interface DomainAuthLookupProps {
 }
 
 const PRESET_DOMAINS = [
+  { name: 'GitHub', domain: 'github.com', note: 'Developer Platform' },
   { name: 'Google', domain: 'google.com', note: 'Strict p=reject, A+' },
   { name: 'Google AI Studio', domain: 'ai.studio', note: 'Official AI Platform' },
   { name: 'AI Studio Subdomain', domain: 'aistudio.google.com', note: 'Console Subdomain' },
@@ -63,9 +66,11 @@ export function DomainAuthLookup({
   const [selectorInput, setSelectorInput] = useState(initialSelector);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [osintLoading, setOsintLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<DomainAuthHealthReport | null>(null);
-  const [activeTab, setActiveTab] = useState<'domainAge' | 'spf' | 'dmarc' | 'dkim' | 'mx' | 'remediation'>('domainAge');
+  const [osintReport, setOsintReport] = useState<OSINTReport | null>(null);
+  const [activeTab, setActiveTab] = useState<'domainAge' | 'osint' | 'spf' | 'dmarc' | 'dkim' | 'mx' | 'remediation'>('domainAge');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
 
   // Trigger initial query on mount if initialDomain provided
@@ -75,29 +80,69 @@ export function DomainAuthLookup({
     }
   }, [initialDomain]);
 
+  const fetchOsintReport = async (domain: string): Promise<OSINTReport | null> => {
+    try {
+      const r = await fetch('/api/osint/domain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain }),
+        signal: AbortSignal.timeout(10000)
+      });
+      if (!r.ok) return null;
+      const text = await r.text();
+      if (!text || !text.trim()) return null;
+      return JSON.parse(text) as OSINTReport;
+    } catch (e: any) {
+      console.warn('[DomainAuthLookup] OSINT resolution soft fallback:', e?.message);
+      return null;
+    }
+  };
+
   const handleLookup = async (domainToQuery?: string, selToQuery?: string) => {
-    const targetDomain = domainToQuery || domainInput;
+    const rawTarget = domainToQuery || domainInput;
     const targetSelector = selToQuery !== undefined ? selToQuery : selectorInput;
 
-    if (!targetDomain.trim()) {
-      setError('Please enter a domain name to validate.');
+    if (!rawTarget.trim()) {
+      setError('Please enter a domain name or URL to validate.');
+      return;
+    }
+
+    const cleanDomain = extractCleanDomain(rawTarget);
+    if (!cleanDomain || !cleanDomain.includes('.')) {
+      setError('Please enter a valid domain or HTTP(S) URL (e.g. github.com, google.com).');
       return;
     }
 
     setLoading(true);
+    setOsintLoading(true);
     setError(null);
 
     try {
-      const result = await validateDomainEmailAuth(targetDomain, targetSelector);
-      setReport(result);
-      setDomainInput(result.domain);
-      if (onSelectDomain) {
-        onSelectDomain(result.domain);
+      const [result, osintResult] = await Promise.allSettled([
+        validateDomainEmailAuth(cleanDomain, targetSelector),
+        fetchOsintReport(cleanDomain)
+      ]);
+
+      if (result.status === 'fulfilled') {
+        setReport(result.value);
+        setDomainInput(result.value.domain);
+        if (onSelectDomain) {
+          onSelectDomain(result.value.domain);
+        }
+      } else {
+        throw result.reason;
+      }
+
+      if (osintResult.status === 'fulfilled' && osintResult.value) {
+        setOsintReport(osintResult.value);
+      } else {
+        setOsintReport(null);
       }
     } catch (err: any) {
       setError(err?.message || 'Failed to query DNS authentication records. Check your internet connection.');
     } finally {
       setLoading(false);
+      setOsintLoading(false);
     }
   };
 
@@ -109,12 +154,17 @@ export function DomainAuthLookup({
 
   const exportReportJson = () => {
     if (!report) return;
-    const jsonStr = JSON.stringify(report, null, 2);
+    const exportData = {
+      domainAuthReport: report,
+      infrastructureOsintReport: osintReport || null,
+      exportedAt: new Date().toISOString()
+    };
+    const jsonStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `dns-auth-audit-${report.domain}-${Date.now()}.json`;
+    a.download = `domain-intel-audit-${report.domain}-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -406,7 +456,7 @@ export function DomainAuthLookup({
 
               {/* Middle Authentication Matrix */}
               <div className="lg:col-span-8 space-y-3">
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
                   
                   {/* Domain Age Status Tile */}
                   <div 
@@ -429,6 +479,25 @@ export function DomainAuthLookup({
                         {report.domainAge?.isNewlyRegistered 
                           ? '⚠️ Newly Registered' 
                           : `Reg: ${report.domainAge?.creationDateFormatted || 'Established'}`}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* OSINT Infrastructure Tile */}
+                  <div 
+                    onClick={() => setActiveTab('osint')}
+                    className="p-3 rounded-xl border flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.02] bg-purple-500/5 border-purple-500/30"
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[11px] font-mono font-bold text-gray-300">INFRA / OSINT</span>
+                      <Globe className="w-3.5 h-3.5 text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-mono font-bold text-white truncate">
+                        {osintReport?.evidence.find(e => e.kind === 'Hosting / ISP')?.value || (osintLoading ? 'Resolving…' : 'DNS & ASN')}
+                      </div>
+                      <div className="text-[10px] text-gray-400 truncate">
+                        {osintReport?.evidence.find(e => e.kind === 'ASN')?.value || osintReport?.evidence.find(e => e.kind === 'A')?.value || 'Public Infrastructure'}
                       </div>
                     </div>
                   </div>
@@ -563,6 +632,24 @@ export function DomainAuthLookup({
                   NRD
                 </span>
               )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('osint')}
+              className={`px-4 py-2 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeTab === 'osint'
+                  ? 'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              INFRASTRUCTURE & HOSTING (OSINT)
+              {osintReport && (
+                <span className="px-1.5 py-0.5 text-[9px] bg-purple-500/30 text-purple-300 rounded font-mono font-bold">
+                  {osintReport.evidence.length}
+                </span>
+              )}
+              {osintLoading && <RefreshCw className="w-3 h-3 animate-spin text-cyber-blue" />}
             </button>
 
             <button
@@ -847,6 +934,164 @@ export function DomainAuthLookup({
                   </div>
                 </div>
 
+              </div>
+            )}
+
+            {/* INFRASTRUCTURE & HOSTING (OSINT) TAB */}
+            {activeTab === 'osint' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div>
+                    <h4 className="text-white font-mono font-bold text-sm flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-cyber-blue" />
+                      Infrastructure OSINT & Hosting Intelligence
+                    </h4>
+                    <p className="text-xs text-gray-400">Public DNS, BGP Autonomous System (ASN), ISP, and Registry relationships for <code className="text-cyber-blue">{report.domain}</code></p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border flex items-center gap-1.5 ${
+                      osintReport?.status === 'complete' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
+                      osintReport?.status === 'partial' ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' :
+                      'bg-white/5 text-gray-400 border-white/10'
+                    }`}>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-cyber-blue" />
+                      STATUS: {osintReport ? osintReport.status.toUpperCase() : osintLoading ? 'RESOLVING OSINT…' : 'PASSIVE DOH READY'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Top 4 Quick Metric Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* IP Address */}
+                  <div className="bg-[#050806] border border-white/10 p-3.5 rounded-xl space-y-1">
+                    <span className="text-[10px] font-mono text-gray-500 uppercase flex items-center justify-between">
+                      Primary IPv4 Address
+                      {osintReport?.evidence.find(e => e.kind === 'A')?.value && (
+                        <button
+                          onClick={() => copyToClipboard(osintReport.evidence.find(e => e.kind === 'A')!.value, 'osint-ip')}
+                          className="text-gray-400 hover:text-white"
+                          title="Copy IP"
+                        >
+                          {copiedSection === 'osint-ip' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      )}
+                    </span>
+                    <div className="text-sm font-mono font-bold text-white truncate">
+                      {osintReport?.evidence.find(e => e.kind === 'A')?.value || (osintLoading ? 'Resolving…' : 'DNS A record pending')}
+                    </div>
+                    <p className="text-[11px] text-gray-400 font-mono">
+                      {osintReport?.evidence.find(e => e.kind === 'AAAA')?.value ? `IPv6: ${osintReport.evidence.find(e => e.kind === 'AAAA')?.value}` : 'Public routing address'}
+                    </p>
+                  </div>
+
+                  {/* ASN */}
+                  <div className="bg-[#050806] border border-white/10 p-3.5 rounded-xl space-y-1">
+                    <span className="text-[10px] font-mono text-gray-500 uppercase">Autonomous System (ASN)</span>
+                    <div className="text-sm font-mono font-bold text-cyber-blue truncate">
+                      {osintReport?.evidence.find(e => e.kind === 'ASN')?.value || (osintLoading ? 'Querying BGP…' : 'N/A')}
+                    </div>
+                    <p className="text-[11px] text-gray-400 font-mono">BGP Routing Origin</p>
+                  </div>
+
+                  {/* Hosting / ISP */}
+                  <div className="bg-[#050806] border border-white/10 p-3.5 rounded-xl space-y-1">
+                    <span className="text-[10px] font-mono text-gray-500 uppercase">Hosting Provider / ISP</span>
+                    <div className="text-sm font-mono font-bold text-white truncate">
+                      {osintReport?.evidence.find(e => e.kind === 'Hosting / ISP')?.value || (osintLoading ? 'Detecting…' : 'Cloud / Web Host')}
+                    </div>
+                    <p className="text-[11px] text-gray-400 font-mono">Infrastructure Operator</p>
+                  </div>
+
+                  {/* Country */}
+                  <div className="bg-[#050806] border border-white/10 p-3.5 rounded-xl space-y-1">
+                    <span className="text-[10px] font-mono text-gray-500 uppercase">Infrastructure Location</span>
+                    <div className="text-sm font-mono font-bold text-emerald-400 truncate">
+                      {osintReport?.evidence.find(e => e.kind.includes('country'))?.value || (osintLoading ? 'Locating…' : 'Global Edge Network')}
+                    </div>
+                    <p className="text-[11px] text-gray-400 font-mono">Physical Routing Region</p>
+                  </div>
+                </div>
+
+                {/* Nameserver (NS) Records */}
+                {osintReport?.evidence.some(e => e.kind === 'NS') && (
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-mono font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                      <Server className="w-3.5 h-3.5 text-cyber-blue" />
+                      Authoritative DNS Nameservers
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                      {osintReport.evidence.filter(e => e.kind === 'NS').map((ns, idx) => (
+                        <div key={idx} className="bg-[#050806] border border-white/5 p-2.5 rounded-xl flex items-center justify-between font-mono text-xs">
+                          <span className="text-white truncate">{ns.value}</span>
+                          <span className="text-[10px] text-gray-500 shrink-0 ml-2">NS</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Evidence Table */}
+                <div className="space-y-3">
+                  <h5 className="text-xs font-mono font-bold text-white flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-cyber-blue" />
+                    OSINT Observable Evidence & Provenance
+                  </h5>
+                  <div className="overflow-x-auto rounded-xl border border-white/10">
+                    <table className="w-full text-left text-xs font-mono border-collapse">
+                      <thead>
+                        <tr className="border-b border-white/10 text-gray-400 bg-white/5">
+                          <th className="p-2.5">INDICATOR</th>
+                          <th className="p-2.5">FINDING</th>
+                          <th className="p-2.5">EVIDENCE TYPE</th>
+                          <th className="p-2.5">SOURCE</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 bg-[#050806]">
+                        {osintReport && osintReport.evidence.length > 0 ? (
+                          osintReport.evidence.map((ev, i) => (
+                            <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                              <td className="p-2.5 text-cyber-blue font-bold">{ev.kind}</td>
+                              <td className="p-2.5 text-white font-mono break-all">{ev.value}</td>
+                              <td className="p-2.5">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  ev.provenance === 'observed' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-300'
+                                }`}>
+                                  {ev.provenance.replace('_', ' ')}
+                                </span>
+                              </td>
+                              <td className="p-2.5 text-gray-400">{ev.source}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center text-gray-500 font-mono">
+                              {osintLoading ? 'Collecting public OSINT telemetry…' : 'No external OSINT evidence returned. Public DoH validation remains active.'}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Unavailable Observations Accordion */}
+                {osintReport && osintReport.unavailable.length > 0 && (
+                  <details className="p-3.5 rounded-xl bg-black/40 border border-white/10 text-xs text-gray-400">
+                    <summary className="font-mono text-gray-300 font-bold cursor-pointer hover:text-white">
+                      Unavailable / Excluded Observations ({osintReport.unavailable.length})
+                    </summary>
+                    <ul className="mt-2.5 space-y-1 pl-4 list-disc text-gray-400 font-mono text-[11px]">
+                      {osintReport.unavailable.map((u, i) => (
+                        <li key={i}>{u}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+
+                {/* Legal & Attribution Disclaimer */}
+                <p className="text-[11px] text-gray-500 font-mono leading-relaxed p-3 bg-black/20 rounded-xl border border-white/5">
+                  ℹ️ {osintReport?.disclaimer || 'Infrastructure observations are not attacker identity or physical location. Shared hosting and DNS relationships do not prove maliciousness.'}
+                </p>
               </div>
             )}
             

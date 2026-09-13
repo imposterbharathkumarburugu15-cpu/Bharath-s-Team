@@ -1,24 +1,50 @@
-import { apiFetch as fetch } from '../lib/apiClient';
-import React, { useState } from 'react';
-import { Globe, Search, Loader2 } from 'lucide-react';
-import type { OSINTReport } from '../services/intelligence/osint';
+import React, { useMemo } from 'react';
+import { DomainAuthLookup } from '../components/DomainAuthLookup';
+import { ShieldCheck } from 'lucide-react';
 
 export function DomainOSINT() {
-  const [domain, setDomain] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [report, setReport] = useState<OSINTReport | null>(null);
-  const lookup = async (e: React.FormEvent) => {
-    e.preventDefault(); setBusy(true); setError(''); setReport(null);
-    try {
-      const r = await fetch('/api/osint/domain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain }), signal: AbortSignal.timeout(15000) });
-      const data = await r.json(); if (!r.ok) throw new Error(data.error || 'Lookup unavailable'); setReport(data);
-    } catch (e: any) { setError(e.message); } finally { setBusy(false); }
-  };
-  return <main className="ns-workspace"><div className="ns-eyebrow">INFRASTRUCTURE INTELLIGENCE</div><h1>Domain OSINT<span className="ns-accent">.</span></h1><p className="ns-lead">Inspect public DNS, registry records and hosting relationships. Every finding includes its source.</p>
-    <form onSubmit={lookup} className="ns-search-form"><Globe size={22} /><label className="sr-only" htmlFor="osint-domain">Domain or URL</label><input id="osint-domain" value={domain} onChange={e => setDomain(e.target.value)} placeholder="Enter a domain or URL" required maxLength={2048} /><button className="ns-primary" disabled={busy}>{busy ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}{busy ? 'Looking up…' : 'Investigate'}</button></form>
-    {error && <p className="ns-error" role="alert">{error}</p>}
-    {!report && !busy && <div className="ns-empty"><Globe size={38} /><h2>Start with an observed domain</h2><p>Copy the sender domain or a suspicious link from your email investigation.</p><p className="ns-caption">This passive lookup does not open the submitted website.</p></div>}
-    {report && <><div className="ns-section-heading"><h2>{report.domain}</h2><span className="ns-badge">{report.status}</span></div><p className="ns-caption">Observed {new Date(report.observedAt).toLocaleString()}</p><div className="ns-table-wrap"><table className="ns-table"><thead><tr><th>Indicator</th><th>Finding</th><th>Evidence type</th><th>Source</th></tr></thead><tbody>{report.evidence.map((e, i) => <tr key={i}><td>{e.kind}</td><td className="ns-mono">{e.value}</td><td><span className="ns-badge">{e.provenance.replace('_', ' ')}</span></td><td>{e.source}</td></tr>)}</tbody></table></div><details className="ns-panel"><summary>Unavailable observations ({report.unavailable.length})</summary><ul>{report.unavailable.map((s, i) => <li key={i}>{s}</li>)}</ul></details><p className="ns-caption">{report.disclaimer}</p></>}
-  </main>;
+  // Read any initial domain passed via query string or hash (e.g. #osint?domain=github.com)
+  const initialDomain = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      const match = hash.match(/[?&]domain=([^&]+)/i);
+      if (match && match[1]) {
+        try {
+          return decodeURIComponent(match[1]);
+        } catch {
+          return match[1];
+        }
+      }
+    }
+    return 'github.com';
+  }, []);
+
+  return (
+    <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+        <div>
+          <div className="text-[11px] font-mono tracking-widest text-cyber-blue uppercase font-bold flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-cyber-blue animate-pulse" />
+            INFRASTRUCTURE INTELLIGENCE & OSINT
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight flex items-center gap-2">
+            Domain OSINT & Auth Inspector<span className="text-cyber-blue">.</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-3xl font-sans leading-relaxed">
+            Unified infrastructure investigation: inspect live DNS cryptographic records (SPF, DKIM, DMARC), DoH resolution, RDAP registry longevity, network ASN routing, and public hosting relationships.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Passive DoH / Non-Intrusive
+          </span>
+        </div>
+      </div>
+
+      {/* Unified Domain OSINT & Authentication Module */}
+      <DomainAuthLookup initialDomain={initialDomain} />
+    </main>
+  );
 }

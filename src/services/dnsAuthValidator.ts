@@ -642,16 +642,27 @@ export async function probeDkimRecords(domain: string, preferredSelector?: strin
 }
 
 /**
- * Execute full Live Email Authentication Health Check for a domain
+ * Clean and extract a hostname / domain from arbitrary user input (URLs, email addresses, paths)
  */
-export async function validateDomainEmailAuth(domainInput: string, customSelector?: string): Promise<DomainAuthHealthReport> {
-  const startTime = performance.now();
+export function extractCleanDomain(domainInput: string): string {
+  if (!domainInput) return '';
   let cleanDomain = domainInput
     .trim()
-    .toLowerCase()
-    .replace(/^(?:https?:\/\/)?(?:mailto:)?(?:www\.)?/i, '')
-    .replace(/\/.*$/, '')
-    .replace(/^@/, '');
+    .toLowerCase();
+
+  // Strip mailto: or protocol (http://, https://, etc.)
+  cleanDomain = cleanDomain.replace(/^(?:[a-z0-9+.-]+:\/\/)?(?:mailto:)?(?:www\.)?/i, '');
+
+  // Strip path, query params, hash fragments, and port numbers
+  cleanDomain = cleanDomain.replace(/[/?#:].*$/, '');
+
+  // Strip userinfo if present (e.g. user@domain.com)
+  if (cleanDomain.includes('@')) {
+    cleanDomain = cleanDomain.split('@').pop() || cleanDomain;
+  }
+
+  // Strip leading/trailing dots or special characters
+  cleanDomain = cleanDomain.replace(/^[^a-z0-9]+|[^a-z0-9]+$/gi, '');
 
   // Normalize common aliases if user omitted TLD or typed brand name
   if (cleanDomain === 'google') cleanDomain = 'google.com';
@@ -662,9 +673,20 @@ export async function validateDomainEmailAuth(domainInput: string, customSelecto
   else if (cleanDomain === 'vercel') cleanDomain = 'vercel.app';
   else if (cleanDomain === 'github') cleanDomain = 'github.com';
 
+  return cleanDomain;
+}
+
+/**
+ * Execute full Live Email Authentication Health Check for a domain
+ */
+export async function validateDomainEmailAuth(domainInput: string, customSelector?: string): Promise<DomainAuthHealthReport> {
+  const startTime = performance.now();
+  const cleanDomain = extractCleanDomain(domainInput);
+
   if (!cleanDomain || !cleanDomain.includes('.')) {
     throw new Error('Please enter a valid domain name (e.g. google.com, ai.studio, microsoft.com, or your-company.com)');
   }
+
 
   // Query in parallel including live RDAP domain age & registration intelligence
   const [spfAnswers, dmarcAnswers, mxAnswers, bimiAnswers, domainAgeData] = await Promise.all([
