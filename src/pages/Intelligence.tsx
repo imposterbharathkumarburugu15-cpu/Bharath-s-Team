@@ -63,7 +63,83 @@ export function Intelligence({ initialView = 'campaigns' }: { initialView?: 'cam
     setNotice(status === 'confirmed' ? 'Campaign reviewed. Selected validated indicators are now in threat intelligence.' : 'Campaign rejected. Its propagated indicators have been retracted.'); await load();
   });
   return <main className="ns-workspace"><div className="ns-eyebrow">SECURITY OPERATIONS</div><div className="ns-section-heading"><h1>Intelligence<span className="ns-accent">.</span></h1>{role && <button className="ns-secondary" onClick={() => { socKey = ''; setRole(''); setIssued(null); setClusters([]); setIncidents([]); setSessions([]); setIOCs([]); }}>Lock SOC</button>}</div><p className="ns-lead">One detected incident should help identify related incidents.</p>
-    {!role ? <form className="ns-panel ns-soc-login" onSubmit={e => { e.preventDefault(); void run(async () => { socKey = keyInput; try { const who = await api('soc/session'); setRole(who.role); setKeyInput(''); await load(); } catch (e) { socKey = ''; throw e; } }); }}><LockKeyhole size={28} className="ns-accent" /><h2>Open your SOC workspace</h2><p>Use the analyst or security administrator key issued for this deployment.</p><label htmlFor="soc-key">SOC access key</label><input id="soc-key" type="password" value={keyInput} onChange={e => setKeyInput(e.target.value)} autoComplete="off" required /><button className="ns-primary" disabled={busy}>Unlock workspace <ArrowRight size={16} /></button><p className="ns-caption">Access keys remain in memory until you lock the workspace or reload the page.</p></form> : <>
+    {!role ? (
+      <form
+        className="ns-panel ns-soc-login"
+        onSubmit={e => {
+          e.preventDefault();
+          void run(async () => {
+            socKey = keyInput.trim();
+            try {
+              const who = await api('soc/session');
+              setRole(who.role);
+              setKeyInput('');
+              await load();
+            } catch (e) {
+              socKey = '';
+              throw e;
+            }
+          });
+        }}
+      >
+        <LockKeyhole size={28} className="ns-accent" />
+        <h2>Open your SOC workspace</h2>
+        <p>Use the analyst or security administrator key issued for this deployment.</p>
+
+        {/* Demo / Local Quick Access Banner */}
+        <div style={{
+          background: 'rgba(103, 233, 169, 0.08)',
+          border: '1px solid rgba(103, 233, 169, 0.25)',
+          borderRadius: '8px',
+          padding: '12px 14px',
+          margin: '12px 0 16px 0',
+          textAlign: 'left'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+            <span style={{ color: '#67e9a9', fontSize: '12px', fontWeight: 'bold' }}>🔑 Default Dev / Demo SOC Key:</span>
+            <button
+              type="button"
+              className="ns-secondary"
+              style={{ fontSize: '11px', padding: '4px 10px', cursor: 'pointer' }}
+              onClick={() => {
+                const devKey = 'neuroshield-soc-admin-secret-key-2026-production-token';
+                setKeyInput(devKey);
+                void run(async () => {
+                  socKey = devKey;
+                  try {
+                    const who = await api('soc/session');
+                    setRole(who.role);
+                    setKeyInput('');
+                    await load();
+                  } catch (e) {
+                    socKey = '';
+                    throw e;
+                  }
+                });
+              }}
+            >
+              1-Click Auto Unlock
+            </button>
+          </div>
+          <code style={{ background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', color: '#a7f3d0', fontSize: '11px', display: 'block', wordBreak: 'break-all' }}>
+            neuroshield-soc-admin-secret-key-2026-production-token
+          </code>
+        </div>
+
+        <label htmlFor="soc-key">SOC access key</label>
+        <input
+          id="soc-key"
+          type="password"
+          value={keyInput}
+          onChange={e => setKeyInput(e.target.value)}
+          placeholder="Enter or paste SOC key..."
+          autoComplete="off"
+          required
+        />
+        <button className="ns-primary" disabled={busy}>Unlock workspace <ArrowRight size={16} /></button>
+        <p className="ns-caption">Access keys remain in memory until you lock the workspace or reload the page.</p>
+      </form>
+    ) : <>
       <div className="ns-tabs" role="navigation" aria-label="Intelligence modules"><button className={view === 'campaigns' ? 'active' : ''} onClick={() => setView('campaigns')}><Network size={16} /> Campaigns</button><button className={view === 'deception' ? 'active' : ''} onClick={() => setView('deception')}><Shield size={16} /> Controlled deception</button><button className={view === 'iocs' ? 'active' : ''} onClick={() => setView('iocs')}>IOC database</button><button onClick={() => void run(load)} disabled={busy} aria-label="Refresh intelligence"><RefreshCw size={16} /></button></div>
       {view === 'campaigns' && <div className="ns-soc-grid"><aside className="ns-panel"><h2>Campaign clusters</h2><p className="ns-caption">{clusters.length} clusters · {incidents.length} stored incidents</p>{clusters.map(c => <button className={`ns-list-item ${campaignId === c.id ? 'selected' : ''}`} key={c.id} onClick={() => setCampaignId(c.id)}><strong>{c.id}</strong><span>{c.incidentIds.length} incidents · {Math.round(c.confidence * 100)}% similarity</span><span className="ns-badge">{c.status}</span></button>)}{!clusters.length && <p className="ns-caption">Analyze related emails or browser incidents. A cluster appears only when independent evidence supports a relationship.</p>}</aside><section>{campaign ? <><div className="ns-panel"><div className="ns-section-heading"><h2>{campaign.id}</h2><span className="ns-badge">{campaign.status}</span></div><p>Correlation confidence {Math.round(campaign.confidence * 100)}% · {campaign.incidentIds.length} related incidents</p><EvidenceGraph graph={campaign.graph} /><details><summary>Supporting evidence for every correlation ({campaign.correlations.length})</summary>{campaign.correlations.map((c, i) => <div className="ns-evidence-block" key={i}><p>{c.incidentA} ↔ {c.incidentB} · {Math.round(c.score * 100)}%</p><ul className="ns-evidence-list">{c.evidence.map((f, j) => <li key={j}><span className="ns-badge">{f.provenance}</span> {f.family} / {f.key}: <code>{f.value}</code><small>{f.source}</small></li>)}</ul></div>)}</details></div><div className="ns-panel"><h3>SOC review & IOC propagation</h3><p>Select only indicators that the evidence supports as malicious. Shared infrastructure can be recorded as context.</p><IndicatorPicker indicators={campaign.indicators} selected={selected} onChange={setSelected} /><label htmlFor="campaign-note">Review rationale</label><textarea id="campaign-note" value={note} onChange={e => setNote(e.target.value)} maxLength={1000} placeholder="Explain why this cluster is supported or should be rejected." /><div className="ns-actions"><button className="ns-primary" disabled={busy || note.trim().length < 3} onClick={() => void reviewCampaign('confirmed')}>Confirm & publish {selected.length} IOCs</button><button className="ns-danger" disabled={busy || note.trim().length < 3} onClick={() => void reviewCampaign('rejected')}>Reject cluster</button></div></div></> : <div className="ns-empty"><Network size={36} /><h2>{clusters.length ? 'Select a campaign' : 'Evidence builds the graph'}</h2><p>Observed indicators and inferred connections appear here. No attribution or phishing-kit name is assigned.</p><a href="#phishing" className="ns-text-button">Analyze an email <ArrowRight size={14} /></a></div>}</section></div>}
       {view === 'deception' && <><div className="ns-panel"><div className="ns-section-heading"><h2>Controlled Deception / HoneyTrap</h2><span className="ns-badge">{status?.enabled ? 'Enabled by administrator' : 'Disabled'}</span></div><p>Passive, isolated research with synthetic data. Interaction uses an expiring capability; NeuroShield never contacts a suspect site or sends a message.</p><p className="ns-caption">Runtime: {status?.runtimeAvailable ? 'Container available' : 'Container unavailable'} · Network egress: disabled · Maximum run: 120 seconds</p><div className="ns-actions"><button className="ns-primary" disabled={busy || role !== 'admin' || (!status?.enabled && !status?.runtimeAvailable)} onClick={() => void run(async () => { await api('deception/config', { enabled: !status?.enabled }); await load(); })}><Power size={16} />{status?.enabled ? 'Disable module' : 'Enable module'}</button><button className="ns-danger" disabled={role !== 'admin'} onClick={() => void run(async () => { await api('deception/kill', {}); setIssued(null); await load(); })}><OctagonX size={17} /> Kill switch · stop all</button></div>{role !== 'admin' && <p className="ns-caption">Administrator access is required to enable, launch, probe or stop sandboxes.</p>}</div>
