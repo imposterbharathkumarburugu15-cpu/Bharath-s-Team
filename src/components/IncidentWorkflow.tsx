@@ -1,10 +1,40 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Network, FileSearch, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Network, FileSearch, ArrowRight, RefreshCw } from 'lucide-react';
 
-export function IncidentWorkflow({ analysis, loading }: { analysis: any; loading: boolean }) {
+export function IncidentWorkflow({ analysis, loading, onRetry }: { analysis: any; loading: boolean; onRetry?: () => void }) {
   const [step, setStep] = useState(0);
-  if (loading) return <div className="ns-panel" role="status">Analyzing email → checking forensic evidence → matching campaign intelligence → resolving protection…</div>;
-  if (!analysis) return <div className="ns-panel ns-error">No backend decision is available. Treat this email as unverified and retry analysis.</div>;
+  if (loading) return (
+    <div className="ns-panel" role="status" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <RefreshCw className="animate-spin" size={16} />
+      <span>Analyzing email → checking forensic evidence → matching campaign intelligence → resolving protection…</span>
+    </div>
+  );
+  if (!analysis) return (
+    <div className="ns-panel ns-error" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+      <span>No backend decision is available. Treat this email as unverified and retry analysis.</span>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          style={{
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            color: '#fff',
+            padding: '4px 12px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <RefreshCw size={12} />
+          Retry Analysis
+        </button>
+      )}
+    </div>
+  );
   const decision = analysis.authoritativeProtectionDecision;
   const evidence = analysis.evidence_provenance || [];
   return <section className="ns-workspace ns-incident-flow">
