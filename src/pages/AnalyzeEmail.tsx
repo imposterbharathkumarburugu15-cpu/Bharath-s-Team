@@ -32,6 +32,7 @@ import { addScanToHistory } from '@/lib/history';
 import { SihForensicSuite } from '@/components/forensics/SihForensicSuite';
 import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import { SentinelWave } from '@/components/SentinelWave';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const ATTACK_PRESETS = [
   {
@@ -94,6 +95,7 @@ Your monthly invoice for AWS services is now available in the AWS Billing Consol
 ];
 
 export function AnalyzeEmail() {
+  const { t } = useLanguage();
   const [emailContent, setEmailContent] = useState('');
   const [sender, setSender] = useState('');
   const [subject, setSubject] = useState('');
@@ -234,11 +236,11 @@ export function AnalyzeEmail() {
               <Mail className="w-4 h-4" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white uppercase">
-              Email Phishing & Header Analyzer
+              {t('analyze_title')}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-[#8995A5] font-mono">
-            Autonomous RFC 5322 Header Deconstruction, DNS Protocol Verification & NLP Deception Analysis
+            {t('analyze_desc')}
           </p>
         </div>
 
@@ -281,7 +283,7 @@ export function AnalyzeEmail() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold text-[#8995A5] uppercase tracking-wider flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-[#36c96c]" />
-                  Load Real-World Phishing Attack Presets:
+                  {t('choose_preset_title')}:
                 </span>
                 <span className="text-[10px] font-mono text-[#36c96c]">1-Click Demo Fill</span>
               </div>
@@ -336,7 +338,7 @@ export function AnalyzeEmail() {
               <div>
                 <div className="flex items-center justify-between mb-1.5 font-mono text-xs">
                   <label className="text-[#8995A5] text-[11px] font-bold uppercase">
-                    Raw Email Body or Full RFC 5322 Headers:
+                    {t('manual_header_input')}:
                   </label>
                   
                   {/* File Upload Trigger */}
@@ -374,7 +376,7 @@ export function AnalyzeEmail() {
                   className="px-6 py-3 rounded-xl bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-extrabold text-xs font-mono transition-all shadow-[0_0_20px_rgba(105,230,165,0.3)] hover:shadow-[0_0_30px_rgba(105,230,165,0.5)] cursor-pointer disabled:opacity-40 flex items-center gap-2 active:scale-95"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Analyze Email</span>
+                  <span>{t('run_deep_analysis')}</span>
                 </button>
               </div>
             </div>

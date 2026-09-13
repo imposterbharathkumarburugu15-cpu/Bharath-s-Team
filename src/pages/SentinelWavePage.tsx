@@ -6,8 +6,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function SentinelWavePage() {
+  const { t } = useLanguage();
   const [activeSimId, setActiveSimId] = useState<string>(WAVE_SCENARIOS[0].id);
   const activeScenario = WAVE_SCENARIOS.find(s => s.id === activeSimId) || WAVE_SCENARIOS[0];
 
@@ -52,15 +54,15 @@ export function SentinelWavePage() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30">
-                  Interactive Security Learning
+                  {t('wave_eyebrow')}
                 </span>
-                <span className="text-[10px] font-mono text-gray-400">Beginner Friendly</span>
+                <span className="text-[10px] font-mono text-gray-400">{t('wave_beginner_badge')}</span>
               </div>
               <h1 className="text-xl sm:text-2xl font-bold text-white mt-1">
-                NeuroShield Wave: Attack Journey Simulator
+                {t('wave_title')}
               </h1>
               <p className="text-xs sm:text-sm text-gray-300 mt-1 max-w-3xl leading-relaxed">
-                Watch how cyber scams travel across the internet from the fraudster’s computer, through deceptive messages and fake links, to the target victim — and see how <strong>NeuroShield AI</strong> stops them in their tracks.
+                {t('wave_desc')}
               </p>
             </div>
           </div>
@@ -106,7 +108,7 @@ export function SentinelWavePage() {
           <div className="flex items-center gap-2.5">
             <Lightbulb className="w-5 h-5 text-[#ffb703]" />
             <h2 className="text-sm sm:text-base font-bold text-white">
-              Cyber Safety 101: 4 Golden Rules Every Beginner Should Know
+              {t('safety_rules_title')}
             </h2>
           </div>
           <span className="text-[11px] font-mono text-gray-400">Essential Protection Habits</span>

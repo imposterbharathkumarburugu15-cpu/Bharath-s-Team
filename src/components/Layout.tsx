@@ -288,7 +288,7 @@ export function Layout({
           >
             <div className="flex items-center gap-2">
               <Search className="w-3.5 h-3.5 text-gray-500 group-hover:text-cyber-blue transition-colors" />
-              <span className="text-gray-400 group-hover:text-gray-200">Quick Command...</span>
+              <span className="text-gray-400 group-hover:text-gray-200">{t('Quick Command...')}</span>
             </div>
             <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-gray-400 border border-white/10 group-hover:border-cyber-blue/30">
               ⌘K
@@ -392,7 +392,7 @@ export function Layout({
           <div className="space-y-1 w-full">
             {!isSidebarCollapsed ? (
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5e8c6f] mb-2 px-3 flex items-center gap-2 font-mono">
-                <span>AI INTELLIGENCE</span>
+                <span>{t('AI INTELLIGENCE')}</span>
                 <div className="flex-1 h-[1px] bg-gradient-to-r from-cyber-border/40 to-transparent" />
               </div>
             ) : (
@@ -481,7 +481,7 @@ export function Layout({
           <div className="space-y-1 w-full">
             {!isSidebarCollapsed ? (
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5e8c6f] mb-2 px-3 flex items-center gap-2 font-mono">
-                <span>SYSTEM &amp; API</span>
+                <span>{t('PLATFORM')}</span>
                 <div className="flex-1 h-[1px] bg-gradient-to-r from-cyber-border/40 to-transparent" />
               </div>
             ) : (
@@ -891,7 +891,7 @@ export function Layout({
                       }
                     }
                   }}
-                  placeholder="Type a module name, feature, or command..."
+                  placeholder={t('Search or ask copilot...')}
                   className="flex-1 bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none font-mono"
                 />
                 <button

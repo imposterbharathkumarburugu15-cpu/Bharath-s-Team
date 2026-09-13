@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Network, Shield, LockKeyhole, RefreshCw, Power, OctagonX, ArrowRight } from 'lucide-react';
 import type { Campaign, Indicator, ConfirmedIOC, IntelligenceIncident } from '../services/intelligence/types';
 import type { DeceptionSession } from '../services/deception/service';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const SESSION_KEY = 'neuroshield_soc_key';
 let socKey = '';
@@ -340,6 +341,7 @@ function IndicatorPicker({ indicators, selected, onChange }: { indicators: Indic
 }
 
 export function Intelligence({ initialView = 'campaigns' }: { initialView?: 'campaigns' | 'deception' }) {
+  const { t } = useLanguage();
   const [view, setView] = useState<'campaigns' | 'deception' | 'iocs'>(initialView);
   const [keyInput, setKeyInput] = useState('');
   const [role, setRole] = useState('');
@@ -401,7 +403,7 @@ export function Intelligence({ initialView = 'campaigns' }: { initialView?: 'cam
     await api(`intelligence/campaigns/${campaign.id}/review`, { status, indicators: selected, note });
     setNotice(status === 'confirmed' ? 'Campaign reviewed. Selected validated indicators are now in threat intelligence.' : 'Campaign rejected. Its propagated indicators have been retracted.'); await load();
   });
-  return <main className="ns-workspace"><div className="ns-eyebrow">SECURITY OPERATIONS</div><div className="ns-section-heading"><h1>SOC Sector<span className="ns-accent">.</span></h1>{role && <button className="ns-secondary" onClick={() => { persistKey(''); setRole(''); setIssued(null); setClusters([]); setIncidents([]); setSessions([]); setIOCs([]); }}>Lock SOC</button>}</div><p className="ns-lead">Unified campaign intelligence, controlled deception research & active IOC database.</p>
+  return <main className="ns-workspace"><div className="ns-eyebrow">{t('soc_eyebrow')}</div><div className="ns-section-heading"><h1>{t('soc_title')}<span className="ns-accent">.</span></h1>{role && <button className="ns-secondary" onClick={() => { persistKey(''); setRole(''); setIssued(null); setClusters([]); setIncidents([]); setSessions([]); setIOCs([]); }}>{t('soc_lock_btn')}</button>}</div><p className="ns-lead">{t('soc_desc')}</p>
     {!role ? (
       <form
         className="ns-panel ns-soc-login"
@@ -466,7 +468,7 @@ export function Intelligence({ initialView = 'campaigns' }: { initialView?: 'cam
           </code>
         </div>
 
-        <label htmlFor="soc-key">SOC access key</label>
+        <label htmlFor="soc-key">{t('soc_auth_key')}</label>
         <input
           id="soc-key"
           type="password"
@@ -476,11 +478,11 @@ export function Intelligence({ initialView = 'campaigns' }: { initialView?: 'cam
           autoComplete="off"
           required
         />
-        <button className="ns-primary" disabled={busy}>Unlock workspace <ArrowRight size={16} /></button>
+        <button className="ns-primary" disabled={busy}>{t('soc_unlock_btn')} <ArrowRight size={16} /></button>
         <p className="ns-caption">Access keys remain in memory until you lock the workspace or reload the page.</p>
       </form>
     ) : <>
-      <div className="ns-tabs" role="navigation" aria-label="Intelligence modules"><button className={view === 'campaigns' ? 'active' : ''} onClick={() => setView('campaigns')}><Network size={16} /> Campaigns</button><button className={view === 'deception' ? 'active' : ''} onClick={() => setView('deception')}><Shield size={16} /> Controlled deception</button><button className={view === 'iocs' ? 'active' : ''} onClick={() => setView('iocs')}>IOC database</button><button onClick={() => void run(load)} disabled={busy} aria-label="Refresh intelligence"><RefreshCw size={16} /></button></div>
+      <div className="ns-tabs" role="navigation" aria-label="Intelligence modules"><button className={view === 'campaigns' ? 'active' : ''} onClick={() => setView('campaigns')}><Network size={16} /> {t('tab_campaigns')}</button><button className={view === 'deception' ? 'active' : ''} onClick={() => setView('deception')}><Shield size={16} /> {t('tab_deception')}</button><button className={view === 'iocs' ? 'active' : ''} onClick={() => setView('iocs')}>{t('tab_iocs')}</button><button onClick={() => void run(load)} disabled={busy} aria-label="Refresh intelligence"><RefreshCw size={16} /></button></div>
       {view === 'campaigns' && <div className="ns-soc-grid"><aside className="ns-panel"><h2>Campaign clusters</h2><p className="ns-caption">{clusters.length} clusters · {incidents.length} stored incidents</p>{clusters.map(c => <button className={`ns-list-item ${campaignId === c.id ? 'selected' : ''}`} key={c.id} onClick={() => setCampaignId(c.id)}><strong>{c.id}</strong><span>{c.incidentIds.length} incidents · {Math.round(c.confidence * 100)}% similarity</span><span className="ns-badge">{c.status}</span></button>)}{!clusters.length && <p className="ns-caption">Analyze related emails or browser incidents. A cluster appears only when independent evidence supports a relationship.</p>}</aside><section>{campaign ? <><div className="ns-panel"><div className="ns-section-heading"><h2>{campaign.id}</h2><span className="ns-badge">{campaign.status}</span></div><p>Correlation confidence {Math.round(campaign.confidence * 100)}% · {campaign.incidentIds.length} related incidents</p><EvidenceGraph graph={campaign.graph} /><details><summary>Supporting evidence for every correlation ({campaign.correlations.length})</summary>{campaign.correlations.map((c, i) => <div className="ns-evidence-block" key={i}><p>{c.incidentA} ↔ {c.incidentB} · {Math.round(c.score * 100)}%</p><ul className="ns-evidence-list">{c.evidence.map((f, j) => <li key={j}><span className="ns-badge">{f.provenance}</span> {f.family} / {f.key}: <code>{f.value}</code><small>{f.source}</small></li>)}</ul></div>)}</details></div><div className="ns-panel"><h3>SOC review & IOC propagation</h3><p>Select only indicators that the evidence supports as malicious. Shared infrastructure can be recorded as context.</p><IndicatorPicker indicators={campaign.indicators} selected={selected} onChange={setSelected} /><label htmlFor="campaign-note">Review rationale</label><textarea id="campaign-note" value={note} onChange={e => setNote(e.target.value)} maxLength={1000} placeholder="Explain why this cluster is supported or should be rejected." /><div className="ns-actions"><button className="ns-primary" disabled={busy || note.trim().length < 3} onClick={() => void reviewCampaign('confirmed')}>Confirm & publish {selected.length} IOCs</button><button className="ns-danger" disabled={busy || note.trim().length < 3} onClick={() => void reviewCampaign('rejected')}>Reject cluster</button></div></div></> : <div className="ns-empty"><Network size={36} /><h2>{clusters.length ? 'Select a campaign' : 'Evidence builds the graph'}</h2><p>Observed indicators and inferred connections appear here. No attribution or phishing-kit name is assigned.</p><a href="#phishing" className="ns-text-button">Analyze an email <ArrowRight size={14} /></a></div>}</section></div>}
       {view === 'deception' && <><div className="ns-panel"><div className="ns-section-heading"><h2>Controlled Deception / HoneyTrap</h2><span className="ns-badge">{status?.enabled ? 'Enabled by administrator' : 'Disabled'}</span></div><p>Passive, isolated research with synthetic data. Interaction uses an expiring capability; NeuroShield never contacts a suspect site or sends a message.</p><p className="ns-caption">Runtime: {status?.isEmulated ? 'Emulated Sandbox Active (Verification Mode)' : status?.runtimeAvailable ? 'Container available (Docker)' : 'Container unavailable'} · Network egress: disabled · Maximum run: 120 seconds</p><div className="ns-actions"><button className="ns-primary" disabled={busy || role !== 'admin'} onClick={() => void run(async () => { sessionStorage.setItem('ns_deception_emulated', 'true'); await api('deception/config', { enabled: !status?.enabled }); await load(); })}><Power size={16} />{status?.enabled ? 'Disable module' : 'Enable module'}</button><button className="ns-danger" disabled={role !== 'admin'} onClick={() => void run(async () => { await api('deception/kill', {}); setIssued(null); await load(); })}><OctagonX size={17} /> Kill switch · stop all</button></div>{role !== 'admin' && <p className="ns-caption">Administrator access is required to enable, launch, probe or stop sandboxes.</p>}</div>
         <div className="ns-panel"><h3>Create a controlled session</h3><div className="ns-form-row"><label>Eligible malicious incident<select value={incidentId} onChange={e => setIncidentId(e.target.value)}><option value="">Select a high-confidence incident</option>{eligible.map(i => <option key={i.id} value={i.id}>{i.id} · confidence {i.confidence}%</option>)}</select></label><label>Time limit (seconds)<input type="number" min={10} max={120} value={duration} onChange={e => setDuration(Number(e.target.value))} /></label><button className="ns-primary" disabled={busy || role !== 'admin' || !status?.enabled || !incidentId} onClick={() => void run(async () => { const created = await api('deception/sessions', { incidentId, durationSeconds: duration }); if (created?.session?.id) { setIssued(created); setSessionId(created.session.id); } await load(); })}>Start sandbox</button></div>{!eligible.length && <p className="ns-caption">No eligible incidents. The gate requires risk ≥85, confidence ≥90 and independent technical plus behavioral evidence from the last 24 hours.</p>}</div>

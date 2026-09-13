@@ -476,7 +476,126 @@ Please authenticate your credentials immediately: https://microsoft-security-ver
   risk_label_high: { en: 'HIGH RISK', hi: 'उच्च जोखिम', te: 'అధిక ప్రమాదం' },
   risk_label_suspicious: { en: 'SUSPICIOUS', hi: 'संदिग्ध', te: 'అనుమానాస్పద' },
   risk_label_low: { en: 'LOW RISK', hi: 'कम जोखिम', te: 'తక్కువ ప్రమాదం' },
+
+  // Nav Items & Categories
+  'start_here': { en: 'Start here', hi: 'यहाँ से शुरू करें', te: 'ఇక్కడ ప్రారంభించండి' },
+  'Start here': { en: 'Start here', hi: 'यहाँ से शुरू करें', te: 'ఇక్కడ ప్రారంభించండి' },
+  'domain_osint': { en: 'Domain OSINT', hi: 'डोमेन ओसिंट', te: 'డొమైన్ OSINT' },
+  'Domain OSINT': { en: 'Domain OSINT', hi: 'डोमेन ओसिंट', te: 'డొమైన్ OSINT' },
+  'soc_sector': { en: 'SOC Sector', hi: 'सॉक सेक्टर', te: 'SOC సెక్టార్' },
+  'SOC Sector': { en: 'SOC Sector', hi: 'सॉक सेक्टर', te: 'SOC సెక్టార్' },
+  'ai_intel': { en: 'AI INTELLIGENCE', hi: 'एआई इंटेलिजेंस', te: 'AI ఇంటెలిజెన్స్' },
+  'AI INTELLIGENCE': { en: 'AI INTELLIGENCE', hi: 'एआई इंटेलिजेंस', te: 'AI ఇంటెలిజెన్స్' },
+  'platform': { en: 'PLATFORM', hi: 'प्लेटफ़ॉर्म', te: 'ప్లాట్‌ఫారమ్' },
+  'PLATFORM': { en: 'PLATFORM', hi: 'प्लेटफ़ॉर्म', te: 'ప్లాట్‌ఫారమ్' },
+  'Quick Command...': { en: 'Quick Command...', hi: 'त्वरित आदेश...', te: 'త్వరిత ఆదేశం...' },
+  'all_systems_operational': { en: 'All Systems Operational', hi: 'सभी सिस्टम परिचालन में', te: 'అన్ని వ్యవస్థలు పని చేస్తున్నాయి' },
+  'notifications': { en: 'Notifications', hi: 'सूचनाएं', te: 'నోటిఫికేషన్‌లు' },
+  'fullscreen': { en: 'Fullscreen', hi: 'पूर्ण स्क्रीन', te: 'పూర్తి స్క్రీన్' },
+  'select_language': { en: 'Select Language', hi: 'भाषा चुनें', te: 'భాషను ఎంచుకోండి' },
+  'collapse_sidebar': { en: 'Collapse Sidebar', hi: 'साइडबार संकुचित करें', te: 'సైడ్‌బార్‌ను కుదించండి' },
+  'back_to_inbox': { en: '← Back to Inbox', hi: '← इनबॉक्स पर वापस', te: '← ఇన్‌బాక్స్‌కు తిరిగి' },
+
+  // Start Page (Start.tsx)
+  'start_kicker': { en: 'YOUR NEXT STEP', hi: 'आपका अगला कदम', te: 'మీ తదుపరి అడుగు' },
+  'start_title_1': { en: 'Start with your inbox.', hi: 'अपने इनबॉक्स से शुरू करें।', te: 'మీ ఇన్‌బాక్స్‌తో ప్రారంభించండి.' },
+  'start_title_2': { en: 'Know what to trust.', hi: 'विश्वास करने योग्य पहचानें।', te: 'దేనిని విశ్వసించాలో తెలుసుకోండి.' },
+  'start_lead': { en: 'Connect Gmail, choose an email, and see the evidence behind every protection decision.', hi: 'जीमेल कनेक्ट करें, एक ईमेल चुनें, और हर सुरक्षा निर्णय के पीछे का साक्ष्य देखें।', te: 'Gmailని కనెక్ట్ చేయండి, ఇమెయిల్‌ను ఎంచుకోండి మరియు ప్రతి రక్షణ నిర్ణయం వెనుక ఉన్న ఆధారాలను చూడండి.' },
+  'connect_gmail_cta': { en: 'Connect Gmail', hi: 'जीमेल कनेक्ट करें', te: 'Gmailని కనెక్ట్ చేయండి' },
+  'open_inbox_cta': { en: 'Open inbox', hi: 'इनबॉक्स खोलें', te: 'ఇన్‌బాక్స్ తెరవండి' },
+  'connecting_status': { en: 'Connecting…', hi: 'कनेक्ट हो रहा है…', te: 'కనెక్ట్ చేస్తోంది…' },
+  'gmail_read_only_caption': { en: 'Gmail access is read-only. NeuroShield shows evidence and protects links inside its workspace.', hi: 'जीमेल का उपयोग केवल पढ़ने के लिए है। न्यूरोशील्ड साक्ष्य दिखाता है और लिंक्स की सुरक्षा करता है।', te: 'Gmail యాక్సెస్ రీడ్-ఓన్లీ మాత్రమే. NeuroShield సాక్ష్యాలను చూపుతుంది మరియు లింక్‌లను రక్షిస్తుంది.' },
+  'journey_step_1_title': { en: '1. Connect your inbox', hi: '1. अपना इनबॉक्स कनेक्ट करें', te: '1. మీ ఇన్‌బాక్స్‌ను కనెక్ట్ చేయండి' },
+  'journey_step_1_desc': { en: 'Authorize read-only access with Google so NeuroShield can inspect headers and links for your review.', hi: 'Google के साथ केवल-पढ़ने के लिए अधिकृत करें ताकि न्यूरोशील्ड आपकी समीक्षा के लिए हेडर और लिंक का निरीक्षण कर सके।', te: 'Googleతో రీడ్-ఓన్లీ యాక్సెస్‌ను ప్రామాణీకరించండి, తద్వారా NeuroShield మీ సమీక్ష కోసం హెడర్‌లు మరియు లింక్‌లను తనిఖీ చేయగలదు.' },
+  'journey_step_2_title': { en: '2. See the evidence', hi: '2. साक्ष्य देखें', te: '2. సాక్ష్యాలను చూడండి' },
+  'journey_step_2_desc': { en: 'Every message is evaluated for sender authentication, header consistency, body risk, and destination safety.', hi: 'हर संदेश का मूल्यांकन प्रेषक प्रमाणीकरण, हेडर संगति, बॉडी जोखिम और गंतव्य सुरक्षा के लिए किया जाता है।', te: 'పంపినవారి ప్రమాణీకరణ, హెడర్ అనుగుణ్యత, బాడీ రిస్క్ మరియు గమ్యస్థాన భద్రత కోసం ప్రతి సందేశం మూల్యాంకనం చేయబడుతుంది.' },
+  'journey_step_3_title': { en: '3. Act with confidence', hi: '3. विश्वास के साथ कार्य करें', te: '3. విశ్వాసంతో చర్య తీసుకోండి' },
+  'journey_step_3_desc': { en: 'Know why an email was flagged before opening attachments, clicking links, or replying to urgent requests.', hi: 'संलग्नक खोलने, लिंक पर क्लिक करने या जरूरी अनुरोधों का जवाब देने से पहले जानें कि ईमेल को क्यों फ़्लैग किया गया था।', te: 'అటాచ్‌మెంట్‌లను తెరవడానికి, లింక్‌లను క్లిక్ చేయడానికి లేదా అత్యవసర అభ్యర్థనలకు ప్రతిస్పందించడానికి ముందు ఇమెయిల్ ఎందుకు ఫ్లాగ్ చేయబడిందో తెలుసుకోండి.' },
+  'feature_auth_audit': { en: 'Authentication audit', hi: 'प्रमाणीकरण ऑडिट', te: 'ప్రామాణీకరణ ఆడిట్' },
+  'feature_auth_audit_desc': { en: 'Confirm SPF, DKIM, and DMARC alignment before trusting the sender.', hi: 'प्रेषक पर भरोसा करने से पहले एसपीएफ़, डीकेआईएम और डीएमएआरसी संरेखण की पुष्टि करें।', te: 'పంపినవారిని విశ్వసించే ముందు SPF, DKIM మరియు DMARC అమరికను నిర్ధారించండి.' },
+  'feature_header_analysis': { en: 'RFC 5322 header analysis', hi: 'आरएफसी 5322 हेडर विश्लेषण', te: 'RFC 5322 హెడర్ విశ్లేషణ' },
+  'feature_header_analysis_desc': { en: 'Detect lookalikes, reply-to traps, and mismatched relay hops.', hi: 'समान दिखने वाले पते, उत्तर जाल और बेमेल रिले हॉप्स का पता लगाएं।', te: 'సారూప్య చిరునామాలు, ప్రత్యుత్తర ఉచ్చులు మరియు సరిపోలని రిలే హాప్‌లను గుర్తించండి.' },
+  'feature_link_eval': { en: 'Safe link evaluation', hi: 'सुरक्षित लिंक मूल्यांकन', te: 'సురక్షిత లింక్ మూల్యాంకనం' },
+  'feature_link_eval_desc': { en: 'Inspect destinations and redirects before anyone in your team visits them.', hi: 'अपनी टीम में किसी के जाने से पहले गंतव्यों और रीडायरेक्ट का निरीक्षण करें।', te: 'మీ బృందంలో ఎవరైనా సందర్శించే ముందు గమ్యస్థానాలు మరియు దారి మళ్లింపులను తనిఖీ చేయండి.' },
+  'feature_campaign_intel': { en: 'Campaign intelligence', hi: 'अभियान इंटेलिजेंस', te: 'క్యాంపెయిన్ ఇంటెలిజెన్స్' },
+  'feature_campaign_intel_desc': { en: 'Connect related incidents through observable evidence.', hi: 'अवलोकन योग्य साक्ष्य के माध्यम से संबंधित घटनाओं को जोड़ें।', te: 'పరిశీలించదగిన సాక్ష్యం ద్వారా సంబంధిత సంఘటనలను కనెక్ట్ చేయండి.' },
+  'feature_autonomous_prot': { en: 'Autonomous protection', hi: 'स्वायत्त सुरक्षा', te: 'స్వయంప్రतिపత్త రక్షణ' },
+  'feature_autonomous_prot_desc': { en: 'Turn the backend assessment into an actionable decision.', hi: 'बैकएंड मूल्यांकन को एक कार्रवाई योग्य निर्णय में बदलें।', te: 'బ్యాకెండ్ అంచనాను ఆచరణాత్మక నిర్ణయంగా మార్చండి.' },
+  'working_secops': { en: 'Working in security operations?', hi: 'सुरक्षा संचालन में काम कर रहे हैं?', te: 'సెక్యూరిటీ ఆపరేషన్స్‌లో పనిచేస్తున్నారా?' },
+  'open_soc_intel': { en: 'Open SOC intelligence', hi: 'सॉक इंटेलिजेंस खोलें', te: 'SOC ఇంటెలిజెన్స్ తెరవండి' },
+
+  // Domain OSINT Page (DomainOSINT.tsx)
+  'osint_eyebrow': { en: 'INFRASTRUCTURE INTELLIGENCE & OSINT', hi: 'इन्फ्रास्ट्रक्चर इंटेलिजेंस और ओसिंट', te: 'ఇన్‌ఫ్రాస్ట్రక్చర్ ఇంటెలిజెన్స్ & OSINT' },
+  'osint_title': { en: 'Domain OSINT & Auth Inspector', hi: 'डोमेन ओसिंट और प्रमाणीकरण निरीक्षक', te: 'డొమైన్ OSINT & ప్రామాణీకరణ ఇన్‌స్పెక్టర్' },
+  'osint_desc': { en: 'Unified infrastructure investigation: inspect live DNS cryptographic records (SPF, DKIM, DMARC), DoH resolution, RDAP registry longevity, network ASN routing, and public hosting relationships.', hi: 'एकीकृत बुनियादी ढांचा जांच: लाइव डीएनएस क्रिप्टोग्राफिक रिकॉर्ड (एसपीएफ, डीकेआईएम, डीएमएआरसी), डीओएच रिज़ॉल्यूशन, आरडीएपी रजिस्ट्री दीर्घायु, नेटवर्क एएसएन रूटिंग और सार्वजनिक होस्टिंग संबंधों का निरीक्षण करें।', te: 'ఏకీకృత మౌలిక సదుపాయాల పరిశోధన: ప్రత్యక్ష DNS క్రిప్టోగ్రాఫిక్ రికార్డులను (SPF, DKIM, DMARC), DoH రిజల్యూషన్, RDAP రిజిస్ట్రీ దీర్ఘాయువు, నెట్‌వర్క్ ASN రూటింగ్ మరియు పబ్లిక్ హోస్టింగ్ సంబంధాలను పరిశీలించండి.' },
+  'passive_doh_badge': { en: 'Passive DoH / Non-Intrusive', hi: 'निष्क्रिय DoH / गैर-घुसपैठिया', te: 'నిష్క్రియాత్మక DoH / చొరబడనిది' },
+
+  // Guard Page (Guard.tsx)
+  'guard_eyebrow': { en: 'AUTONOMOUS RUNTIME DEFENSE', hi: 'स्वायत्त रनटाइम रक्षा', te: 'స్వయంప్రతిపత్త రన్‌టైమ్ రక్షణ' },
+  'guard_title': { en: 'NeuroShield Guard', hi: 'न्यूरोशील्ड गार्ड', te: 'న్యూరోషీల్డ్ గార్డ్' },
+  'guard_subtitle': { en: 'Real-time telemetry interception, browser extension enforcement & multi-channel containment.', hi: 'वास्तविक समय टेलीमेट्री अवरोधन, ब्राउज़र एक्सटेंशन प्रवर्तन और बहु-चैनल रोकथाम।', te: 'నిజ-సమయ టెలిమెట్రీ నిరోధం, బ్రౌజర్ పొడిగింపు అమలు & బహుళ-ఛానల్ కంటైన్‌మెంట్.' },
+  'guard_ext_btn': { en: 'Browser Extension', hi: 'ब्राउज़र एक्सटेंशन', te: 'బ్రౌజర్ పొడిగింపు' },
+  'guard_qr_btn': { en: 'Scan QR Code', hi: 'क्यूआर कोड स्कैन करें', te: 'QR కోడ్‌ని స్కాన్ చేయండి' },
+  'guard_backend_online': { en: 'CORE ENGINE OPERATIONAL', hi: 'कोर इंजन चालू है', te: 'కోర్ ఇంజిన్ పనిచేస్తోంది' },
+  'guard_backend_offline': { en: 'STANDALONE HEURISTIC MODE', hi: 'स्टैंडअलोन अनुमानी मोड', te: 'స్టాండ్‌అలోన్ హ్యూరిస్టిక్ మోడ్' },
+  'guard_active_channels': { en: 'Active Interception Vectors', hi: 'सक्रिय अवरोधन चैनल', te: 'యాక్టివ్ నిరోధక ఛానెల్‌లు' },
+  'channel_web_title': { en: 'Web Navigation Interceptor', hi: 'वेब नेविगेशन इंटरसेप्टर', te: 'వెబ్ నావిగేషన్ ఇంటర్‌సెప్టర్' },
+  'channel_web_desc': { en: 'Continuous URL & credential harvesting inspection.', hi: 'निरंतर यूआरएल और क्रेडेंशियल हार्वेस्टिंग जांच।', te: 'నిరంతర URL & ఆధారాల హార్వెస్టింగ్ తనిఖీ.' },
+  'channel_sms_title': { en: 'SMS & Smishing Shield', hi: 'एसएमएस और स्मिशिंग शील्ड', te: 'SMS & స్మిషింగ్ షీల్డ్' },
+  'channel_sms_desc': { en: 'Detects bank fraud urgency, APK lures, and shortlink evasions.', hi: 'बैंक धोखाधड़ी तात्कालिकता, एपीके आकर्षण और शॉर्टलिंक चोरी का पता लगाता है।', te: 'బ్యాంక్ మోసం అత్యవసరాన్ని, APK ఎరలను మరియు షార్ట్‌లింక్ తప్పించుకునే విధానాలను గుర్తిస్తుంది.' },
+  'channel_qr_title': { en: 'QR Code (Quishing) Detonator', hi: 'क्यूआर कोड (क्विशिंग) डेटोनेटर', te: 'QR కోడ్ (క్విషింగ్) డెటోనేటర్' },
+  'channel_qr_desc': { en: 'Decodes obfuscated QR vectors and evaluates multi-redirect chains.', hi: 'अस्पष्ट क्यूआर वैक्टर को डिकोड करता है और मल्टी-रीडायरेक्ट चेन का मूल्यांकन करता है।', te: 'అస్పష్టమైన QR వెక్టర్లను డీకోడ్ చేస్తుంది మరియు బహుళ-రీడైరెక్ట్ గొలుసులను అంచనా వేస్తుంది.' },
+  'channel_prompt_title': { en: 'AI Prompt Injection Barrier', hi: 'एआई प्रॉम्प्ट इंजेक्शन बैरियर', te: 'AI ప్రాంప్ట్ ఇంజెక్షన్ బారియర్' },
+  'channel_prompt_desc': { en: 'Neutralizes hidden system prompts, jailbreak payloads, and instruction overrides.', hi: 'छिपे हुए सिस्टम प्रॉम्प्ट, जेलब्रेक पेलोड और निर्देश ओवरराइड को बेअसर करता है।', te: 'దాచిన సిస్టమ్ ప్రాంప్ట్‌లు, జైల్ బ్రేక్ పేలోడ్‌లు మరియు సూచనల ఓవర్‌రైడ్‌లను తటస్థీకరిస్తుంది.' },
+  'run_diagnostics': { en: 'Run Live Threat Diagnostics', hi: 'लाइव थ्रेट डायग्नोस्टिक्स चलाएं', te: 'లైవ్ థ్రెట్ డయాగ్నోస్టిక్స్ రన్ చేయండి' },
+  'payload_input_label': { en: 'Target Payload / URL / Message / Prompt', hi: 'लक्ष्य पेलोड / यूआरएल / संदेश / प्रॉम्प्ट', te: 'టార్గెట్ పేలోడ్ / URL / సందేశం / ప్రాంప్ట్' },
+  'simulate_interception_btn': { en: 'Simulate Interception', hi: 'अवरोधन का अनुकरण करें', te: 'నిరోధాన్ని అనుకరించండి' },
+  'recent_intercepts_title': { en: 'Recent Intercepted Incidents', hi: 'हाल ही में रोकी गई घटनाएं', te: 'ఇటీవల నిరోధించబడిన సంఘటనలు' },
+  'no_intercepts': { en: 'No incidents intercepted yet in this session.', hi: 'इस सत्र में अभी तक कोई घटना नहीं रोकी गई है।', te: 'ఈ సెషన్‌లో ఇంకా ఎలాంటి సంఘటనలు నిరోధించబడలేదు.' },
+
+  // Intelligence / SOC Sector Page (Intelligence.tsx)
+  'soc_eyebrow': { en: 'SOC SECTOR / INCIDENT INTELLIGENCE', hi: 'सॉक सेक्टर / घटना इंटेलिजेंस', te: 'SOC సెక్టార్ / సంఘటన ఇంటెలిజెన్స్' },
+  'soc_title': { en: 'Campaign Intelligence & Controlled Deception', hi: 'अभियान इंटेलिजेंस और नियंत्रित धोखा', te: 'క్యాంపెయిన్ ఇంటెలిజెన్స్ & నియంత్రిత మోసం' },
+  'soc_desc': { en: 'Cross-incident campaign clustering, autonomous honeypot deception sandboxes, and court-defensible IOC curation.', hi: 'क्रॉस-इंसिडेंट कैंपेन क्लस्टरिंग, ऑटोनॉमस हनीपॉट डिसेप्शन सैंडबॉक्स और कोर्ट-डिफेंसिबल आईओसी क्यूरेशन।', te: 'క్రాస్-ఇన్సిడెంట్ క్యాంపెయిన్ క్లస్టరింగ్, అటానమస్ హనీపాట్ డిసెప్షన్ శాండ్‌బాక్స్‌లు మరియు కోర్ట్-డిఫెన్సిబుల్ IOC క్యూరేషన్.' },
+  'tab_campaigns': { en: 'Correlated Campaigns', hi: 'सहसंबद्ध अभियान', te: 'పరస్పర సంబంధిత ప్రచారాలు' },
+  'tab_deception': { en: 'Controlled Deception Sandboxes', hi: 'नियंत्रित धोखा सैंडबॉक्स', te: 'నియంత్రిత మోసపూరిత శాండ్‌బాక్స్‌లు' },
+  'tab_iocs': { en: 'Reviewed IOC Registry', hi: 'समीक्षित आईओसी रजिस्ट्री', te: 'సమీక్షించిన IOC రిజిస్ట్రీ' },
+  'soc_auth_key': { en: 'SOC Access Authorization Key:', hi: 'सॉक एक्सेस प्राधिकरण कुंजी:', te: 'SOC యాక్సెస్ ప్రామాణీకరణ కీ:' },
+  'soc_unlock_btn': { en: 'Authenticate SOC Access', hi: 'सॉक एक्सेस प्रमाणित करें', te: 'SOC యాక్సెస్‌ను ప్రామాణీకరించండి' },
+  'soc_lock_btn': { en: 'Revoke / Lock Key', hi: 'कुंजी रद्द करें / लॉक करें', te: 'కీని రద్దు చేయండి / లాక్ చేయండి' },
+  'active_campaigns_count': { en: 'Active Campaign Clusters', hi: 'सक्रिय अभियान क्लस्टर', te: 'క్రియాశీల ప్రచార సమూహాలు' },
+  'new_sandbox_session': { en: 'Launch Deception Sandbox', hi: 'डिसेप्शन सैंडबॉक्स लॉन्च करें', te: 'డిసెప్షన్ శాండ్‌బాక్స్‌ను ప్రారంభించండి' },
+  'deception_mode_emulated': { en: 'Running in Emulated Sandbox Mode', hi: 'इम्यूलेटेड सैंडबॉक्स मोड में चल रहा है', te: 'ఎమ్యులేటెడ్ శాండ్‌బాక్స్ మోడ్‌లో నడుస్తోంది' },
+  'publish_iocs_btn': { en: 'Publish Reviewed Indicators to Firewall', hi: 'समीक्षित संकेतकों को फ़ायरवॉल पर प्रकाशित करें', te: 'సమీక్షించిన సూచికలను ఫైర్‌వాల్‌కు ప్రచురించండి' },
+
+  // Analyze Email Page (AnalyzeEmail.tsx)
+  'analyze_eyebrow': { en: 'EMAIL THREAT LAB', hi: 'ईमेल खतरा प्रयोगशाला', te: 'ఇమెయిల్ ముప్పు ప్రయోగశాల' },
+  'analyze_title': { en: 'Deep RFC 5322 & Header Analyzer', hi: 'गहन आरएफसी 5322 और हेडर विश्लेषक', te: 'డీప్ RFC 5322 & హెడర్ ఎనలైజర్' },
+  'analyze_desc': { en: 'Upload raw .EML or paste complex message headers to detonate URLs and reconstruct relay hops.', hi: 'कच्चा .EML अपलोड करें या यूआरएल डेटोनेट करने और रिले हॉप्स का पुनर्निर्माण करने के लिए हेडर पेस्ट करें।', te: 'రా .EMLని అప్‌లోడ్ చేయండి లేదా URLలను పేల్చడానికి మరియు రిలే హాప్‌లను పునర్నిర్మించడానికి సంక్లిష్ట శీర్షికలను అతికించండి.' },
+  'choose_preset_title': { en: 'Quick Attack Simulation Presets', hi: 'त्वरित हमला सिमुलेशन प्रीसेट', te: 'త్వరిత దాడి అనుకరణ ప్రీసెట్‌లు' },
+  'manual_header_input': { en: 'Manual RFC 5322 Message & Header Input', hi: 'मैनुअल आरएफसी 5322 संदेश और हेडर इनपुट', te: 'మాన్యువల్ RFC 5322 సందేశం & శీర్షిక ఇన్‌పుట్' },
+  'run_deep_analysis': { en: 'RUN DEEP FORENSIC ANALYSIS', hi: 'गहन फोरेंसिक विश्लेषण चलाएं', te: 'డీప్ ఫోరెన్సిక్ విశ్లేషణను రన్ చేయండి' },
+  'analyzing_headers': { en: 'Reconstructing RFC Headers...', hi: 'आरएफसी हेडर्स का पुनर्निर्माण हो रहा है...', te: 'RFC హెడర్‌లను పునర్నిర్మిస్తోంది...' },
+  'overall_threat_level': { en: 'Overall Threat Verdict', hi: 'समग्र खतरा निर्णय', te: 'మొత్తం ముప్పు తీర్పు' },
+
+  // SentinelWave Page (SentinelWavePage.tsx)
+  'wave_eyebrow': { en: 'INTERACTIVE SECURITY LEARNING', hi: 'इंटरएक्टिव सुरक्षा शिक्षण', te: 'ఇంటరాక్టివ్ సెక్యూరిటీ లెర్నింగ్' },
+  'wave_title': { en: 'NeuroShield Wave: Attack Journey Simulator', hi: 'न्यूरोशील्ड वेव: अटैक जर्नी सिम्युलेटर', te: 'NeuroShield Wave: ఎటాక్ జర్నీ సిమ్యులేటర్' },
+  'wave_desc': { en: 'Interactive visual simulation tracing how modern cyber threats travel from attacker origin to victim workstation.', hi: 'इंटरएक्टिव विज़ुअल सिमुलेशन जो ट्रैक करता है कि कैसे आधुनिक साइबर खतरे हमलावर से पीड़ित तक पहुंचते हैं।', te: 'ఆధునిక సైబర్ బెదిరింపులు దాడి చేసేవారి నుండి బాధితుడి వర్క్‌స్టేషన్‌కు ఎలా ప్రయాణిస్తాయో ట్రాక్ చేసే ఇంటరాక్టివ్ విజువల్ సిమ్యులేషన్.' },
+  'wave_beginner_badge': { en: 'Beginner Friendly', hi: 'शुरुआती लोगों के लिए उपयुक्त', te: 'ప్రారంభకులకు అనుకూలమైనది' },
+  'safety_rules_title': { en: 'Essential Everyday Cyber Rules', hi: 'आवश्यक दैनिक साइबर नियम', te: 'ముఖ్యమైన రోజువారీ సైబర్ నియమాలు' },
+
+  // Scan History (ScanHistory.tsx)
+  'history_title': { en: 'Scan Audit History & Threat Logs', hi: 'स्कैन ऑडिट इतिहास और थ्रेट लॉग', te: 'స్కాన్ ఆడిట్ చరిత్ర & ముప్పు లాగ్‌లు' },
+  'history_desc': { en: 'Chronological forensic ledger of all processed emails, reverse tunnels, and containment actions.', hi: 'सभी संसाधित ईमेल, रिवर्स टनल और रोकथाम कार्यों का कालानुक्रमिक फोरेंसिक खाता।', te: 'అన్ని ప్రాసెస్ చేయబడిన ఇమెయిల్‌లు, రివర్స్ టన్నెల్‌లు మరియు నియంత్రణ చర్యల కాలక్రమానుసార ఫోరెన్సిక్ లెడ్జర్.' },
+  'export_history_btn': { en: 'Export Audit History', hi: 'ऑडिट इतिहास निर्यात करें', te: 'ఆడిట్ చరిత్రను ఎగుమతి చేయండి' },
 };
+
+export const SUPPORTED_LANGUAGES: { code: Language; name: string; nativeName: string; flag: string }[] = [
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', flag: '🇮🇳' },
+];
 
 interface LanguageContextProps {
   language: Language;
@@ -487,10 +606,29 @@ interface LanguageContextProps {
 const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('neuroshield_language') as Language;
+      if (saved === 'en' || saved === 'hi' || saved === 'te') return saved;
+    }
+    return 'en';
+  });
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('neuroshield_language', lang);
+    }
+  };
 
   const t = (key: string): string => {
-    return translations[key]?.[language] || key;
+    if (!key) return '';
+    return (
+      translations[key]?.[language] ||
+      translations[key.toLowerCase()]?.[language] ||
+      translations[key.replace(/\s+/g, '_').toLowerCase()]?.[language] ||
+      key
+    );
   };
 
   return (

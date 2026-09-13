@@ -16,12 +16,14 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { getScanHistory, ScanHistoryItem } from '@/lib/history';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ScanHistoryProps {
   onSelectScan?: (item: ScanHistoryItem) => void;
 }
 
 export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
+  const { t } = useLanguage();
   const [history, setHistory] = useState<ScanHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVerdict, setFilterVerdict] = useState<'ALL' | 'CRITICAL' | 'SUSPICIOUS' | 'SAFE'>('ALL');
@@ -76,11 +78,11 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
               <History className="w-4 h-4" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white uppercase">
-              Scan Audit History & Threat Logs
+              {t('history_title')}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-[#8995A5] font-mono">
-            Chronological forensic ledger of all processed emails, reverse tunnels, and containment actions
+            {t('history_desc')}
           </p>
         </div>
 
@@ -89,7 +91,7 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
           className="px-4 py-2 rounded-xl bg-[#121b15] hover:bg-[#18251d] text-white border border-white/[0.1] transition-all flex items-center gap-2 font-mono text-xs cursor-pointer shadow-lg self-start sm:self-auto"
         >
           <Download className="w-3.5 h-3.5 text-[#36c96c]" />
-          <span>Export Audit History</span>
+          <span>{t('export_history_btn')}</span>
         </button>
       </div>
 

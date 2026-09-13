@@ -34,6 +34,7 @@ import { UnifiedIncidentObject, GuardState, SafeAlternative } from '@/services/c
 import { GuardWarningCard } from '@/components/guard/GuardWarningCard';
 import { ExtensionDownloadModal } from '@/components/guard/ExtensionDownloadModal';
 import { QrScannerModal } from '@/components/guard/QrScannerModal';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface GuardPageProps {
   onNavigateToForensics?: (incident: UnifiedIncidentObject) => void;
@@ -41,6 +42,7 @@ interface GuardPageProps {
 }
 
 export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPageProps) {
+  const { t } = useLanguage();
   // Primary Automated Protection State
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
   const [isExtensionModalOpen, setIsExtensionModalOpen] = useState(false);
@@ -211,7 +213,7 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
                 <ShieldCheck className="w-6 h-6" />
               </span>
               <span className="text-xs font-mono font-bold tracking-widest uppercase text-cyber-blue">
-                Automatic Security Layer
+                {t('guard_eyebrow')}
               </span>
               <span className={`text-xs font-mono px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 ${
                 isBackendHealthy
@@ -223,15 +225,15 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
                 <span className={`w-1.5 h-1.5 rounded-full ${
                   isBackendHealthy ? 'bg-cyber-green' : 'bg-cyber-red'
                 }`} />
-                {isBackendHealthy ? 'Active Protection' : 'Service Degraded'}
+                {isBackendHealthy ? t('guard_backend_online') : t('guard_backend_offline')}
               </span>
             </div>
 
             <h1 className="text-2xl md:text-3xl font-bold font-mono text-white tracking-tight">
-              NeuroShield Guard
+              {t('guard_title')}
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed font-sans">
-              Proactive enforcement client for <strong className="text-cyber-blue">NeuroShield Core</strong>. Automatically observes security-relevant browser events, evaluates intent, and intercepts credential theft and deceptive destinations before harm occurs.
+              {t('guard_subtitle')}
             </p>
           </div>
 
@@ -242,14 +244,14 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
               className="px-4 py-2.5 bg-cyber-blue hover:bg-cyber-blue/90 text-black text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(105,230,165,0.3)] transition-all flex items-center gap-2 cursor-pointer font-mono active:scale-95"
             >
               <Chrome className="w-4 h-4" />
-              Chrome Extension Settings
+              {t('guard_ext_btn')}
             </button>
             <button
               onClick={() => setIsQrModalOpen(true)}
               className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-bold rounded-xl border border-white/10 transition-all flex items-center gap-2 cursor-pointer font-mono"
             >
               <QrCode className="w-4 h-4 text-amber-400" />
-              Scan QR Image
+              {t('guard_qr_btn')}
             </button>
           </div>
         </div>
@@ -261,14 +263,14 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
                 <Chrome className="w-4 h-4 text-cyber-blue" />
-                Browser Protection
+                {t('channel_web_title')}
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-green/20 text-cyber-green border border-cyber-green/40 font-bold">
                 ACTIVE
               </span>
             </div>
             <p className="text-[11px] text-slate-400 leading-normal font-sans">
-              Automatically observes navigation, redirects, credential forms, login attempts, downloads, and tunnel evasion.
+              {t('channel_web_desc')}
             </p>
             <div className="text-[10px] font-mono text-slate-500 pt-1">
               Enforcement: ALLOW / WARN / BLOCK_ACTION / BLOCK_VIEW
@@ -321,7 +323,7 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
         <div className="lg:col-span-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400">
-              Live Interception Feed
+              {t('recent_intercepts_title')}
             </h2>
             <span className="text-[10px] font-mono text-slate-500">
               {recentInterceptions.length} event{recentInterceptions.length === 1 ? '' : 's'} recorded
@@ -335,10 +337,10 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
               </div>
               <div>
                 <h3 className="text-xs font-bold text-slate-300 font-mono">
-                  Autonomous Protection Active
+                  {t('guard_backend_online')}
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
-                  As you browse normally, any suspicious navigation, deceptive link, or credential form attempt will be automatically analyzed and displayed here.
+                  {t('no_intercepts')}
                 </p>
               </div>
               <button
@@ -347,7 +349,7 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
                 }}
                 className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono rounded-md border border-slate-700 transition cursor-pointer"
               >
-                Simulate Interception Event
+                {t('simulate_interception_btn')}
               </button>
             </div>
           ) : (
@@ -434,10 +436,10 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
             <Terminal className="w-4 h-4 text-sky-400" />
             <div>
               <div className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                Advanced Testing & Security Diagnostics
+                {t('run_diagnostics')}
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5">
-                Developer vector simulator for manual evaluation and pipeline calibration (Not primary product flow).
+                Developer vector simulator for manual evaluation and pipeline calibration.
               </div>
             </div>
           </div>
@@ -519,7 +521,7 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
 
               <div>
                 <label className="text-xs font-mono text-slate-400 font-bold block mb-1">
-                  Test Payload / URL:
+                  {t('payload_input_label')}:
                 </label>
                 {activeTestChannel === 'sms' || activeTestChannel === 'prompt' ? (
                   <textarea
