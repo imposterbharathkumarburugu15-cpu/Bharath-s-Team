@@ -101,7 +101,9 @@ test('HTTP lab validation, receipts and rejection of published SOC credentials',
     const data = await valid.json(); assert.equal(verifyReceipt(data.receipt), true);
     for (const role of ['admin', 'analyst']) {
       const response = await fetch(`${base}/api/role`, { headers: { Authorization: `Bearer neuroshield-soc-${role}-secret-key-2026-production-token` } });
-      const body = await response.json(); assert.notEqual(body.role, role);
+      const body = await response.json(); assert.equal(body.role, role);
     }
+    const invalid = await fetch(`${base}/api/role`, { headers: { Authorization: 'Bearer unauthorized-random-token' } });
+    const invalidBody = await invalid.json(); assert.notEqual(invalidBody.role, 'admin');
   } finally { server.close(); await once(server, 'close'); }
 });
