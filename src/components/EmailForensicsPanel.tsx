@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { 
-  FileText, Download, Share2, Globe, Terminal, 
-  X, Check, Copy, ArrowUpRight, Compass, ShieldAlert, Sparkles, Printer,
-  Brain, ChevronDown, ChevronUp, Network
+  FileText, Download, Globe, Terminal, 
+  X, Check, Copy, Compass, ShieldAlert, Sparkles, Printer,
+  Brain, Network, MapPin, Server, Activity, ArrowUpRight,
+  Shield, CheckCircle2, AlertTriangle, Radio
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ForensicDossier } from '@/services/forensicsEngine';
 import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import { Forensic3DGeoMap } from '@/components/Forensic3DGeoMap';
 
-// Sub-components for the 22-point Forensic Investigation Report
+// Sub-components for the Forensic Investigation Suite
 import { ForensicCaseHeader } from './forensics/ForensicCaseHeader';
 import { PlainEnglishThreatExplainer } from './forensics/PlainEnglishThreatExplainer';
 import { NeuralProfile } from './forensics/NeuralProfile';
@@ -28,9 +29,8 @@ import { UrlAndAttachmentForensics } from './forensics/UrlAndAttachmentForensics
 import { CorrelationAndChain } from './forensics/CorrelationAndChain';
 import { FinalVerdictAndRawEvidence } from './forensics/FinalVerdictAndRawEvidence';
 import { SihForensicSuite } from './forensics/SihForensicSuite';
-import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 
-export type ForensicPillarId = 'summary' | 'protocol' | 'neural' | 'iocs' | 'dossier';
+export type ForensicPillarId = 'geo-intel' | 'protocol' | 'summary' | 'iocs' | 'playbooks' | 'neural';
 
 export interface EmailForensicsPanelProps {
   dossier: ForensicDossier;
@@ -51,11 +51,11 @@ export function EmailForensicsPanel({
   hideHeader = false,
   hidePillarNav = false
 }: EmailForensicsPanelProps) {
-  // Audience View Mode: 'unified' (default), 'plain-english' (for regular users), 'technical' (deep SOC)
+  // Audience View Mode: 'unified' (default), 'plain-english', 'technical'
   const [viewMode, setViewMode] = useState<'unified' | 'plain-english' | 'technical'>('unified');
 
-  // Internal tab state if not controlled
-  const [internalPillar, setInternalPillar] = useState<ForensicPillarId>('summary');
+  // Internal tab state if not controlled - default to 'geo-intel' to highlight IP Geolocation
+  const [internalPillar, setInternalPillar] = useState<ForensicPillarId>('geo-intel');
   const activePillar = controlledPillar ?? internalPillar;
 
   const handlePillarSelect = (pillar: ForensicPillarId) => {
@@ -71,13 +71,22 @@ export function EmailForensicsPanel({
   const [showDnsLookup, setShowDnsLookup] = useState<boolean>(false);
   const [showSocPreview, setShowSocPreview] = useState<boolean>(false);
   const [copiedSocReport, setCopiedSocReport] = useState<boolean>(false);
-  const [showGeoRadar, setShowGeoRadar] = useState<boolean>(false);
   const [copiedPlaybookKey, setCopiedPlaybookKey] = useState<string | null>(null);
+  const [copiedIp, setCopiedIp] = useState<boolean>(false);
 
   const targetDomain = dossier.senderIdentity.fromDomain || dossier.authentication.dmarc.headerFromDomain || 'domain.com';
+  const originIP = dossier.originIP;
 
   const handlePrintPdf = () => {
     window.print();
+  };
+
+  const copyOriginIp = () => {
+    if (originIP?.ip) {
+      navigator.clipboard.writeText(originIP.ip);
+      setCopiedIp(true);
+      setTimeout(() => setCopiedIp(false), 2000);
+    }
   };
 
   // Export handlers
@@ -163,12 +172,13 @@ export function EmailForensicsPanel({
     URL.revokeObjectURL(url);
   };
 
-  const pillarTabs: { id: ForensicPillarId; label: string; icon: any }[] = [
-    { id: 'summary', label: 'Executive Summary', icon: Sparkles },
+  const pillarTabs: { id: ForensicPillarId; label: string; icon: any; badge?: string }[] = [
+    { id: 'geo-intel', label: 'IP Geolocation & Radar', icon: Globe, badge: originIP?.country || 'Origin' },
     { id: 'protocol', label: 'Protocol DNA & Relays', icon: Network },
-    { id: 'neural', label: 'Neural & Cognitive', icon: Brain },
-    { id: 'iocs', label: 'Threat IOCs & SIH', icon: ShieldAlert },
-    { id: 'dossier', label: 'Dossier & Playbooks', icon: FileText },
+    { id: 'summary', label: 'Summary & Anatomy', icon: Sparkles },
+    { id: 'iocs', label: 'Threat IOCs & URLs', icon: ShieldAlert },
+    { id: 'playbooks', label: 'Verdict & Playbooks', icon: FileText },
+    ...(!hideNeuralProfile ? [{ id: 'neural' as ForensicPillarId, label: 'Neural Profile', icon: Brain }] : []),
   ];
 
   return (
@@ -177,7 +187,7 @@ export function EmailForensicsPanel({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6 text-white font-mono"
     >
-      {/* 1. FORENSIC CASE HEADER (only when not embedded in a unified container) */}
+      {/* 1. FORENSIC CASE HEADER (if not suppressed by parent) */}
       {!hideHeader && (
         <ForensicCaseHeader
           dossier={dossier}
@@ -188,133 +198,299 @@ export function EmailForensicsPanel({
         />
       )}
 
-      {/* 2. PILLAR NAVIGATION BAR (rendered when not driven externally) */}
+      {/* 2. PROMINENT IP GEOLOCATION & INFRASTRUCTURE HERO STRIP (ALWAYS VISIBLE AT TOP OF FORENSICS) */}
+      <div className="bg-[#0c130f] border border-cyan-500/30 rounded-2xl p-4 sm:p-5 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+        <div className="absolute top-0 right-0 w-80 h-28 bg-gradient-to-l from-cyan-500/10 to-transparent pointer-events-none" />
+        
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 relative z-10">
+          {/* Origin IP & Country Identity */}
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.25)]">
+              <Globe className="w-6 h-6 text-cyan-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] text-gray-400 uppercase tracking-widest font-bold">
+                  Origin Infrastructure Telemetry
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold">
+                  {originIP.countryFlag || '🌍'} {originIP.country || 'Unknown'} {originIP.city ? `• ${originIP.city}` : ''}
+                </span>
+                <span className={cn(
+                  "text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase",
+                  originIP.threatReputation === 'SUSPICIOUS' || originIP.threatReputation === 'MALICIOUS'
+                    ? "bg-red-500/20 text-red-300 border-red-500/40"
+                    : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                )}>
+                  {originIP.vpnTorIndicator || originIP.threatReputation || 'STANDARD RELAY'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-base sm:text-lg font-bold text-white tracking-wider font-mono">
+                  {originIP.ip || '0.0.0.0'}
+                </span>
+                <button
+                  onClick={copyOriginIp}
+                  className="p-1 text-gray-400 hover:text-cyan-300 rounded hover:bg-white/5 transition-colors cursor-pointer"
+                  title="Copy Origin IP"
+                >
+                  {copiedIp ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+                {originIP.asn && (
+                  <span className="text-xs text-gray-400 font-mono">
+                    [{originIP.asn} • {originIP.isp || originIP.organization || 'ISP'}]
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Origin Action Buttons */}
+          <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto justify-start lg:justify-end shrink-0">
+            <button
+              onClick={() => handlePillarSelect('geo-intel')}
+              className={cn(
+                "px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-md",
+                activePillar === 'geo-intel'
+                  ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                  : "bg-white/5 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+              )}
+            >
+              <Radio className="w-3.5 h-3.5" />
+              <span>Interactive 3D Radar</span>
+            </button>
+
+            <button
+              onClick={() => setShowDnsLookup(true)}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold font-mono bg-white/5 hover:bg-white/10 text-gray-200 border border-white/10 flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
+            >
+              <Compass className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Live DNS & WHOIS</span>
+            </button>
+
+            <button
+              onClick={handlePrintPdf}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold font-mono bg-white/5 hover:bg-white/10 text-gray-200 border border-white/10 flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
+              title="Print PDF dossier"
+            >
+              <Printer className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Print PDF</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. FORENSIC PILLAR NAVIGATION BAR (TAB SWITCHER) */}
       {!hidePillarNav && (
-        <div className="bg-[#0f1612]/90 border border-cyan-500/30 p-2 rounded-2xl backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {pillarTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activePillar === tab.id;
+        <div className="bg-[#0b110e] border border-cyan-500/30 rounded-2xl p-2 shadow-xl flex items-center justify-between gap-2 overflow-x-auto print:hidden">
+          <div className="flex items-center gap-1.5 w-full overflow-x-auto scrollbar-none">
+            {pillarTabs.map(p => {
+              const Icon = p.icon;
+              const isActive = activePillar === p.id;
               return (
                 <button
-                  key={tab.id}
-                  onClick={() => handlePillarSelect(tab.id)}
+                  key={p.id}
+                  onClick={() => handlePillarSelect(p.id)}
                   className={cn(
-                    "px-3.5 py-2 rounded-xl text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-sm",
+                    "px-4 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0",
                     isActive
-                      ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(105,230,165,0.4)]"
-                      : "bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/5"
+                      ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.35)]"
+                      : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10"
                   )}
                 >
-                  <Icon className={cn("w-3.5 h-3.5", isActive ? "text-black" : "text-cyan-400")} />
-                  <span>{tab.label}</span>
+                  <Icon className={cn("w-4 h-4", isActive ? "text-black" : "text-cyan-400")} />
+                  <span>{p.label}</span>
+                  {p.badge && (
+                    <span className={cn(
+                      "text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase",
+                      isActive ? "bg-black/20 text-black" : "bg-white/10 text-cyan-300"
+                    )}>
+                      {p.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+          {/* Presentation Mode Picker */}
+          <div className="hidden xl:flex items-center gap-1 bg-black/50 p-1 rounded-xl border border-white/10 shrink-0">
             <button
-              onClick={() => setShowGeoRadar(!showGeoRadar)}
+              onClick={() => setViewMode('unified')}
               className={cn(
-                "px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer",
-                showGeoRadar
-                  ? "bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]"
-                  : "bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10"
+                "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all",
+                viewMode === 'unified' ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-gray-400 hover:text-white"
               )}
             >
-              <Globe className="w-3.5 h-3.5 text-cyan-400" />
-              <span>3D Radar</span>
+              Unified
             </button>
-
             <button
-              onClick={() => setShowDnsLookup(true)}
-              className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 flex items-center gap-1.5 cursor-pointer"
+              onClick={() => setViewMode('technical')}
+              className={cn(
+                "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all",
+                viewMode === 'technical' ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-gray-400 hover:text-white"
+              )}
             >
-              <Compass className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Live DNS</span>
-            </button>
-
-            <button
-              onClick={handlePrintPdf}
-              className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 flex items-center gap-1.5 cursor-pointer"
-              title="Print report to PDF"
-            >
-              <Printer className="w-3.5 h-3.5 text-cyan-400" />
-              <span>PDF</span>
+              SOC Deep
             </button>
           </div>
         </div>
       )}
 
-      {/* OPTIONAL EXPANDABLE 3D ORIGIN RADAR */}
-      {showGeoRadar && (
-        <div className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-3">
-          <div className="flex items-center justify-between border-b border-white/10 pb-2">
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-cyan-400" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-                Origin Infrastructure 3D Telemetry
-              </h3>
-            </div>
-            <button
-              onClick={() => setShowGeoRadar(false)}
-              className="text-xs text-gray-400 hover:text-white"
-            >
-              Close
-            </button>
-          </div>
-          <Forensic3DGeoMap originIP={dossier.originIP} />
-        </div>
-      )}
-
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      {/* PILLAR 1: EXECUTIVE SUMMARY & ANATOMY                                      */}
+      {/* PILLAR 1: IP GEOLOCATION & ORIGIN INFRASTRUCTURE RADAR                     */}
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      {activePillar === 'summary' && (
+      {activePillar === 'geo-intel' && (
         <div className="space-y-6">
-          {/* Plain-English Threat Explainer */}
-          {(viewMode === 'plain-english' || viewMode === 'unified') && (
-            <PlainEnglishThreatExplainer 
-              dossier={dossier}
-              onSwitchToTechnicalView={() => setViewMode('technical')}
-            />
+          {/* Interactive 3D Tactical Radar Map */}
+          <div className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <Globe className="w-5 h-5 text-cyan-400" />
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                    3D Origin Geolocation & Relay Radar
+                  </h3>
+                  <p className="text-[11px] text-gray-400 font-sans">
+                    Real-time spherical projection of mail relay origin and physical hosting infrastructure
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono px-2 py-1 rounded bg-black/50 text-cyan-300 border border-cyan-500/20">
+                  Lat: {originIP.latitude?.toFixed(4) || 'N/A'} • Lng: {originIP.longitude?.toFixed(4) || 'N/A'}
+                </span>
+              </div>
+            </div>
+
+            {/* 3D Globe Component */}
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
+              <Forensic3DGeoMap originIP={dossier.originIP} hops={dossier.relayReconstruction?.chronologicalHops} />
+            </div>
+          </div>
+
+          {/* Deep Origin IP Telemetry Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+            {/* IP Address & PTR */}
+            <div className="bg-[#0c120e] border border-white/10 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-cyan-400 text-[11px] font-bold uppercase">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Origin IP & PTR</span>
+              </div>
+              <div className="text-sm font-bold text-white break-all">{originIP.ip}</div>
+              <div className="text-[11px] text-gray-400 break-all">
+                PTR: {originIP.resolvedDomain || 'None configured'}
+              </div>
+              <div className="text-[10px] text-gray-500">
+                Type: {originIP.ipType || (originIP.isPrivate ? 'Private / RFC 1918' : 'Public IPv4')}
+              </div>
+            </div>
+
+            {/* Geolocation */}
+            <div className="bg-[#0c120e] border border-white/10 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 text-[11px] font-bold uppercase">
+                <Globe className="w-3.5 h-3.5" />
+                <span>Geographic Location</span>
+              </div>
+              <div className="text-sm font-bold text-white">
+                {originIP.countryFlag || '📍'} {originIP.city ? `${originIP.city}, ` : ''}{originIP.country}
+              </div>
+              <div className="text-[11px] text-gray-400">
+                Region: {originIP.region || 'Standard Territory'}
+              </div>
+              <div className="text-[10px] text-gray-500">
+                Timezone: {originIP.timezone || 'UTC'}
+              </div>
+            </div>
+
+            {/* ASN & Network */}
+            <div className="bg-[#0c120e] border border-white/10 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-purple-400 text-[11px] font-bold uppercase">
+                <Server className="w-3.5 h-3.5" />
+                <span>Autonomous System</span>
+              </div>
+              <div className="text-sm font-bold text-white truncate" title={originIP.asn}>
+                {originIP.asn || 'AS-UNKNOWN'}
+              </div>
+              <div className="text-[11px] text-gray-400 truncate" title={originIP.isp}>
+                ISP: {originIP.isp || 'Commercial Backbone'}
+              </div>
+              <div className="text-[10px] text-gray-500 truncate" title={originIP.organization}>
+                Org: {originIP.organization || 'Unspecified Org'}
+              </div>
+            </div>
+
+            {/* Threat & Infrastructure */}
+            <div className="bg-[#0c120e] border border-white/10 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 text-[11px] font-bold uppercase">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                <span>Infrastructure Risk</span>
+              </div>
+              <div className="text-sm font-bold text-white">
+                {originIP.vpnTorIndicator || 'Datacenter / VPS'}
+              </div>
+              <div className="text-[11px] text-gray-400">
+                Reputation: <span className={originIP.threatReputation === 'CLEAN' ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>{originIP.threatReputation}</span>
+              </div>
+              <div className="text-[10px] text-gray-500">
+                Source: {originIP.providerSource || 'Forensic Telemetry'}
+              </div>
+            </div>
+          </div>
+
+          {/* Forensic Attribution Disclaimer */}
+          <div className="p-3.5 rounded-xl bg-black/40 border border-white/10 flex items-start gap-3 font-mono text-xs">
+            <Shield className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+            <p className="text-gray-300 text-[11px] leading-relaxed">
+              <strong className="text-white font-bold">Court-Defensible Attribution Note: </strong>
+              {originIP.attributionDisclaimer || 'IP geolocation reflects the physical location of the transmitting mail relay or anonymizing gateway, not necessarily the physical location of the human adversary.'}
+            </p>
+          </div>
+
+          {/* Relay Hop Progression Timeline */}
+          {dossier.relayReconstruction?.chronologicalHops && dossier.relayReconstruction.chronologicalHops.length > 0 && (
+            <div className="bg-[#0e1410] border border-white/10 rounded-2xl p-5 space-y-3">
+              <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-white">
+                  Mail Server Relay Chain ({dossier.relayReconstruction.chronologicalHops.length} Network Hops)
+                </span>
+                <span className="text-[10px] text-gray-400">
+                  Total Latency: {dossier.relayReconstruction.totalTransitTimeSeconds || 0}s
+                </span>
+              </div>
+              <div className="space-y-2">
+                {dossier.relayReconstruction.chronologicalHops.map((hop, idx) => (
+                  <div 
+                    key={idx}
+                    className="p-3 rounded-xl bg-black/30 border border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold flex items-center justify-center shrink-0">
+                        #{hop.hopNumber}
+                      </span>
+                      <div>
+                        <span className="font-bold text-white">{hop.sourceHostname || hop.destinationHostname || 'Mail Relay'}</span>
+                        <span className="text-[11px] text-gray-400 block font-mono">
+                          IP: {hop.sourceIP || 'Masked / Internal'} {hop.city ? `• ${hop.city}, ${hop.country}` : ''}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px] text-gray-400 font-mono">
+                      {hop.delayToNextHopSeconds !== undefined && (
+                        <span className={hop.delayToNextHopSeconds > 10 ? 'text-amber-400 font-bold' : 'text-gray-400'}>
+                          +{hop.delayToNextHopSeconds}s transit
+                        </span>
+                      )}
+                      <span className={hop.isAnomalous ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+                        {hop.isAnomalous ? (hop.anomalyReason || 'Route Delay') : (hop.protocol || 'Standard SMTP')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
-
-          {/* Executive Forensic Summary */}
-          <ForensicExecutiveSummary
-            dossier={dossier}
-            onDrillDown={(target) => setDrillDownTarget(target)}
-          />
-
-          {/* Email Forensic Anatomy Visualization */}
-          {viewMode !== 'plain-english' && (
-            <EmailAnatomyDiagram
-              dossier={dossier}
-              onDrillDown={(target) => setDrillDownTarget(target)}
-            />
-          )}
-
-          {/* Final Forensic Verdict & Containment Action */}
-          <FinalVerdictAndRawEvidence
-            dossier={dossier}
-            onDrillDown={(target) => setDrillDownTarget(target)}
-            onBlockIp={(ip) => console.log(`Containing IP: ${ip}`)}
-            onBlockDomain={(domain) => console.log(`Sinkholing domain: ${domain}`)}
-            onPurgeEmail={() => console.log('Initiating mailbox purge across tenant')}
-            onExportEml={() => {
-              const rawContent = dossier.rawHeaders && Object.keys(dossier.rawHeaders).length > 0
-                ? Object.entries(dossier.rawHeaders).map(([k, v]) => Array.isArray(v) ? v.map(i => `${k}: ${i}`).join('\n') : `${k}: ${v}`).join('\n')
-                : Object.entries(dossier.headerFields).map(([k, v]) => `${k}: ${v}`).join('\n');
-              const blob = new Blob([rawContent], { type: 'message/rfc822' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `evidence-${dossier.chainOfCustody.caseId}.eml`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          />
         </div>
       )}
 
@@ -349,28 +525,36 @@ export function EmailForensicsPanel({
       )}
 
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      {/* PILLAR 3: NEURAL PROFILE & COGNITIVE NLP                                   */}
+      {/* PILLAR 3: SUMMARY & EMAIL ANATOMY                                          */}
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      {activePillar === 'neural' && (
+      {activePillar === 'summary' && (
         <div className="space-y-6">
-          {/* Neural Profile */}
-          {!hideNeuralProfile && (
-            <NeuralProfile
+          {/* Plain-English Threat Explainer */}
+          {(viewMode === 'plain-english' || viewMode === 'unified') && (
+            <PlainEnglishThreatExplainer 
               dossier={dossier}
-              onOpenFullForensics={() => handlePillarSelect('summary')}
+              onSwitchToTechnicalView={() => setViewMode('technical')}
             />
           )}
 
-          {/* Social Engineering & Cognitive Manipulation */}
-          <SocialEngineeringAndNlp
+          {/* Executive Forensic Summary */}
+          <ForensicExecutiveSummary
             dossier={dossier}
             onDrillDown={(target) => setDrillDownTarget(target)}
           />
+
+          {/* Email Forensic Anatomy Visualization */}
+          {viewMode !== 'plain-english' && (
+            <EmailAnatomyDiagram
+              dossier={dossier}
+              onDrillDown={(target) => setDrillDownTarget(target)}
+            />
+          )}
         </div>
       )}
 
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      {/* PILLAR 4: THREAT IOCS & SIH 5-PILLAR SUITE                                */}
+      {/* PILLAR 4: THREAT IOCS & URL/ATTACHMENT FORENSICS                           */}
       {/* ────────────────────────────────────────────────────────────────────────── */}
       {activePillar === 'iocs' && (
         <div className="space-y-6">
@@ -403,10 +587,31 @@ export function EmailForensicsPanel({
       )}
 
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      {/* PILLAR 5: INCIDENT DOSSIER & PLAYBOOKS                                     */}
+      {/* PILLAR 5: VERDICT & SOC MITIGATION PLAYBOOKS                               */}
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      {activePillar === 'dossier' && (
+      {activePillar === 'playbooks' && (
         <div className="space-y-6">
+          {/* Final Forensic Verdict & Containment Action */}
+          <FinalVerdictAndRawEvidence
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+            onBlockIp={(ip) => console.log(`Containing IP: ${ip}`)}
+            onBlockDomain={(domain) => console.log(`Sinkholing domain: ${domain}`)}
+            onPurgeEmail={() => console.log('Initiating mailbox purge across tenant')}
+            onExportEml={() => {
+              const rawContent = dossier.rawHeaders && Object.keys(dossier.rawHeaders).length > 0
+                ? Object.entries(dossier.rawHeaders).map(([k, v]) => Array.isArray(v) ? v.map(i => `${k}: ${i}`).join('\n') : `${k}: ${v}`).join('\n')
+                : Object.entries(dossier.headerFields).map(([k, v]) => `${k}: ${v}`).join('\n');
+              const blob = new Blob([rawContent], { type: 'message/rfc822' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `evidence-${dossier.chainOfCustody.caseId}.eml`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          />
+
           {/* Automated SOC Mitigation Playbooks */}
           {dossier.socPlaybooks && dossier.socPlaybooks.length > 0 && (
             <section 
@@ -508,37 +713,57 @@ export function EmailForensicsPanel({
         </div>
       )}
 
-      {/* 18. ANALYST DRILL-DOWN MODAL */}
-      <ForensicDrillDownModal
-        target={drillDownTarget}
-        onClose={() => setDrillDownTarget(null)}
-      />
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {/* PILLAR 6: NEURAL PROFILE (ONLY IF ENABLED)                                 */}
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {activePillar === 'neural' && !hideNeuralProfile && (
+        <div className="space-y-6">
+          <NeuralProfile
+            dossier={dossier}
+            onOpenFullForensics={() => handlePillarSelect('summary')}
+          />
+          <SocialEngineeringAndNlp
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+          />
+        </div>
+      )}
 
-      {/* LIVE DNS LOOKUP MODAL */}
+      {/* 18. ANALYST DRILL-DOWN MODAL */}
+      <AnimatePresence>
+        {drillDownTarget && (
+          <ForensicDrillDownModal
+            target={drillDownTarget}
+            onClose={() => setDrillDownTarget(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 19. LIVE DNS & WHOIS LOOKUP MODAL */}
       <AnimatePresence>
         {showDnsLookup && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0f1712] border border-cyan-500/40 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl font-mono"
+              className="w-full max-w-3xl bg-[#0b100d] border border-cyan-500/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
-              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#080c09]">
+              <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/40">
                 <div className="flex items-center gap-2">
-                  <Compass className="w-4 h-4 text-cyan-400" />
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                    Live DNS & Domain Authentication Inspector
+                  <Compass className="w-5 h-5 text-cyan-400" />
+                  <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
+                    Live Autonomous DNS & WHOIS Resolver
                   </h3>
                 </div>
                 <button
                   onClick={() => setShowDnsLookup(false)}
-                  className="p-1 rounded text-gray-400 hover:text-white cursor-pointer"
+                  className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="p-4 overflow-y-auto max-h-[calc(85vh-60px)]">
+              <div className="p-6 overflow-y-auto custom-scrollbar">
                 <DomainAuthLookup initialDomain={targetDomain} />
               </div>
             </motion.div>
@@ -546,49 +771,48 @@ export function EmailForensicsPanel({
         )}
       </AnimatePresence>
 
-      {/* FULL SOC INCIDENT REPORT MARKDOWN PREVIEW MODAL */}
+      {/* 20. FULL SOC DOSSIER MODAL */}
       <AnimatePresence>
         {showSocPreview && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0f1712] border border-cyan-500/40 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl font-mono"
+              className="w-full max-w-4xl max-h-[85vh] bg-[#0b100d] border border-cyan-500/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             >
-              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#080c09]">
+              <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/40">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-cyan-400" />
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                    Official Forensic Incident Dossier — Case #{dossier.chainOfCustody.caseId}
+                  <FileText className="w-5 h-5 text-cyan-400" />
+                  <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
+                    Full SOC Incident Investigation Dossier
                   </h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={copySocReport}
-                    className="px-3 py-1 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold flex items-center gap-1 cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-cyan-300 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     {copiedSocReport ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedSocReport ? 'Copied' : 'Copy Markdown'}</span>
+                    <span>{copiedSocReport ? 'Copied' : 'Copy'}</span>
                   </button>
                   <button
                     onClick={downloadMarkdownReport}
-                    className="px-3 py-1 rounded bg-white/5 text-gray-300 border border-white/10 text-xs font-mono flex items-center gap-1 cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-xs font-mono text-white flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5 text-cyan-400" />
                     <span>Download .md</span>
                   </button>
                   <button
                     onClick={() => setShowSocPreview(false)}
-                    className="p-1 rounded text-gray-400 hover:text-white cursor-pointer"
+                    className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-
-              <div className="p-6 overflow-y-auto space-y-4 text-xs font-mono text-gray-300 leading-relaxed">
-                <div className="markdown-body">
+              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar font-mono text-xs text-gray-200 bg-black/30">
+                <div className="markdown-body prose prose-invert max-w-none prose-pre:bg-black/60 prose-pre:border prose-pre:border-white/10">
                   <Markdown>{dossier.socReportMarkdown}</Markdown>
                 </div>
               </div>
