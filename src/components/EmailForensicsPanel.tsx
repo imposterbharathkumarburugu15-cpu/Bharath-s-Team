@@ -4,8 +4,9 @@ import Markdown from 'react-markdown';
 import { 
   FileText, Download, Share2, Globe, Terminal, 
   X, Check, Copy, ArrowUpRight, Compass, ShieldAlert, Sparkles, Printer,
-  Brain, ChevronDown, ChevronUp
+  Brain, ChevronDown, ChevronUp, Network
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { ForensicDossier } from '@/services/forensicsEngine';
 import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import { Forensic3DGeoMap } from '@/components/Forensic3DGeoMap';
@@ -29,15 +30,41 @@ import { FinalVerdictAndRawEvidence } from './forensics/FinalVerdictAndRawEviden
 import { SihForensicSuite } from './forensics/SihForensicSuite';
 import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 
-interface EmailForensicsPanelProps {
+export type ForensicPillarId = 'summary' | 'protocol' | 'neural' | 'iocs' | 'dossier';
+
+export interface EmailForensicsPanelProps {
   dossier: ForensicDossier;
   compact?: boolean;
   hideNeuralProfile?: boolean;
+  activePillar?: ForensicPillarId;
+  onPillarChange?: (pillar: ForensicPillarId) => void;
+  hideHeader?: boolean;
+  hidePillarNav?: boolean;
 }
 
-export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfile = false }: EmailForensicsPanelProps) {
+export function EmailForensicsPanel({ 
+  dossier, 
+  compact = false, 
+  hideNeuralProfile = false,
+  activePillar: controlledPillar,
+  onPillarChange,
+  hideHeader = false,
+  hidePillarNav = false
+}: EmailForensicsPanelProps) {
   // Audience View Mode: 'unified' (default), 'plain-english' (for regular users), 'technical' (deep SOC)
   const [viewMode, setViewMode] = useState<'unified' | 'plain-english' | 'technical'>('unified');
+
+  // Internal tab state if not controlled
+  const [internalPillar, setInternalPillar] = useState<ForensicPillarId>('summary');
+  const activePillar = controlledPillar ?? internalPillar;
+
+  const handlePillarSelect = (pillar: ForensicPillarId) => {
+    if (onPillarChange) {
+      onPillarChange(pillar);
+    } else {
+      setInternalPillar(pillar);
+    }
+  };
 
   // Modal & Drill-down states
   const [drillDownTarget, setDrillDownTarget] = useState<DrillDownTarget | null>(null);
@@ -46,7 +73,6 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
   const [copiedSocReport, setCopiedSocReport] = useState<boolean>(false);
   const [showGeoRadar, setShowGeoRadar] = useState<boolean>(false);
   const [copiedPlaybookKey, setCopiedPlaybookKey] = useState<string | null>(null);
-  const [showNeuralProfile, setShowNeuralProfile] = useState<boolean>(!hideNeuralProfile);
 
   const targetDomain = dossier.senderIdentity.fromDomain || dossier.authentication.dmarc.headerFromDomain || 'domain.com';
 
@@ -137,32 +163,12 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
     URL.revokeObjectURL(url);
   };
 
-  const scrollToSection = (sectionId: string) => {
-    if (sectionId === 'neural-profile') {
-      setShowNeuralProfile(true);
-    }
-    const el = document.getElementById(sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const navSections = [
-    { id: 'sih-forensic-suite', label: '🔥 SIH 5 Upgrades' },
-    ...(!hideNeuralProfile ? [{ id: 'neural-profile', label: '1. Neural Profile' }] : []),
-    { id: 'plain-english-explainer', label: '2. Plain-English' },
-    { id: 'executive-forensic-summary', label: '3. Summary' },
-    { id: 'email-forensic-anatomy-visualization', label: '4. Anatomy' },
-    { id: 'sender-identity-graph', label: '5. Identity' },
-    { id: 'smtp-hop-route-graph', label: '6. Route' },
-    { id: 'email-timeline-section', label: '7. Timeline' },
-    { id: 'authentication-visual-matrix', label: '8-9. Auth' },
-    { id: 'ioc-intelligence-section', label: '10-11. IOCs' },
-    { id: 'social-engineering-analysis', label: '12. Social Eng' },
-    { id: 'url-forensics-section', label: '13-14. URLs/Files' },
-    { id: 'threat-correlation-graph', label: '15-17. Evidence' },
-    { id: 'final-forensic-verdict', label: '18. Verdict' },
-    { id: 'raw-rfc-evidence-section', label: '19. Raw RFC' }
+  const pillarTabs: { id: ForensicPillarId; label: string; icon: any }[] = [
+    { id: 'summary', label: 'Executive Summary', icon: Sparkles },
+    { id: 'protocol', label: 'Protocol DNA & Relays', icon: Network },
+    { id: 'neural', label: 'Neural & Cognitive', icon: Brain },
+    { id: 'iocs', label: 'Threat IOCs & SIH', icon: ShieldAlert },
+    { id: 'dossier', label: 'Dossier & Playbooks', icon: FileText },
   ];
 
   return (
@@ -171,139 +177,75 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6 text-white font-mono"
     >
-      {/* 1. FORENSIC CASE HEADER */}
-      <ForensicCaseHeader
-        dossier={dossier}
-        onOpenSocReport={() => setShowSocPreview(true)}
-        onExportJson={downloadJsonDossier}
-        onExportStix={exportSTIX21}
-        onPrintPdf={handlePrintPdf}
-      />
+      {/* 1. FORENSIC CASE HEADER (only when not embedded in a unified container) */}
+      {!hideHeader && (
+        <ForensicCaseHeader
+          dossier={dossier}
+          onOpenSocReport={() => setShowSocPreview(true)}
+          onExportJson={downloadJsonDossier}
+          onExportStix={exportSTIX21}
+          onPrintPdf={handlePrintPdf}
+        />
+      )}
 
-      {/* AUDIENCE PRESENTATION MODE SWITCHER (Plain-English User View vs SOC Analyst View) */}
-      <div className="bg-[#151f19] border border-cyan-500/40 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg print:hidden">
-        <div className="flex items-center gap-2.5">
-          <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse shrink-0" />
-          <div>
-            <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white block">
-              Forensics Presentation Mode
-            </span>
-            <span className="text-[11px] text-gray-400 font-sans block">
-              Switch between plain-English guidance for non-technical users and 22-point RFC telemetry for SOC analysts.
-            </span>
+      {/* 2. PILLAR NAVIGATION BAR (rendered when not driven externally) */}
+      {!hidePillarNav && (
+        <div className="bg-[#0f1612]/90 border border-cyan-500/30 p-2 rounded-2xl backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {pillarTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activePillar === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handlePillarSelect(tab.id)}
+                  className={cn(
+                    "px-3.5 py-2 rounded-xl text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-sm",
+                    isActive
+                      ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(105,230,165,0.4)]"
+                      : "bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/5"
+                  )}
+                >
+                  <Icon className={cn("w-3.5 h-3.5", isActive ? "text-black" : "text-cyan-400")} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+            <button
+              onClick={() => setShowGeoRadar(!showGeoRadar)}
+              className={cn(
+                "px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer",
+                showGeoRadar
+                  ? "bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]"
+                  : "bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10"
+              )}
+            >
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <span>3D Radar</span>
+            </button>
+
+            <button
+              onClick={() => setShowDnsLookup(true)}
+              className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 flex items-center gap-1.5 cursor-pointer"
+            >
+              <Compass className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Live DNS</span>
+            </button>
+
+            <button
+              onClick={handlePrintPdf}
+              className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 flex items-center gap-1.5 cursor-pointer"
+              title="Print report to PDF"
+            >
+              <Printer className="w-3.5 h-3.5 text-cyan-400" />
+              <span>PDF</span>
+            </button>
           </div>
         </div>
-
-        <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-white/10 w-full sm:w-auto overflow-x-auto shrink-0">
-          <button
-            onClick={() => setViewMode('plain-english')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              viewMode === 'plain-english'
-                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <span>👤 Plain-English (User View)</span>
-          </button>
-
-          <button
-            onClick={() => setViewMode('unified')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              viewMode === 'unified'
-                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <span>⚡ Unified (Dual View)</span>
-          </button>
-
-          <button
-            onClick={() => setViewMode('technical')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              viewMode === 'technical'
-                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <span>🔬 SOC Deep-Dive</span>
-          </button>
-        </div>
-      </div>
-
-      {/* QUICK JUMP SECTION NAV BAR (Sticky on Desktop for Rapid SOC Navigation, hidden in print) */}
-      <nav 
-        id="forensic-report-navigation"
-        aria-label="Forensic Report Sections"
-        className="sticky top-2 z-20 bg-[#0e1410]/95 border border-cyan-500/30 rounded-xl p-2.5 sm:p-3 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 overflow-x-auto text-xs sm:text-sm print:hidden"
-      >
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
-          <span className="text-xs text-cyan-400 font-bold uppercase tracking-wider px-2 shrink-0">
-            JUMP TO:
-          </span>
-          {navSections.map(s => (
-            <button
-              key={s.id}
-              onClick={() => scrollToSection(s.id)}
-              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/25 hover:text-cyan-300 text-gray-200 transition-all whitespace-nowrap cursor-pointer text-xs sm:text-sm font-semibold"
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0 pl-3 border-l border-white/10">
-          <button
-            onClick={handlePrintPdf}
-            id="nav-print-pdf-btn"
-            className="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-1.5 cursor-pointer transition-all shadow-[0_0_12px_rgba(105,230,165,0.4)] active:scale-95"
-            title="Print report to PDF"
-          >
-            <Printer className="w-4 h-4 text-black" />
-            <span className="hidden sm:inline">Print PDF</span>
-          </button>
-
-          <button
-            onClick={() => setShowGeoRadar(!showGeoRadar)}
-            className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-              showGeoRadar 
-                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]'
-                : 'bg-white/10 hover:bg-white/20 text-gray-200 border border-white/10'
-            }`}
-          >
-            <Globe className="w-4 h-4 text-cyan-400" />
-            <span className="hidden sm:inline">3D Radar</span>
-          </button>
-
-          <button
-            onClick={() => setShowDnsLookup(true)}
-            className="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 text-gray-200 border border-white/10 flex items-center gap-1.5 cursor-pointer"
-          >
-            <Compass className="w-4 h-4 text-cyan-400" />
-            <span className="hidden sm:inline">Live DNS</span>
-          </button>
-
-          {!hideNeuralProfile && (
-            <button
-              onClick={() => {
-                const next = !showNeuralProfile;
-                setShowNeuralProfile(next);
-                if (next) {
-                  setTimeout(() => scrollToSection('neural-profile'), 80);
-                }
-              }}
-              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                showNeuralProfile 
-                  ? 'bg-purple-500 text-white shadow-[0_0_12px_rgba(126,176,147,0.5)] border border-purple-400'
-                  : 'bg-white/10 hover:bg-white/20 text-purple-300 border border-purple-500/30'
-              }`}
-              title="Inspect Neural Profile & Cognitive Threat Telemetry"
-            >
-              <Brain className="w-4 h-4 text-purple-400" />
-              <span className="hidden sm:inline">Neural Profile</span>
-            </button>
-          )}
-        </div>
-      </nav>
+      )}
 
       {/* OPTIONAL EXPANDABLE 3D ORIGIN RADAR */}
       {showGeoRadar && (
@@ -326,249 +268,244 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
         </div>
       )}
 
-      {/* 1. NEURAL PROFILE SEPARATE BUTTON & EXPANDABLE CARD (SHOWN FIRST) */}
-      {!hideNeuralProfile && (
-        <div id="neural-profile" className="bg-[#0f1712] border border-purple-500/30 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(126,176,147,0.25)]">
-                <Brain className="w-5 h-5 text-purple-300 animate-pulse" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                    1. Neural Profile & Behavioral Sender Analysis
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
-                    Layer 2 Engine
-                  </span>
-                </div>
-                <p className="text-[11px] text-gray-300 font-sans mt-0.5">
-                  Cognitive urgency scoring, Amygdala hijack detection, and executive impersonation mimicry.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowNeuralProfile(!showNeuralProfile)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap shadow-md active:scale-95 w-full sm:w-auto ${
-                showNeuralProfile
-                  ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(126,176,147,0.4)]'
-                  : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40'
-              }`}
-            >
-              <Brain className="w-4 h-4" />
-              <span>{showNeuralProfile ? 'Hide Neural Profile' : 'Inspect Neural Profile'}</span>
-              {showNeuralProfile ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
-          </div>
-
-          {showNeuralProfile && (
-            <div className="pt-4 mt-4 border-t border-purple-500/20">
-              <NeuralProfile
-                dossier={dossier}
-                onOpenFullForensics={() => scrollToSection('executive-forensic-summary')}
-              />
-            </div>
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {/* PILLAR 1: EXECUTIVE SUMMARY & ANATOMY                                      */}
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {activePillar === 'summary' && (
+        <div className="space-y-6">
+          {/* Plain-English Threat Explainer */}
+          {(viewMode === 'plain-english' || viewMode === 'unified') && (
+            <PlainEnglishThreatExplainer 
+              dossier={dossier}
+              onSwitchToTechnicalView={() => setViewMode('technical')}
+            />
           )}
+
+          {/* Executive Forensic Summary */}
+          <ForensicExecutiveSummary
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+          />
+
+          {/* Email Forensic Anatomy Visualization */}
+          {viewMode !== 'plain-english' && (
+            <EmailAnatomyDiagram
+              dossier={dossier}
+              onDrillDown={(target) => setDrillDownTarget(target)}
+            />
+          )}
+
+          {/* Final Forensic Verdict & Containment Action */}
+          <FinalVerdictAndRawEvidence
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+            onBlockIp={(ip) => console.log(`Containing IP: ${ip}`)}
+            onBlockDomain={(domain) => console.log(`Sinkholing domain: ${domain}`)}
+            onPurgeEmail={() => console.log('Initiating mailbox purge across tenant')}
+            onExportEml={() => {
+              const rawContent = dossier.rawHeaders && Object.keys(dossier.rawHeaders).length > 0
+                ? Object.entries(dossier.rawHeaders).map(([k, v]) => Array.isArray(v) ? v.map(i => `${k}: ${i}`).join('\n') : `${k}: ${v}`).join('\n')
+                : Object.entries(dossier.headerFields).map(([k, v]) => `${k}: ${v}`).join('\n');
+              const blob = new Blob([rawContent], { type: 'message/rfc822' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `evidence-${dossier.chainOfCustody.caseId}.eml`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          />
         </div>
       )}
 
-      {/* SIH26106 5-PILLAR FORENSIC SUITE UPGRADES */}
-      <SihForensicSuite 
-        dossier={dossier} 
-        onDrillDown={(target) => setDrillDownTarget(target)} 
-      />
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {/* PILLAR 2: PROTOCOL DNA & RELAYS                                            */}
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {activePillar === 'protocol' && (
+        <div className="space-y-6">
+          {/* SPF / DKIM / DMARC Visual Matrix & Flow */}
+          <AuthMatrixAndFlow
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+          />
 
-      {/* 2. PLAIN-ENGLISH USER EXPLAINER (Rendered in Plain-English and Unified views) */}
-      {(viewMode === 'plain-english' || viewMode === 'unified') && (
-        <PlainEnglishThreatExplainer 
-          dossier={dossier}
-          onSwitchToTechnicalView={() => setViewMode('technical')}
-        />
+          {/* Sender Identity Alignment Graph */}
+          <SenderIdentityGraph
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+          />
+
+          {/* SMTP Hop & Route Graph */}
+          <SmtpRouteGraph
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+          />
+
+          {/* Email Chronological Route Timeline */}
+          <EmailTimelineView
+            dossier={dossier}
+          />
+        </div>
       )}
 
-      {/* 3. EXECUTIVE FORENSIC SUMMARY */}
-      <ForensicExecutiveSummary
-        dossier={dossier}
-        onDrillDown={(target) => setDrillDownTarget(target)}
-      />
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {/* PILLAR 3: NEURAL PROFILE & COGNITIVE NLP                                   */}
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {activePillar === 'neural' && (
+        <div className="space-y-6">
+          {/* Neural Profile */}
+          {!hideNeuralProfile && (
+            <NeuralProfile
+              dossier={dossier}
+              onOpenFullForensics={() => handlePillarSelect('summary')}
+            />
+          )}
 
-      {/* HUMAN-IN-THE-LOOP ADAPTIVE FEEDBACK LEARNING SECTION */}
-      <div id="hitl-feedback-section" className="print:hidden">
-        <AdaptiveFeedbackSection
-          targetId={`case-${dossier.chainOfCustody.caseId}`}
-          modelPrediction={`${dossier.scoreBreakdown.riskCategory}: ${dossier.headerFields.subject || 'Analyzed Email'}`}
-          riskScore={dossier.scoreBreakdown.totalRiskScore}
-          predictedAttackType="EMAIL"
-          extractedFeatures={{
-            signals: dossier.allThreatSignals?.map(s => s.name || s.id) || [],
-            sender: dossier.headerFields.from,
-            subject: dossier.headerFields.subject,
-            detectedLinks: dossier.urlForensics?.map(u => u.rawUrl) || dossier.iocs?.urls?.map(u => u.url) || [],
-            source: dossier.senderIdentity.fromDomain,
-            target: dossier.headerFields.to
-          }}
-        />
-      </div>
-
-      {/* 4. EMAIL FORENSIC ANATOMY VISUALIZATION */}
-      {(viewMode !== 'plain-english') && (
-        <EmailAnatomyDiagram
-          dossier={dossier}
-          onDrillDown={(target) => setDrillDownTarget(target)}
-        />
+          {/* Social Engineering & Cognitive Manipulation */}
+          <SocialEngineeringAndNlp
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+          />
+        </div>
       )}
 
-      {/* 5. SENDER IDENTITY GRAPH */}
-      {(viewMode !== 'plain-english') && (
-        <SenderIdentityGraph
-          dossier={dossier}
-          onDrillDown={(target) => setDrillDownTarget(target)}
-        />
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {/* PILLAR 4: THREAT IOCS & SIH 5-PILLAR SUITE                                */}
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {activePillar === 'iocs' && (
+        <div className="space-y-6">
+          {/* IOC Intelligence Section & Table */}
+          <IocSectionAndTable
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+            onExportCsv={exportIocsCsv}
+            onExportStix={exportSTIX21}
+          />
+
+          {/* URL & Attachment Forensics */}
+          <UrlAndAttachmentForensics
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+          />
+
+          {/* Threat Correlation Graph & Chain of Evidence */}
+          <CorrelationAndChain
+            dossier={dossier}
+            onDrillDown={(target) => setDrillDownTarget(target)}
+          />
+
+          {/* SIH26106 5-Pillar Forensic Suite Upgrades */}
+          <SihForensicSuite 
+            dossier={dossier} 
+            onDrillDown={(target) => setDrillDownTarget(target)} 
+          />
+        </div>
       )}
 
-      {/* 6. SMTP HOP / ROUTE GRAPH */}
-      {(viewMode !== 'plain-english') && (
-        <SmtpRouteGraph
-          dossier={dossier}
-          onDrillDown={(target) => setDrillDownTarget(target)}
-        />
-      )}
-
-      {/* 7. EMAIL TIMELINE */}
-      {(viewMode !== 'plain-english') && (
-        <EmailTimelineView
-          dossier={dossier}
-        />
-      )}
-
-      {/* 8 & 9. SPF / DKIM / DMARC VISUAL MATRIX & AUTHENTICATION FLOW DIAGRAM */}
-      {(viewMode !== 'plain-english') && (
-        <AuthMatrixAndFlow
-          dossier={dossier}
-          onDrillDown={(target) => setDrillDownTarget(target)}
-        />
-      )}
-
-      {/* 10 & 11. IOC INTELLIGENCE SECTION & IOC TABLE */}
-      {(viewMode !== 'plain-english') && (
-        <IocSectionAndTable
-          dossier={dossier}
-          onDrillDown={(target) => setDrillDownTarget(target)}
-          onExportCsv={exportIocsCsv}
-          onExportStix={exportSTIX21}
-        />
-      )}
-
-      {/* 12. SOCIAL ENGINEERING ANALYSIS */}
-      {(viewMode !== 'plain-english') && (
-        <SocialEngineeringAndNlp
-          dossier={dossier}
-          onDrillDown={(target) => setDrillDownTarget(target)}
-        />
-      )}
-
-      {/* 13 & 14. URL FORENSICS & ATTACHMENT FORENSICS */}
-      {(viewMode !== 'plain-english') && (
-        <UrlAndAttachmentForensics
-          dossier={dossier}
-          onDrillDown={(target) => setDrillDownTarget(target)}
-        />
-      )}
-
-      {/* 15, 16, 17. THREAT CORRELATION GRAPH, FORENSIC EVIDENCE CHAIN, EVIDENCE VS CONCLUSION */}
-      {(viewMode !== 'plain-english') && (
-        <CorrelationAndChain
-          dossier={dossier}
-          onDrillDown={(target) => setDrillDownTarget(target)}
-        />
-      )}
-
-      {/* 17 & 19. FINAL FORENSIC VERDICT & RAW RFC 5322 EVIDENCE */}
-      <FinalVerdictAndRawEvidence
-        dossier={dossier}
-        onDrillDown={(target) => setDrillDownTarget(target)}
-        onBlockIp={(ip) => {
-          // Trigger local containment notice
-          console.log(`Containing IP: ${ip}`);
-        }}
-        onBlockDomain={(domain) => {
-          console.log(`Sinkholing domain: ${domain}`);
-        }}
-        onPurgeEmail={() => {
-          console.log('Initiating mailbox purge across tenant');
-        }}
-        onExportEml={() => {
-          const rawContent = dossier.rawHeaders && Object.keys(dossier.rawHeaders).length > 0
-            ? Object.entries(dossier.rawHeaders).map(([k, v]) => Array.isArray(v) ? v.map(i => `${k}: ${i}`).join('\n') : `${k}: ${v}`).join('\n')
-            : Object.entries(dossier.headerFields).map(([k, v]) => `${k}: ${v}`).join('\n');
-          const blob = new Blob([rawContent], { type: 'message/rfc822' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `evidence-${dossier.chainOfCustody.caseId}.eml`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }}
-      />
-
-      {/* SOC INCIDENT MITIGATION PLAYBOOKS */}
-      {dossier.socPlaybooks && dossier.socPlaybooks.length > 0 && (
-        <section 
-          id="soc-playbooks-section"
-          className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
-        >
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <div className="flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-cyan-400" />
-              <h2 className="text-xs font-bold uppercase tracking-widest text-white">
-                Automated SOC Mitigation Playbooks & Containment Scripts
-              </h2>
-            </div>
-            <span className="text-[10px] text-gray-500">
-              Ready-to-execute defensive policies
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {dossier.socPlaybooks.map((pb, idx) => (
-              <div 
-                key={idx} 
-                className="bg-black/40 border border-white/10 rounded-xl p-4 space-y-3 flex flex-col justify-between hover:border-cyan-500/40 transition-all"
-              >
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white">{pb.title}</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-white/10 uppercase">
-                      {pb.category}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-gray-300 font-sans leading-relaxed">
-                    {pb.description}
-                  </p>
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {/* PILLAR 5: INCIDENT DOSSIER & PLAYBOOKS                                     */}
+      {/* ────────────────────────────────────────────────────────────────────────── */}
+      {activePillar === 'dossier' && (
+        <div className="space-y-6">
+          {/* Automated SOC Mitigation Playbooks */}
+          {dossier.socPlaybooks && dossier.socPlaybooks.length > 0 && (
+            <section 
+              id="soc-playbooks-section"
+              className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-cyan-400" />
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-white">
+                    Automated SOC Mitigation Playbooks & Containment Scripts
+                  </h2>
                 </div>
-
-                <div className="space-y-2 pt-2 border-t border-white/5">
-                  <div className="bg-[#080c09] p-2.5 rounded-lg text-[10px] font-mono text-cyan-300 break-all select-all border border-white/5">
-                    {pb.commandOrRule}
-                  </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(pb.commandOrRule);
-                      setCopiedPlaybookKey(`pb-${idx}`);
-                      setTimeout(() => setCopiedPlaybookKey(null), 2000);
-                    }}
-                    className="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-mono flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    {copiedPlaybookKey === `pb-${idx}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                    <span>{copiedPlaybookKey === `pb-${idx}` ? 'Copied Rule' : 'Copy Playbook Script'}</span>
-                  </button>
-                </div>
+                <span className="text-[10px] text-gray-500 font-sans">
+                  Ready-to-execute defensive policies
+                </span>
               </div>
-            ))}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {dossier.socPlaybooks.map((pb, idx) => (
+                  <div 
+                    key={idx} 
+                    className="bg-black/40 border border-white/10 rounded-xl p-4 space-y-3 flex flex-col justify-between hover:border-cyan-500/40 transition-all shadow-inner"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">{pb.title}</span>
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-white/10 uppercase">
+                          {pb.category}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-gray-300 font-sans leading-relaxed">
+                        {pb.description}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-white/5">
+                      <div className="bg-[#080c09] p-2.5 rounded-lg text-[10px] font-mono text-cyan-300 break-all select-all border border-white/5">
+                        {pb.commandOrRule}
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(pb.commandOrRule);
+                          setCopiedPlaybookKey(`pb-${idx}`);
+                          setTimeout(() => setCopiedPlaybookKey(null), 2000);
+                        }}
+                        className="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-mono flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        {copiedPlaybookKey === `pb-${idx}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        <span>{copiedPlaybookKey === `pb-${idx}` ? 'Copied Rule' : 'Copy Playbook Script'}</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Full Markdown SOC Report View */}
+          <div className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-cyan-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                  Official SOC Forensic Dossier — Case #{dossier.chainOfCustody.caseId}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={copySocReport}
+                  className="px-3 py-1.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer hover:bg-cyan-500/25 transition-colors"
+                >
+                  {copiedSocReport ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  <span>{copiedSocReport ? 'Copied' : 'Copy Markdown'}</span>
+                </button>
+                <button
+                  onClick={downloadMarkdownReport}
+                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-200 border border-white/10 text-xs font-mono flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Download className="w-3 h-3 text-cyan-400" />
+                  <span>Download .md</span>
+                </button>
+                <button
+                  onClick={handlePrintPdf}
+                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-200 border border-white/10 text-xs font-mono flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Printer className="w-3 h-3 text-cyan-400" />
+                  <span>Print PDF</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 bg-black/40 rounded-xl border border-white/5 text-xs text-gray-300 leading-relaxed max-h-[500px] overflow-y-auto custom-scrollbar font-mono">
+              <div className="markdown-body prose prose-invert max-w-none text-xs">
+                <Markdown>{dossier.socReportMarkdown}</Markdown>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
       )}
 
       {/* 18. ANALYST DRILL-DOWN MODAL */}
