@@ -85,11 +85,11 @@ export function NeuralProfile({
   ];
 
   return (
-    <div id="neural-profile" className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-6 font-mono text-white">
+    <div id="neural-profile" className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-6 font-mono text-white">
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_20px_rgba(0,245,255,0.2)]">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_20px_rgba(105,230,165,0.2)]">
             <Brain className="w-6 h-6 text-cyan-300 animate-pulse" />
           </div>
           <div>
@@ -361,7 +361,7 @@ export function NeuralProfile({
         <div className="pt-2 flex justify-end">
           <button
             onClick={onOpenFullForensics}
-            className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_12px_rgba(0,245,255,0.3)] active:scale-95"
+            className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_12px_rgba(105,230,165,0.3)] active:scale-95"
           >
             <span>Proceed to 2. Email Forensic Layer (22-Point RFC Analysis)</span>
             <ArrowRight className="w-4 h-4" />

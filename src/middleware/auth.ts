@@ -7,6 +7,12 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../config';
+import { createHash, timingSafeEqual } from 'node:crypto';
+
+function matchesKey(value: string, secret?: string): boolean {
+  if (!secret || secret.length < 32 || !value) return false;
+  return timingSafeEqual(createHash('sha256').update(value).digest(), createHash('sha256').update(secret).digest());
+}
 
 export interface AuthenticatedUser {
   id: string;
@@ -43,9 +49,16 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
     return next();
   }
 
+  const supplied = (req.headers.authorization || '').replace(/^Bearer /, '') || String(req.headers['x-api-key'] || '');
+  for (const [role, secret] of [['admin', process.env.NEUROSHIELD_ADMIN_KEY], ['analyst', process.env.NEUROSHIELD_ANALYST_KEY]] as const) {
+    if (matchesKey(supplied, secret)) {
+      req.user = { id: `${role}-${createHash('sha256').update(supplied).digest('hex').slice(0, 12)}`, role };
+      return next();
+    }
+  }
   // If auth is not strictly required by environment configuration
   if (!config.requireAuth) {
-    req.user = { id: 'demo-user', role: 'analyst' };
+    req.user = { id: 'demo-user', role: 'anonymous' };
     return next();
   }
 

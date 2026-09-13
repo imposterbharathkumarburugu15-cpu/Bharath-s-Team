@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../lib/apiClient';
 import React, { useEffect, useState, useMemo } from 'react';
 import { 
   ShieldCheck, 
@@ -370,7 +371,7 @@ export function Dashboard() {
     <div className="space-y-8 max-w-[1600px] mx-auto px-3 sm:px-6 py-6 font-sans text-slate-100">
       {/* Toast Notification */}
       {statusMessage && (
-        <div className="fixed top-6 right-8 z-50 bg-[#070e1e]/95 border border-cyan-500/60 text-cyan-200 px-6 py-4 rounded-2xl shadow-[0_0_35px_rgba(0,240,255,0.35)] flex items-center gap-3 text-xs font-mono backdrop-blur-2xl animate-in fade-in slide-in-from-top-4">
+        <div className="fixed top-6 right-8 z-50 bg-[#0f1612]/95 border border-cyan-500/60 text-cyan-200 px-6 py-4 rounded-2xl shadow-[0_0_35px_rgba(105,230,165,0.35)] flex items-center gap-3 text-xs font-mono backdrop-blur-2xl animate-in fade-in slide-in-from-top-4">
           <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
           <span className="font-semibold">{statusMessage}</span>
         </div>
@@ -379,7 +380,7 @@ export function Dashboard() {
       {/* =========================================================================
           1. FLAGSHIP HERO SECTION & THREAT DEFENSE SPHERE
          ========================================================================= */}
-      <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-b from-[#060b19] via-[#091128] to-[#040814] border border-cyan-500/30 shadow-[0_20px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 backdrop-blur-3xl">
+      <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-b from-[#0c130f] via-[#141d17] to-[#0a0e0b] border border-cyan-500/30 shadow-[0_20px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 backdrop-blur-3xl">
         {/* Futuristic Ambient Glow Meshes */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/12 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/12 rounded-full blur-[140px] pointer-events-none" />
@@ -390,7 +391,7 @@ export function Dashboard() {
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 pb-8 border-b border-white/10">
           <div className="flex flex-wrap items-center gap-3">
             {/* Live Radar Pulse */}
-            <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-400/40 text-cyan-300 font-mono text-[11px] font-bold shadow-[0_0_20px_rgba(0,240,255,0.25)]">
+            <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-400/40 text-cyan-300 font-mono text-[11px] font-bold shadow-[0_0_20px_rgba(105,230,165,0.25)]">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-80" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400" />
@@ -416,7 +417,7 @@ export function Dashboard() {
             <button
               onClick={handleInjectTestIncident}
               disabled={isInjecting}
-              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95"
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl shadow-[0_0_20px_rgba(105,230,165,0.4)] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95"
             >
               {isInjecting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 fill-current" />}
               <span>{isInjecting ? 'INTERCEPTING...' : '+ INGEST THREAT'}</span>
@@ -461,7 +462,7 @@ export function Dashboard() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 font-mono text-xs">
                 <button
                   onClick={() => navigateTo('scanner')}
-                  className="p-3 rounded-2xl bg-[#0b1428] hover:bg-[#101e3d] border border-cyan-500/30 hover:border-cyan-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(0,240,255,0.2)]"
+                  className="p-3 rounded-2xl bg-[#141f18] hover:bg-[#1f2e24] border border-cyan-500/30 hover:border-cyan-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(105,230,165,0.2)]"
                 >
                   <div className="flex items-center justify-between text-cyan-400 mb-1">
                     <ShieldAlert className="w-4 h-4" />
@@ -473,7 +474,7 @@ export function Dashboard() {
 
                 <button
                   onClick={() => navigateTo('phishing')}
-                  className="p-3 rounded-2xl bg-[#0b1428] hover:bg-[#101e3d] border border-emerald-500/30 hover:border-emerald-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                  className="p-3 rounded-2xl bg-[#141f18] hover:bg-[#1f2e24] border border-emerald-500/30 hover:border-emerald-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
                 >
                   <div className="flex items-center justify-between text-emerald-400 mb-1">
                     <Mail className="w-4 h-4" />
@@ -485,7 +486,7 @@ export function Dashboard() {
 
                 <button
                   onClick={() => navigateTo('voice')}
-                  className="p-3 rounded-2xl bg-[#0b1428] hover:bg-[#101e3d] border border-purple-500/30 hover:border-purple-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+                  className="p-3 rounded-2xl bg-[#141f18] hover:bg-[#1f2e24] border border-purple-500/30 hover:border-purple-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(126,176,147,0.2)]"
                 >
                   <div className="flex items-center justify-between text-purple-400 mb-1">
                     <Mic className="w-4 h-4" />
@@ -497,7 +498,7 @@ export function Dashboard() {
 
                 <button
                   onClick={() => navigateTo('alerts')}
-                  className="p-3 rounded-2xl bg-[#0b1428] hover:bg-[#101e3d] border border-rose-500/30 hover:border-rose-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.2)]"
+                  className="p-3 rounded-2xl bg-[#141f18] hover:bg-[#1f2e24] border border-rose-500/30 hover:border-rose-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(244,63,94,0.2)]"
                 >
                   <div className="flex items-center justify-between text-rose-400 mb-1">
                     <Activity className="w-4 h-4" />
@@ -509,7 +510,7 @@ export function Dashboard() {
 
                 <button
                   onClick={() => navigateTo('copilot')}
-                  className="p-3 rounded-2xl bg-[#0b1428] hover:bg-[#101e3d] border border-sky-500/30 hover:border-sky-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(14,165,233,0.2)]"
+                  className="p-3 rounded-2xl bg-[#141f18] hover:bg-[#1f2e24] border border-sky-500/30 hover:border-sky-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(14,165,233,0.2)]"
                 >
                   <div className="flex items-center justify-between text-sky-400 mb-1">
                     <Bot className="w-4 h-4" />
@@ -521,7 +522,7 @@ export function Dashboard() {
 
                 <button
                   onClick={() => navigateTo('feedback')}
-                  className="p-3 rounded-2xl bg-[#0b1428] hover:bg-[#101e3d] border border-amber-500/30 hover:border-amber-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+                  className="p-3 rounded-2xl bg-[#141f18] hover:bg-[#1f2e24] border border-amber-500/30 hover:border-amber-400 text-left transition-all group cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]"
                 >
                   <div className="flex items-center justify-between text-amber-400 mb-1">
                     <Sliders className="w-4 h-4" />
@@ -536,7 +537,7 @@ export function Dashboard() {
 
           {/* Right Column: Interactive Live Threat Sandbox Terminal */}
           <div className="lg:col-span-6">
-            <div className="rounded-3xl bg-[#070d1e]/90 border border-cyan-500/40 p-5 sm:p-6 shadow-[0_0_50px_rgba(0,240,255,0.2)] backdrop-blur-2xl space-y-4">
+            <div className="rounded-3xl bg-[#0f1612]/90 border border-cyan-500/40 p-5 sm:p-6 shadow-[0_0_50px_rgba(105,230,165,0.2)] backdrop-blur-2xl space-y-4">
               {/* Terminal Header */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2 font-mono text-xs">
@@ -569,7 +570,7 @@ export function Dashboard() {
                         onClick={() => handleSelectHeroPreset(preset)}
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition-all border cursor-pointer ${
                           isSelected
-                            ? `${preset.badgeColor} shadow-[0_0_12px_rgba(0,240,255,0.3)] ring-1 ring-cyan-400`
+                            ? `${preset.badgeColor} shadow-[0_0_12px_rgba(105,230,165,0.3)] ring-1 ring-cyan-400`
                             : 'bg-black/40 text-slate-400 border-white/10 hover:border-white/20 hover:text-slate-200'
                         }`}
                       >
@@ -586,7 +587,7 @@ export function Dashboard() {
                   value={heroInput}
                   onChange={(e) => setHeroInput(e.target.value)}
                   rows={4}
-                  className="w-full bg-[#030712] border border-slate-700/80 rounded-xl p-3.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 custom-scrollbar resize-none"
+                  className="w-full bg-[#080d0a] border border-slate-700/80 rounded-xl p-3.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 custom-scrollbar resize-none"
                   placeholder="Paste suspicious raw RFC email headers, reverse tunnel link, or voice transcript..."
                 />
                 <button
@@ -639,7 +640,7 @@ export function Dashboard() {
          ========================================================================= */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Threats Blocked */}
-        <div className="relative overflow-hidden rounded-3xl bg-[#070d1e]/90 border border-rose-500/30 hover:border-rose-500/60 p-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group hover:shadow-[0_0_30px_rgba(244,63,94,0.25)]">
+        <div className="relative overflow-hidden rounded-3xl bg-[#0f1612]/90 border border-rose-500/30 hover:border-rose-500/60 p-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group hover:shadow-[0_0_30px_rgba(244,63,94,0.25)]">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 shadow-[0_0_15px_rgba(244,63,94,0.8)]" />
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-rose-300/80">
@@ -662,7 +663,7 @@ export function Dashboard() {
         </div>
 
         {/* Card 2: Warnings Issued */}
-        <div className="relative overflow-hidden rounded-3xl bg-[#070d1e]/90 border border-amber-500/30 hover:border-amber-500/60 p-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group hover:shadow-[0_0_30px_rgba(245,158,11,0.25)]">
+        <div className="relative overflow-hidden rounded-3xl bg-[#0f1612]/90 border border-amber-500/30 hover:border-amber-500/60 p-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group hover:shadow-[0_0_30px_rgba(245,158,11,0.25)]">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300/80">
@@ -682,13 +683,13 @@ export function Dashboard() {
         </div>
 
         {/* Card 3: Sensitive Data Intercepts */}
-        <div className="relative overflow-hidden rounded-3xl bg-[#070d1e]/90 border border-purple-500/30 hover:border-purple-500/60 p-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group hover:shadow-[0_0_30px_rgba(168,85,247,0.25)]">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.8)]" />
+        <div className="relative overflow-hidden rounded-3xl bg-[#0f1612]/90 border border-purple-500/30 hover:border-purple-500/60 p-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group hover:shadow-[0_0_30px_rgba(126,176,147,0.25)]">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_15px_rgba(126,176,147,0.8)]" />
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-purple-300/80">
               Sensitive Data Intercepts
             </span>
-            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.25)] group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(126,176,147,0.25)] group-hover:scale-110 transition-transform">
               <Lock className="w-5 h-5" />
             </div>
           </div>
@@ -702,13 +703,13 @@ export function Dashboard() {
         </div>
 
         {/* Card 4: Mean-Time-to-Detect */}
-        <div className="relative overflow-hidden rounded-3xl bg-[#070d1e]/90 border border-cyan-500/30 hover:border-cyan-500/60 p-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group hover:shadow-[0_0_30px_rgba(0,240,255,0.25)]">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 shadow-[0_0_15px_rgba(0,240,255,0.8)]" />
+        <div className="relative overflow-hidden rounded-3xl bg-[#0f1612]/90 border border-cyan-500/30 hover:border-cyan-500/60 p-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group hover:shadow-[0_0_30px_rgba(105,230,165,0.25)]">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 shadow-[0_0_15px_rgba(105,230,165,0.8)]" />
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-cyan-300/80">
               Mean Time to Detect (MTTD)
             </span>
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.25)] group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(105,230,165,0.25)] group-hover:scale-110 transition-transform">
               <Zap className="w-5 h-5" />
             </div>
           </div>
@@ -727,7 +728,7 @@ export function Dashboard() {
          ========================================================================= */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Interactive Telemetry Chart & Geolocation Switcher */}
-        <div className="lg:col-span-8 rounded-3xl bg-[#070d1e]/90 border border-white/10 p-6 shadow-2xl space-y-4">
+        <div className="lg:col-span-8 rounded-3xl bg-[#0f1612]/90 border border-white/10 p-6 shadow-2xl space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
             <div>
               <h2 className="text-base font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -744,7 +745,7 @@ export function Dashboard() {
                 onClick={() => setActiveTelemetryTab('chart')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border cursor-pointer ${
                   activeTelemetryTab === 'chart'
-                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-[0_0_12px_rgba(0,240,255,0.25)]'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-[0_0_12px_rgba(105,230,165,0.25)]'
                     : 'bg-black/40 text-slate-400 border-white/10 hover:text-white'
                 }`}
               >
@@ -754,7 +755,7 @@ export function Dashboard() {
                 onClick={() => setActiveTelemetryTab('geo')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border cursor-pointer ${
                   activeTelemetryTab === 'geo'
-                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-[0_0_12px_rgba(0,240,255,0.25)]'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-[0_0_12px_rgba(105,230,165,0.25)]'
                     : 'bg-black/40 text-slate-400 border-white/10 hover:text-white'
                 }`}
               >
@@ -777,19 +778,19 @@ export function Dashboard() {
                       <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="safeGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00f0ff" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#00f0ff" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#36c96c" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#36c96c" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                  <XAxis dataKey="hour" stroke="#64748b" fontSize={11} fontFamily="monospace" />
-                  <YAxis stroke="#64748b" fontSize={11} fontFamily="monospace" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e3b29" />
+                  <XAxis dataKey="hour" stroke="#648b72" fontSize={11} fontFamily="monospace" />
+                  <YAxis stroke="#648b72" fontSize={11} fontFamily="monospace" />
                   <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#091122', borderColor: '#00f0ff', borderRadius: '12px', fontFamily: 'monospace', fontSize: '11px' }}
+                    contentStyle={{ backgroundColor: '#111a14', borderColor: '#36c96c', borderRadius: '12px', fontFamily: 'monospace', fontSize: '11px' }}
                   />
                   <Area type="monotone" dataKey="blocked" stroke="#f43f5e" strokeWidth={2.5} fillOpacity={1} fill="url(#blockedGrad)" name="Blocked Threats" />
                   <Area type="monotone" dataKey="warnings" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#warnGrad)" name="Warnings Issued" />
-                  <Area type="monotone" dataKey="safe" stroke="#00f0ff" strokeWidth={1.5} fillOpacity={1} fill="url(#safeGrad)" name="Safe Traffic" />
+                  <Area type="monotone" dataKey="safe" stroke="#36c96c" strokeWidth={1.5} fillOpacity={1} fill="url(#safeGrad)" name="Safe Traffic" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -822,7 +823,7 @@ export function Dashboard() {
         </div>
 
         {/* Right: Protection Matrix Health Pillars */}
-        <div className="lg:col-span-4 rounded-3xl bg-[#070d1e]/90 border border-white/10 p-6 shadow-2xl space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-4 rounded-3xl bg-[#0f1612]/90 border border-white/10 p-6 shadow-2xl space-y-4 flex flex-col justify-between">
           <div>
             <h2 className="text-base font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -834,7 +835,7 @@ export function Dashboard() {
           </div>
 
           <div className="space-y-3 font-mono text-xs">
-            <div className="p-3.5 rounded-2xl bg-[#040814] border border-white/10 flex items-center justify-between">
+            <div className="p-3.5 rounded-2xl bg-[#0a0e0b] border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Chrome className="w-4 h-4 text-cyan-400" />
                 <div>
@@ -847,7 +848,7 @@ export function Dashboard() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#040814] border border-white/10 flex items-center justify-between">
+            <div className="p-3.5 rounded-2xl bg-[#0a0e0b] border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-emerald-400" />
                 <div>
@@ -860,7 +861,7 @@ export function Dashboard() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#040814] border border-white/10 flex items-center justify-between">
+            <div className="p-3.5 rounded-2xl bg-[#0a0e0b] border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Cpu className="w-4 h-4 text-purple-400" />
                 <div>
@@ -873,7 +874,7 @@ export function Dashboard() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#040814] border border-white/10 flex items-center justify-between">
+            <div className="p-3.5 rounded-2xl bg-[#0a0e0b] border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Database className="w-4 h-4 text-sky-400" />
                 <div>
@@ -897,7 +898,7 @@ export function Dashboard() {
       {/* =========================================================================
           4. LIVE INCIDENT TELEMETRY TABLE & INCIDENT DRAWER
          ========================================================================= */}
-      <section className="rounded-3xl bg-[#070d1e]/90 border border-white/10 p-6 shadow-2xl space-y-5">
+      <section className="rounded-3xl bg-[#0f1612]/90 border border-white/10 p-6 shadow-2xl space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div>
             <h2 className="text-base font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -918,14 +919,14 @@ export function Dashboard() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search IOC, domain, title..."
-                className="bg-[#030712] border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
+                className="bg-[#080d0a] border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
               />
             </div>
 
             <select
               value={filterDecision}
               onChange={(e) => setFilterDecision(e.target.value as any)}
-              className="bg-[#030712] border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-cyan-400"
+              className="bg-[#080d0a] border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-cyan-400"
             >
               <option value="ALL">All Decisions</option>
               <option value="BLOCKED">Blocked Only</option>
@@ -936,7 +937,7 @@ export function Dashboard() {
             <select
               value={filterSource}
               onChange={(e) => setFilterSource(e.target.value as any)}
-              className="bg-[#030712] border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-cyan-400"
+              className="bg-[#080d0a] border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-cyan-400"
             >
               <option value="ALL">All Channels</option>
               <option value="Chrome">Chrome Extension</option>
@@ -1056,7 +1057,7 @@ export function Dashboard() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#091122] border border-cyan-500/40 rounded-3xl max-w-2xl w-full p-7 space-y-6 shadow-[0_0_60px_rgba(0,240,255,0.2)] relative"
+              className="bg-[#111a14] border border-cyan-500/40 rounded-3xl max-w-2xl w-full p-7 space-y-6 shadow-[0_0_60px_rgba(105,230,165,0.2)] relative"
             >
               {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-800">

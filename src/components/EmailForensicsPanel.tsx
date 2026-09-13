@@ -181,7 +181,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
       />
 
       {/* AUDIENCE PRESENTATION MODE SWITCHER (Plain-English User View vs SOC Analyst View) */}
-      <div className="bg-[#0b1329] border border-cyan-500/40 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg print:hidden">
+      <div className="bg-[#151f19] border border-cyan-500/40 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg print:hidden">
         <div className="flex items-center gap-2.5">
           <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse shrink-0" />
           <div>
@@ -199,7 +199,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
             onClick={() => setViewMode('plain-english')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               viewMode === 'plain-english'
-                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(0,245,255,0.4)]'
+                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -210,7 +210,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
             onClick={() => setViewMode('unified')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               viewMode === 'unified'
-                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(0,245,255,0.4)]'
+                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -221,7 +221,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
             onClick={() => setViewMode('technical')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               viewMode === 'technical'
-                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(0,245,255,0.4)]'
+                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -234,7 +234,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
       <nav 
         id="forensic-report-navigation"
         aria-label="Forensic Report Sections"
-        className="sticky top-2 z-20 bg-[#080d1a]/95 border border-cyan-500/30 rounded-xl p-2.5 sm:p-3 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 overflow-x-auto text-xs sm:text-sm print:hidden"
+        className="sticky top-2 z-20 bg-[#0e1410]/95 border border-cyan-500/30 rounded-xl p-2.5 sm:p-3 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 overflow-x-auto text-xs sm:text-sm print:hidden"
       >
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
           <span className="text-xs text-cyan-400 font-bold uppercase tracking-wider px-2 shrink-0">
@@ -255,7 +255,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
           <button
             onClick={handlePrintPdf}
             id="nav-print-pdf-btn"
-            className="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-1.5 cursor-pointer transition-all shadow-[0_0_12px_rgba(0,245,255,0.4)] active:scale-95"
+            className="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-1.5 cursor-pointer transition-all shadow-[0_0_12px_rgba(105,230,165,0.4)] active:scale-95"
             title="Print report to PDF"
           >
             <Printer className="w-4 h-4 text-black" />
@@ -266,7 +266,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
             onClick={() => setShowGeoRadar(!showGeoRadar)}
             className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               showGeoRadar 
-                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(0,245,255,0.4)]' 
+                ? 'bg-cyan-500 text-black shadow-[0_0_12px_rgba(105,230,165,0.4)]'
                 : 'bg-white/10 hover:bg-white/20 text-gray-200 border border-white/10'
             }`}
           >
@@ -293,7 +293,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
               }}
               className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 showNeuralProfile 
-                  ? 'bg-purple-500 text-white shadow-[0_0_12px_rgba(168,85,247,0.5)] border border-purple-400' 
+                  ? 'bg-purple-500 text-white shadow-[0_0_12px_rgba(126,176,147,0.5)] border border-purple-400'
                   : 'bg-white/10 hover:bg-white/20 text-purple-300 border border-purple-500/30'
               }`}
               title="Inspect Neural Profile & Cognitive Threat Telemetry"
@@ -307,7 +307,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
 
       {/* OPTIONAL EXPANDABLE 3D ORIGIN RADAR */}
       {showGeoRadar && (
-        <div className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-3">
+        <div className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-3">
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-cyan-400" />
@@ -328,10 +328,10 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
 
       {/* 1. NEURAL PROFILE SEPARATE BUTTON & EXPANDABLE CARD (SHOWN FIRST) */}
       {!hideNeuralProfile && (
-        <div id="neural-profile" className="bg-[#0a0f1c] border border-purple-500/30 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
+        <div id="neural-profile" className="bg-[#0f1712] border border-purple-500/30 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.25)]">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(126,176,147,0.25)]">
                 <Brain className="w-5 h-5 text-purple-300 animate-pulse" />
               </div>
               <div>
@@ -353,7 +353,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
               onClick={() => setShowNeuralProfile(!showNeuralProfile)}
               className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap shadow-md active:scale-95 w-full sm:w-auto ${
                 showNeuralProfile
-                  ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+                  ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(126,176,147,0.4)]'
                   : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40'
               }`}
             >
@@ -517,7 +517,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
       {dossier.socPlaybooks && dossier.socPlaybooks.length > 0 && (
         <section 
           id="soc-playbooks-section"
-          className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
+          className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
         >
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
@@ -550,7 +550,7 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-white/5">
-                  <div className="bg-[#05080f] p-2.5 rounded-lg text-[10px] font-mono text-cyan-300 break-all select-all border border-white/5">
+                  <div className="bg-[#080c09] p-2.5 rounded-lg text-[10px] font-mono text-cyan-300 break-all select-all border border-white/5">
                     {pb.commandOrRule}
                   </div>
                   <button
@@ -585,9 +585,9 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0a0f1c] border border-cyan-500/40 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl font-mono"
+              className="bg-[#0f1712] border border-cyan-500/40 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl font-mono"
             >
-              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#05080f]">
+              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#080c09]">
                 <div className="flex items-center gap-2">
                   <Compass className="w-4 h-4 text-cyan-400" />
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">
@@ -617,9 +617,9 @@ export function EmailForensicsPanel({ dossier, compact = false, hideNeuralProfil
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0a0f1c] border border-cyan-500/40 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl font-mono"
+              className="bg-[#0f1712] border border-cyan-500/40 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl font-mono"
             >
-              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#05080f]">
+              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#080c09]">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-cyan-400" />
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">

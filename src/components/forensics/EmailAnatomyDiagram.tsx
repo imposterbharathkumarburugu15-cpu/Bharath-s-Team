@@ -370,7 +370,7 @@ export function EmailAnatomyDiagram({ dossier, onDrillDown }: EmailAnatomyDiagra
   return (
     <section 
       id="email-forensic-anatomy-visualization"
-      className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl font-mono text-white space-y-4"
+      className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl font-mono text-white space-y-4"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
         <div>
@@ -398,7 +398,7 @@ export function EmailAnatomyDiagram({ dossier, onDrillDown }: EmailAnatomyDiagra
       <div className="relative p-2 sm:p-4 bg-black/40 rounded-xl border border-white/5 overflow-x-auto">
         {/* Central EMAIL Hub Node */}
         <div className="flex justify-center mb-6">
-          <div className="p-3 px-6 rounded-2xl bg-[#0e1626] border-2 border-cyan-400 shadow-[0_0_25px_rgba(0,245,255,0.3)] flex items-center gap-3 text-center">
+          <div className="p-3 px-6 rounded-2xl bg-[#151f19] border-2 border-cyan-400 shadow-[0_0_25px_rgba(105,230,165,0.3)] flex items-center gap-3 text-center">
             <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300">
               <Mail className="w-6 h-6" />
             </div>
@@ -421,7 +421,7 @@ export function EmailAnatomyDiagram({ dossier, onDrillDown }: EmailAnatomyDiagra
               onClick={() => onDrillDown(node.drillDown)}
               onMouseEnter={() => setHoveredNode(node.id)}
               onMouseLeave={() => setHoveredNode(null)}
-              className={`p-3 rounded-xl bg-[#0a0f1c] border ${getStatusBorder(node.status)} transition-all duration-200 cursor-pointer flex flex-col justify-between group hover:shadow-[0_0_15px_rgba(0,245,255,0.15)]`}
+              className={`p-3 rounded-xl bg-[#0f1712] border ${getStatusBorder(node.status)} transition-all duration-200 cursor-pointer flex flex-col justify-between group hover:shadow-[0_0_15px_rgba(105,230,165,0.15)]`}
             >
               <div>
                 <div className="flex items-center justify-between gap-1 mb-1.5">

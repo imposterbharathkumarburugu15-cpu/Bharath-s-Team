@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../lib/apiClient';
 /**
  * NeuroShield Gmail Ingestion Service
  * Centralized Gmail API interaction, email analysis orchestration, and background polling.
@@ -248,6 +249,28 @@ export function gmailMessageToInboxItem(
   };
 }
 
+
+async function analyzeInboxMessage(detail: GmailMessageDetail): Promise<InboxEmailItem> {
+  const headers = detail.payload?.headers || [];
+  const rawHeaders = headers.map(h => `${h.name}: ${h.value}`).join('\n');
+  const content = extractGmailBodyText(detail.payload, detail.snippet || '');
+  const from = headers.find(h => h.name.toLowerCase() === 'from')?.value || '';
+  const sender = parseSender(from);
+  const response = await fetch('/api/neuroshield/analyze', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: detail.id, source: 'email', content, rawPayload: rawHeaders, sender: { identifier: sender.email, displayName: sender.name }, metadata: { client: 'gmail_api' } }),
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!response.ok) throw new Error('Backend analysis unavailable; message remains unverified.');
+  const analysis = await response.json();
+  const item = gmailMessageToInboxItem(detail, analysis.forensics);
+  item.score = analysis.risk_score;
+  item.riskCategory = analysis.verdict === 'UNKNOWN' ? 'SUSPICIOUS' : item.score >= 65 ? 'HIGH RISK' : item.score >= 40 ? 'SUSPICIOUS' : 'LOW RISK';
+  item.isVerified = analysis.verdict === 'SAFE' && analysis.confidence >= 70;
+  if (analysis.verdict === 'UNKNOWN') item.tags.push({ text: 'Unverified', type: 'amber' });
+  return item;
+}
+
 // ─── Full Ingestion Pipeline ────────────────────────────────────────────────
 
 export async function ingestGmailEmails(
@@ -275,20 +298,7 @@ export async function ingestGmailEmails(
     messages.map(async (msg) => {
       try {
         const detail = await fetchGmailMessageDetail(token, msg.id);
-        const headers = detail.payload?.headers || [];
-        const rawHeaderArr = headers.map(h => `${h.name}: ${h.value}`).join('\n');
-        const body = extractGmailBodyText(detail.payload, detail.snippet || '');
-
-        // Run NeuroShield forensic analysis
-        let dossier: ForensicDossier | undefined;
-        try {
-          dossier = await executeEmailForensics(rawHeaderArr, body);
-        } catch (analysisErr: any) {
-          console.warn('[Ingestion] Analysis warning for', msg.id, analysisErr?.message);
-          errors.push({ messageId: msg.id, error: analysisErr?.message || 'Analysis failed' });
-        }
-
-        return gmailMessageToInboxItem(detail, dossier);
+        return await analyzeInboxMessage(detail);
       } catch (fetchErr: any) {
         console.warn('[Ingestion] Fetch error for', msg.id, fetchErr?.message);
         errors.push({ messageId: msg.id, error: fetchErr?.message || 'Fetch failed' });
@@ -300,9 +310,9 @@ export async function ingestGmailEmails(
           subject: '(Message details unavailable)',
           snippet: '',
           timeString: '',
-          score: 0,
-          riskCategory: 'LOW RISK' as const,
-          tags: [],
+          score: 50,
+          riskCategory: 'SUSPICIOUS' as const,
+          tags: [{ text: 'Unverified / analysis unavailable', type: 'amber' as const }],
           rawHeaders: '',
           body: '',
           analyzedAt: new Date().toISOString()
@@ -380,18 +390,7 @@ export class EmailPollingController {
       for (const msgId of newMessageIds) {
         try {
           const detail = await fetchGmailMessageDetail(this.token, msgId);
-          const headers = detail.payload?.headers || [];
-          const rawHeaderArr = headers.map(h => `${h.name}: ${h.value}`).join('\n');
-          const body = extractGmailBodyText(detail.payload, detail.snippet || '');
-
-          let dossier: ForensicDossier | undefined;
-          try {
-            dossier = await executeEmailForensics(rawHeaderArr, body);
-          } catch {
-            // Continue without dossier
-          }
-
-          const item = gmailMessageToInboxItem(detail, dossier);
+          const item = await analyzeInboxMessage(detail);
           newEmails.push(item);
           this.knownMessageIds.add(msgId);
         } catch {

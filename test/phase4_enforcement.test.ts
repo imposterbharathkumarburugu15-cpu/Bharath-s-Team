@@ -6,7 +6,7 @@
  *  1. Authoritative Protection Decision Contract (8-field contract)
  *  2. Protection Policy Logic (ALLOW, WARN, BLOCK_ACTION, BLOCK_VIEW)
  *  3. Action-Specific Enforcement (CLICK_LINK, LOGIN, ENTER_PASSWORD, SHARE_OTP, TRANSFER_MONEY, etc.)
- *  4. Strict Architectural Separation (Gmail API = NOT_SUPPORTED; Chrome Extension = ENFORCED)
+ *  4. Strict Architectural Separation (Gmail API = NOT_SUPPORTED; Chrome Extension = PENDING until acknowledgement)
  *  5. 10 Core Required Enforcement Tests (Test Matrix)
  *  6. Bypass Resistance (Punycode, Encoded URLs, Redirects, Script Submissions)
  *  7. False Positive Protection (Urgent business email, legitimate login)
@@ -77,7 +77,7 @@ async function runPhase4AcceptanceSuite() {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // TEST 2: Malicious URL -> CRITICAL -> BLOCK_VIEW -> Navigation prevented (ENFORCED)
+  // TEST 2: Malicious URL -> CRITICAL -> BLOCK_VIEW -> Navigation block requested (PENDING)
   // ──────────────────────────────────────────────────────────────────────────
   {
     const policy = EnforcementEngine.evaluatePolicy({
@@ -94,7 +94,7 @@ async function runPhase4AcceptanceSuite() {
     const passed =
       (policy.verdict === 'CRITICAL' || policy.verdict === 'HIGH') &&
       policy.protectionDecision === 'BLOCK_VIEW' &&
-      policy.enforcementStatus === 'ENFORCED';
+      policy.enforcementStatus === 'PENDING';
 
     results.push({
       id: 2,
@@ -128,7 +128,7 @@ async function runPhase4AcceptanceSuite() {
     const passed =
       (policy.verdict === 'HIGH' || policy.verdict === 'CRITICAL') &&
       policy.protectionDecision === 'BLOCK_ACTION' &&
-      policy.enforcementStatus === 'ENFORCED';
+      policy.enforcementStatus === 'PENDING';
 
     results.push({
       id: 3,
@@ -194,7 +194,7 @@ async function runPhase4AcceptanceSuite() {
     const passed =
       (policy.verdict === 'HIGH' || policy.verdict === 'CRITICAL') &&
       policy.protectionDecision === 'BLOCK_VIEW' &&
-      policy.enforcementStatus === 'ENFORCED';
+      policy.enforcementStatus === 'PENDING';
 
     results.push({
       id: 5,
@@ -225,7 +225,7 @@ async function runPhase4AcceptanceSuite() {
 
     const passed =
       policy.protectionDecision === 'BLOCK_VIEW' &&
-      policy.enforcementStatus === 'ENFORCED';
+      policy.enforcementStatus === 'PENDING';
 
     results.push({
       id: 6,
@@ -258,7 +258,7 @@ async function runPhase4AcceptanceSuite() {
 
     const passed =
       policy.protectionDecision === 'BLOCK_ACTION' &&
-      policy.enforcementStatus === 'ENFORCED' &&
+      policy.enforcementStatus === 'PENDING' &&
       sensitive.categories.includes('OTP');
 
     results.push({
@@ -292,7 +292,7 @@ async function runPhase4AcceptanceSuite() {
 
     const passed =
       policy.protectionDecision === 'BLOCK_ACTION' &&
-      policy.enforcementStatus === 'ENFORCED' &&
+      policy.enforcementStatus === 'PENDING' &&
       sensitive.categories.includes('PAYMENT_DATA');
 
     results.push({
@@ -425,9 +425,9 @@ async function runPhase4AcceptanceSuite() {
 
     const passed =
       punycodeDecision.protectionDecision === 'BLOCK_VIEW' &&
-      punycodeDecision.enforcementStatus === 'ENFORCED' &&
+      punycodeDecision.enforcementStatus === 'PENDING' &&
       encodedDecision.protectionDecision === 'BLOCK_VIEW' &&
-      encodedDecision.enforcementStatus === 'ENFORCED';
+      encodedDecision.enforcementStatus === 'PENDING';
 
     results.push({
       id: 12,

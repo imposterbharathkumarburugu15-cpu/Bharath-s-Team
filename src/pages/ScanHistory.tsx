@@ -72,7 +72,7 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-[#10151D] border border-[#00F0FF]/30 flex items-center justify-center text-[#00F0FF]">
+            <div className="w-8 h-8 rounded-xl bg-[#121b15] border border-[#36c96c]/30 flex items-center justify-center text-[#36c96c]">
               <History className="w-4 h-4" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white uppercase">
@@ -86,15 +86,15 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
 
         <button
           onClick={handleExportJson}
-          className="px-4 py-2 rounded-xl bg-[#10151D] hover:bg-[#161D27] text-white border border-white/[0.1] transition-all flex items-center gap-2 font-mono text-xs cursor-pointer shadow-lg self-start sm:self-auto"
+          className="px-4 py-2 rounded-xl bg-[#121b15] hover:bg-[#18251d] text-white border border-white/[0.1] transition-all flex items-center gap-2 font-mono text-xs cursor-pointer shadow-lg self-start sm:self-auto"
         >
-          <Download className="w-3.5 h-3.5 text-[#00F0FF]" />
+          <Download className="w-3.5 h-3.5 text-[#36c96c]" />
           <span>Export Audit History</span>
         </button>
       </div>
 
       {/* Filter Toolbar */}
-      <div className="p-4 rounded-2xl bg-[#10151D] border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+      <div className="p-4 rounded-2xl bg-[#121b15] border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
         <div className="relative w-full sm:w-80">
           <Search className="w-3.5 h-3.5 text-[#8995A5] absolute left-3 top-3" />
           <input
@@ -102,7 +102,7 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by ID, sender, or threat name..."
-            className="w-full bg-[#080B10] border border-white/[0.1] rounded-xl pl-9 pr-3 py-2 text-white focus:outline-none focus:border-[#00F0FF]"
+            className="w-full bg-[#0a0e0b] border border-white/[0.1] rounded-xl pl-9 pr-3 py-2 text-white focus:outline-none focus:border-[#36c96c]"
           />
         </div>
 
@@ -113,8 +113,8 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
               onClick={() => setFilterVerdict(v)}
               className={`px-3 py-1.5 rounded-lg font-bold transition-all border cursor-pointer ${
                 filterVerdict === v
-                  ? 'bg-[#00F0FF]/15 text-[#00F0FF] border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.2)]'
-                  : 'bg-[#080B10] text-[#8995A5] border-white/[0.08] hover:text-white'
+                  ? 'bg-[#36c96c]/15 text-[#36c96c] border-[#36c96c]/40 shadow-[0_0_12px_rgba(105,230,165,0.2)]'
+                  : 'bg-[#0a0e0b] text-[#8995A5] border-white/[0.08] hover:text-white'
               }`}
             >
               {v}
@@ -124,11 +124,11 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl bg-[#10151D] border border-white/[0.08] overflow-hidden shadow-2xl">
+      <div className="rounded-2xl bg-[#121b15] border border-white/[0.08] overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead>
-              <tr className="border-b border-white/[0.08] bg-[#080B10] text-[11px] text-[#8995A5] uppercase tracking-wider">
+              <tr className="border-b border-white/[0.08] bg-[#0a0e0b] text-[11px] text-[#8995A5] uppercase tracking-wider">
                 <th className="py-3.5 px-4">Audit ID</th>
                 <th className="py-3.5 px-4">Timestamp</th>
                 <th className="py-3.5 px-4">Threat Name / Description</th>
@@ -157,7 +157,7 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
                     </td>
 
                     <td className="py-3.5 px-4 max-w-xs">
-                      <div className="font-bold text-white group-hover:text-[#00F0FF] transition-colors truncate">
+                      <div className="font-bold text-white group-hover:text-[#36c96c] transition-colors truncate">
                         {item.threatName || item.payloadDescription}
                       </div>
                       <div className="text-[10px] text-[#8995A5] truncate mt-0.5">
@@ -185,7 +185,7 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
                     </td>
 
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <button className="px-2.5 py-1 rounded-lg bg-[#080B10] hover:bg-[#161D27] border border-white/[0.08] text-[#8995A5] hover:text-white transition-all text-[11px] flex items-center gap-1 ml-auto cursor-pointer">
+                      <button className="px-2.5 py-1 rounded-lg bg-[#0a0e0b] hover:bg-[#18251d] border border-white/[0.08] text-[#8995A5] hover:text-white transition-all text-[11px] flex items-center gap-1 ml-auto cursor-pointer">
                         <span>Inspect</span>
                         <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </button>
@@ -201,7 +201,7 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
       {/* Detail Modal */}
       {selectedScan && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#10151D] border border-white/[0.1] rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
+          <div className="bg-[#121b15] border border-white/[0.1] rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
             <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-white text-sm">
@@ -215,7 +215,7 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
               </div>
               <button
                 onClick={() => setSelectedScan(null)}
-                className="text-[#8995A5] hover:text-white px-2.5 py-1 rounded-lg bg-[#080B10]"
+                className="text-[#8995A5] hover:text-white px-2.5 py-1 rounded-lg bg-[#0a0e0b]"
               >
                 ✕ Close
               </button>
@@ -228,11 +228,11 @@ export function ScanHistory({ onSelectScan }: ScanHistoryProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-[#080B10] rounded-xl border border-white/[0.06]">
+              <div className="p-3 bg-[#0a0e0b] rounded-xl border border-white/[0.06]">
                 <div className="text-[10px] text-[#8995A5]">Origin / Ingress:</div>
                 <div className="text-white font-bold truncate mt-0.5">{selectedScan.source}</div>
               </div>
-              <div className="p-3 bg-[#080B10] rounded-xl border border-white/[0.06]">
+              <div className="p-3 bg-[#0a0e0b] rounded-xl border border-white/[0.06]">
                 <div className="text-[10px] text-[#8995A5]">Target Destination:</div>
                 <div className="text-white font-bold truncate mt-0.5">{selectedScan.target || 'Corporate Mail Gateway'}</div>
               </div>

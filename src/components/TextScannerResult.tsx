@@ -99,7 +99,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
   return (
     <div className="flex-1 flex flex-col w-full h-full text-white overflow-y-auto custom-scrollbar">
       {/* Header Area with Multi-Modal View Switcher */}
-      <div className="mb-6 flex-shrink-0 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-[#070d1e]/80 border border-cyber-border/40 p-4 sm:p-5 rounded-2xl backdrop-blur-xl shadow-xl">
+      <div className="mb-6 flex-shrink-0 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-[#0f1612]/80 border border-cyber-border/40 p-4 sm:p-5 rounded-2xl backdrop-blur-xl shadow-xl">
         <div className="flex items-center gap-3.5">
           <div className={cn(
             "w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 transition-transform",
@@ -133,13 +133,13 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
 
         <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end flex-wrap sm:flex-nowrap">
           {/* View Switcher Tabs */}
-          <div className="flex flex-wrap items-center bg-[#050914] p-1 rounded-xl border border-cyber-border/40 gap-1 shadow-inner">
+          <div className="flex flex-wrap items-center bg-[#0a0f0c] p-1 rounded-xl border border-cyber-border/40 gap-1 shadow-inner">
             <button
               onClick={() => setActiveTab('neural')}
               className={cn(
                 "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
                 activeTab === 'neural'
-                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_10px_rgba(126,176,147,0.3)]"
                   : "text-gray-400 hover:text-white"
               )}
             >
@@ -151,7 +151,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               className={cn(
                 "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
                 activeTab === 'forensics'
-                  ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-[0_0_10px_rgba(0,240,255,0.3)]"
+                  ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-[0_0_10px_rgba(105,230,165,0.3)]"
                   : "text-gray-400 hover:text-white"
               )}
             >
@@ -194,7 +194,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
 
           <button 
             onClick={onReset}
-            className="p-2 bg-[#0a1128]/80 text-cyber-muted hover:text-white rounded-xl border border-white/10 hover:border-cyber-blue/40 transition-all cursor-pointer"
+            className="p-2 bg-[#141e18]/80 text-cyber-muted hover:text-white rounded-xl border border-white/10 hover:border-cyber-blue/40 transition-all cursor-pointer"
             title={t('close')}
           >
             <X className="w-5 h-5" />
@@ -206,14 +206,14 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
       {activeTab === 'sih-suite' ? (
         <div className="flex-1 pb-6">
           {isGeneratingForensics ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-[#070d1e]/80 rounded-2xl border border-cyber-border/40 backdrop-blur-xl">
+            <div className="flex flex-col items-center justify-center p-12 bg-[#0f1612]/80 rounded-2xl border border-cyber-border/40 backdrop-blur-xl">
               <Sparkles className="w-8 h-8 text-amber-400 animate-spin mb-4" />
               <p className="text-sm font-mono text-white">Synthesizing SIH26106 5-Pillar Forensic Suite...</p>
             </div>
           ) : dynamicDossier ? (
             <SihForensicSuite dossier={dynamicDossier} />
           ) : (
-            <div className="p-8 text-center bg-[#070d1e]/80 rounded-2xl border border-cyber-border/40 backdrop-blur-xl">
+            <div className="p-8 text-center bg-[#0f1612]/80 rounded-2xl border border-cyber-border/40 backdrop-blur-xl">
               <Mail className="w-8 h-8 text-gray-500 mx-auto mb-3" />
               <p className="text-sm text-gray-400 font-mono mb-4">{t('no_email_headers_payload')}</p>
               <button
@@ -232,14 +232,14 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
       ) : activeTab === 'forensics' ? (
         <div className="flex-1 pb-6">
           {isGeneratingForensics ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-[#070d1e]/80 rounded-2xl border border-cyber-border/40 backdrop-blur-xl">
+            <div className="flex flex-col items-center justify-center p-12 bg-[#0f1612]/80 rounded-2xl border border-cyber-border/40 backdrop-blur-xl">
               <Sparkles className="w-8 h-8 text-cyber-blue animate-spin mb-4" />
               <p className="text-sm font-mono text-white">{t('reconstructing_rfc')}</p>
             </div>
           ) : dynamicDossier ? (
             <EmailForensicsPanel dossier={dynamicDossier} />
           ) : (
-            <div className="p-8 text-center bg-[#070d1e]/80 rounded-2xl border border-cyber-border/40 backdrop-blur-xl">
+            <div className="p-8 text-center bg-[#0f1612]/80 rounded-2xl border border-cyber-border/40 backdrop-blur-xl">
               <Mail className="w-8 h-8 text-gray-500 mx-auto mb-3" />
               <p className="text-sm text-gray-400 font-mono mb-4">{t('no_email_headers_payload')}</p>
               <button
@@ -259,7 +259,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
           
           {/* Risk Score Card */}
           <div className={cn(
-            "bg-[#070d1e]/80 backdrop-blur-xl border rounded-2xl p-6 flex items-center gap-6 transition-all duration-500 shadow-xl",
+            "bg-[#0f1612]/80 backdrop-blur-xl border rounded-2xl p-6 flex items-center gap-6 transition-all duration-500 shadow-xl",
             scanResult.riskScore > 75 ? "border-cyber-red/30 shadow-[0_0_25px_rgba(244,63,94,0.15)]" : 
             scanResult.riskScore > 40 ? "border-amber-500/30 shadow-[0_0_25px_rgba(245,158,11,0.15)]" : 
             "border-cyber-green/30 shadow-[0_0_25px_rgba(16,185,129,0.15)]"
@@ -267,7 +267,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
             <div className="w-28 h-28 relative flex items-center justify-center shrink-0">
               <svg className={cn(
                 "w-full h-full transform -rotate-90",
-                scanResult.riskScore > 75 ? "drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]" : "drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]"
+                scanResult.riskScore > 75 ? "drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]" : "drop-shadow-[0_0_15px_rgba(105,230,165,0.3)]"
               )} viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.06)" strokeWidth="8" fill="none" />
                 <motion.circle 
@@ -314,7 +314,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
           {/* AI Explanation */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase font-mono">{t('ai_explanation')}</div>
+              <div className="text-[11px] font-bold tracking-widest text-[#8aaf98] uppercase font-mono">{t('ai_explanation')}</div>
               {activeSocReport && (
                 <button
                   type="button"
@@ -326,7 +326,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                 </button>
               )}
             </div>
-            <div className="bg-[#070d1e]/80 border border-cyber-border/40 rounded-2xl p-4 sm:p-5 text-sm text-white/95 leading-relaxed overflow-hidden shadow-inner backdrop-blur-xl">
+            <div className="bg-[#0f1612]/80 border border-cyber-border/40 rounded-2xl p-4 sm:p-5 text-sm text-white/95 leading-relaxed overflow-hidden shadow-inner backdrop-blur-xl">
               <div className="markdown-body prose prose-invert prose-p:leading-relaxed prose-strong:text-cyber-blue prose-strong:font-bold prose-a:text-cyber-green text-xs sm:text-sm max-w-none space-y-2">
                 <Markdown>
                   {scanResult.aiExplanation || scanResult.payloadDescription || 'Neural security heuristic analysis completed.'}
@@ -338,7 +338,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
           {/* Keywords and Signals */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase font-mono">{t('threat_signals')}</div>
+              <div className="text-[11px] font-bold tracking-widest text-[#8aaf98] uppercase font-mono">{t('threat_signals')}</div>
               <div className="flex flex-col gap-2">
                 {scanResult.signals && scanResult.signals.length > 0 ? (
                   scanResult.signals.map((sig, i) => {
@@ -368,7 +368,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
             </div>
 
             <div className="flex flex-col gap-2">
-              <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase font-mono">{t('suspicious_keywords')}</div>
+              <div className="text-[11px] font-bold tracking-widest text-[#8aaf98] uppercase font-mono">{t('suspicious_keywords')}</div>
               <div className="flex flex-col gap-2">
                 {scanResult.suspiciousKeywords && scanResult.suspiciousKeywords.length > 0 ? (
                   scanResult.suspiciousKeywords.map((kw, i) => (
@@ -377,7 +377,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 1 + (i * 0.1) }}
-                      className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-xs text-[#8a99af] hover:border-cyber-blue/30 transition-colors font-mono"
+                      className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-xs text-[#8aaf98] hover:border-cyber-blue/30 transition-colors font-mono"
                     >
                       <Activity className="w-3.5 h-3.5 shrink-0 text-cyber-blue" />
                       <span className="truncate">"{kw}"</span>
@@ -412,7 +412,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
           
           {/* Threat Vectors */}
           {vectorData.length > 0 && (
-            <div className="bg-[#070d1e]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl p-5 flex flex-col shrink-0 h-[260px] shadow-xl">
+            <div className="bg-[#0f1612]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl p-5 flex flex-col shrink-0 h-[260px] shadow-xl">
               <div className="flex items-center gap-2 mb-2 text-white border-b border-white/5 pb-2">
                 <Activity className="w-4 h-4 text-cyber-blue" />
                 <h3 className="text-xs font-bold font-mono tracking-widest uppercase">{t('threat_vector_profile')}</h3>
@@ -431,7 +431,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
           )}
 
           {/* Privacy Protection */}
-          <div className="bg-[#070d1e]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl flex flex-col shrink-0 overflow-hidden relative shadow-xl">
+          <div className="bg-[#0f1612]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl flex flex-col shrink-0 overflow-hidden relative shadow-xl">
              <div className="bg-black/40 px-6 py-4 flex items-center gap-3 border-b border-cyber-border/40 relative z-10">
                <Shield className="w-4 h-4 text-cyber-blue" />
                <h3 className="font-bold tracking-widest text-white uppercase flex items-center gap-2 text-xs font-mono">
@@ -446,7 +446,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
             </div>
             
             <div className="p-6 relative z-10 max-h-[300px] overflow-y-auto custom-scrollbar">
-              <div className="text-[10px] font-bold tracking-[0.2em] text-[#8a99af] uppercase mb-4 font-mono">
+              <div className="text-[10px] font-bold tracking-[0.2em] text-[#8aaf98] uppercase mb-4 font-mono">
                 {t('sensitive_data_detected')}
               </div>
               
@@ -468,17 +468,17 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
                  </div>
               ) : (
                  <div className="flex flex-col items-center justify-center py-6 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
-                   <Shield className="w-7 h-7 text-[#8a99af] mb-2 opacity-50" />
-                   <div className="text-xs text-[#8a99af] uppercase tracking-widest font-mono">{t('no_sensitive_data')}</div>
+                   <Shield className="w-7 h-7 text-[#8aaf98] mb-2 opacity-50" />
+                   <div className="text-xs text-[#8aaf98] uppercase tracking-widest font-mono">{t('no_sensitive_data')}</div>
                  </div>
               )}
             </div>
           </div>
 
           {/* Kill Chain */}
-          <div className="bg-[#070d1e]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl overflow-hidden flex flex-col flex-1 min-h-[300px] shadow-xl">
+          <div className="bg-[#0f1612]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl overflow-hidden flex flex-col flex-1 min-h-[300px] shadow-xl">
             <div className="px-5 py-3.5 border-b border-cyber-border/40 flex items-center justify-between shadow-sm z-10 bg-black/20">
-              <div className="text-[10px] tracking-widest text-[#8a99af] uppercase font-mono font-bold">{t('attack_kill_chain')}</div>
+              <div className="text-[10px] tracking-widest text-[#8aaf98] uppercase font-mono font-bold">{t('attack_kill_chain')}</div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-cyber-red animate-pulse shadow-[0_0_8px_#f43f5e]"></span>
                 <span className="text-[10px] text-cyber-red tracking-widest uppercase font-mono font-bold">{t('live_trace_active')}</span>
@@ -507,10 +507,10 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0f1c] border border-cyber-blue/30 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(0,245,255,0.15)] overflow-hidden"
+              className="bg-[#0f1712] border border-cyber-blue/30 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(105,230,165,0.15)] overflow-hidden"
             >
               {/* Header */}
-              <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#05080f]">
+              <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#080c09]">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center">
                     <FileText className="w-5 h-5 text-cyber-blue" />
@@ -580,7 +580,7 @@ export function TextScannerResult({ scanResult, inputText = '', onReset }: TextS
               </div>
 
               {/* Footer */}
-              <div className="p-4 border-t border-white/10 bg-[#05080f] flex justify-between items-center text-xs font-mono text-gray-500">
+              <div className="p-4 border-t border-white/10 bg-[#080c09] flex justify-between items-center text-xs font-mono text-gray-500">
                 <span>{t('soc_footer_tag')}</span>
                 <button
                   type="button"

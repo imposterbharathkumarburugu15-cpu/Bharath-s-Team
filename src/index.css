@@ -1,43 +1,121 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+@import "./styles/intelligence.css";
 
 @theme {
-  --color-kits-bg: #080b10;
-  --color-kits-surface: #10151d;
-  --color-kits-surface-elevated: #161d27;
-  --color-kits-surface-hover: #1c2533;
+  --color-blue-50: #effbf3;
+  --color-blue-100: #d9f5e3;
+  --color-blue-200: #b5e9c9;
+  --color-blue-300: #8cdcb0;
+  --color-blue-400: #69ce98;
+  --color-blue-500: #46b97b;
+  --color-blue-600: #329461;
+  --color-blue-700: #2b7551;
+  --color-blue-800: #245d42;
+  --color-blue-900: #204c38;
+  --color-blue-950: #102d20;
+  --color-cyan-50: #effbf3;
+  --color-cyan-100: #d9f5e3;
+  --color-cyan-200: #b5e9c9;
+  --color-cyan-300: #8cdcb0;
+  --color-cyan-400: #69ce98;
+  --color-cyan-500: #46b97b;
+  --color-cyan-600: #329461;
+  --color-cyan-700: #2b7551;
+  --color-cyan-800: #245d42;
+  --color-cyan-900: #204c38;
+  --color-cyan-950: #102d20;
+  --color-sky-50: #effbf3;
+  --color-sky-100: #d9f5e3;
+  --color-sky-200: #b5e9c9;
+  --color-sky-300: #8cdcb0;
+  --color-sky-400: #69ce98;
+  --color-sky-500: #46b97b;
+  --color-sky-600: #329461;
+  --color-sky-700: #2b7551;
+  --color-sky-800: #245d42;
+  --color-sky-900: #204c38;
+  --color-sky-950: #102d20;
+  --color-indigo-50: #effbf3;
+  --color-indigo-100: #d9f5e3;
+  --color-indigo-200: #b5e9c9;
+  --color-indigo-300: #8cdcb0;
+  --color-indigo-400: #69ce98;
+  --color-indigo-500: #46b97b;
+  --color-indigo-600: #329461;
+  --color-indigo-700: #2b7551;
+  --color-indigo-800: #245d42;
+  --color-indigo-900: #204c38;
+  --color-indigo-950: #102d20;
+  --color-purple-50: #effbf3;
+  --color-purple-100: #d9f5e3;
+  --color-purple-200: #b5e9c9;
+  --color-purple-300: #8cdcb0;
+  --color-purple-400: #69ce98;
+  --color-purple-500: #46b97b;
+  --color-purple-600: #329461;
+  --color-purple-700: #2b7551;
+  --color-purple-800: #245d42;
+  --color-purple-900: #204c38;
+  --color-purple-950: #102d20;
+  --color-violet-50: #effbf3;
+  --color-violet-100: #d9f5e3;
+  --color-violet-200: #b5e9c9;
+  --color-violet-300: #8cdcb0;
+  --color-violet-400: #69ce98;
+  --color-violet-500: #46b97b;
+  --color-violet-600: #329461;
+  --color-violet-700: #2b7551;
+  --color-violet-800: #245d42;
+  --color-violet-900: #204c38;
+  --color-violet-950: #102d20;
+  --color-teal-50: #effbf3;
+  --color-teal-100: #d9f5e3;
+  --color-teal-200: #b5e9c9;
+  --color-teal-300: #8cdcb0;
+  --color-teal-400: #69ce98;
+  --color-teal-500: #46b97b;
+  --color-teal-600: #329461;
+  --color-teal-700: #2b7551;
+  --color-teal-800: #245d42;
+  --color-teal-900: #204c38;
+  --color-teal-950: #102d20;
+  --color-kits-bg: #0a0e0b;
+  --color-kits-surface: #121b15;
+  --color-kits-surface-elevated: #18251d;
+  --color-kits-surface-hover: #202f25;
   --color-kits-border: rgba(255, 255, 255, 0.08);
-  --color-kits-border-strong: rgba(0, 240, 255, 0.25);
-  --color-kits-text-primary: #f1f5f9;
+  --color-kits-border-strong: rgba(105, 230, 165, 0.25);
+  --color-kits-text-primary: #f1f9f4;
   --color-kits-text-secondary: #8995a5;
-  --color-kits-text-muted: #64748b;
+  --color-kits-text-muted: #648b72;
   
-  --color-kits-cyan: #00f0ff;
-  --color-kits-teal: #06b6d4;
+  --color-kits-cyan: #36c96c;
+  --color-kits-teal: #2eac5d;
   --color-kits-emerald: #10b981;
   --color-kits-amber: #f59e0b;
   --color-kits-crimson: #f43f5e;
-  --color-kits-purple: #8b5cf6;
+  --color-kits-purple: #77db9c;
 
-  --color-cyber-bg: #080b10;
-  --color-cyber-card: #10151d;
-  --color-cyber-card-hover: #161d27;
+  --color-cyber-bg: #0a0e0b;
+  --color-cyber-card: #121b15;
+  --color-cyber-card-hover: #18251d;
   --color-cyber-panel: rgba(16, 21, 29, 0.92);
-  --color-cyber-blue: #00f0ff;
-  --color-cyber-blue-glow: rgba(0, 240, 255, 0.35);
-  --color-cyber-cyan: #06b6d4;
-  --color-cyber-sky: #0284c7;
+  --color-cyber-blue: #36c96c;
+  --color-cyber-blue-glow: rgba(105, 230, 165, 0.35);
+  --color-cyber-cyan: #2eac5d;
+  --color-cyber-sky: #2a9f55;
   --color-cyber-red: #f43f5e;
   --color-cyber-red-glow: rgba(244, 63, 94, 0.3);
   --color-cyber-green: #10b981;
   --color-cyber-green-glow: rgba(16, 185, 129, 0.3);
   --color-cyber-amber: #f59e0b;
-  --color-cyber-purple: #8b5cf6;
-  --color-cyber-indigo: #6366f1;
+  --color-cyber-purple: #77db9c;
+  --color-cyber-indigo: #79db9d;
   --color-cyber-border: rgba(255, 255, 255, 0.08);
-  --color-cyber-border-strong: rgba(0, 240, 255, 0.3);
-  --color-cyber-text: #f1f5f9;
-  --color-cyber-text-dim: #cbd5e1;
+  --color-cyber-border-strong: rgba(105, 230, 165, 0.3);
+  --color-cyber-text: #f1f9f4;
+  --color-cyber-text-dim: #cbe1d3;
   --color-cyber-muted: #8995a5;
 
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -46,8 +124,8 @@
 
 @layer base {
   body {
-    background-color: #080b10;
-    color: #f1f5f9;
+    background-color: #0a0e0b;
+    color: #f1f9f4;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -55,8 +133,8 @@
     font-size: 14px;
     line-height: 1.55;
     background-image: 
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 240, 255, 0.07), transparent),
-      radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.04), transparent 50%),
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(105, 230, 165, 0.07), transparent),
+      radial-gradient(circle at 90% 90%, rgba(126, 176, 147, 0.04), transparent 50%),
       radial-gradient(circle at 10% 80%, rgba(16, 185, 129, 0.03), transparent 50%);
     background-attachment: fixed;
   }
@@ -82,7 +160,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 30%, #080b10 85%);
+  background: radial-gradient(circle at center, transparent 30%, #0a0e0b 85%);
 }
 
 /* Premium Linear / Vercel Glass & Surfaces */
@@ -105,12 +183,12 @@
 }
 
 .glass-card:hover {
-  border-color: rgba(0, 240, 255, 0.3);
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.7), 0 0 20px -5px rgba(0, 240, 255, 0.12);
+  border-color: rgba(105, 230, 165, 0.3);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.7), 0 0 20px -5px rgba(105, 230, 165, 0.12);
 }
 
 .cyber-glow-blue {
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.08);
+  box-shadow: 0 0 20px rgba(105, 230, 165, 0.25), inset 0 0 15px rgba(105, 230, 165, 0.08);
 }
 
 .cyber-glow-red {
@@ -148,7 +226,7 @@
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 240, 255, 0.5);
+  background: rgba(105, 230, 165, 0.5);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -160,7 +238,7 @@
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 240, 255, 0.5);
+  background: rgba(105, 230, 165, 0.5);
 }
 
 /* Beam Animation for Scanning */

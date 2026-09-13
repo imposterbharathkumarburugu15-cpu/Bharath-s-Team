@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Layout } from './components/Layout';
-import { LandingPage } from './pages/LandingPage';
+import { Start } from './pages/Start';
+import { DomainOSINT } from './pages/DomainOSINT';
+import { Intelligence } from './pages/Intelligence';
 import { Dashboard } from './pages/Dashboard';
 import EmailPhishing from './pages/EmailPhishing';
 import { LiveScanner } from './pages/Scanner';
@@ -20,6 +22,7 @@ function App() {
       if (hash === 'landing' || hash === 'home') return 'landing';
       if (hash === 'dashboard' || hash === 'overview') return 'dashboard';
       if (hash === 'phishing' || hash === 'email' || hash === 'inbox') return 'phishing';
+      if (['intelligence', 'osint', 'deception'].includes(hash)) return hash;
       if (hash === 'guard') return 'guard';
       if (hash === 'scanner' || hash === 'network') return 'scanner';
       if (hash === 'alerts') return 'alerts';
@@ -42,6 +45,8 @@ function App() {
         setActiveTab('dashboard');
       } else if (hash === 'phishing' || hash === 'email' || hash === 'inbox' || hash === 'analyze') {
         setActiveTab('phishing');
+      } else if (['intelligence', 'osint', 'deception'].includes(hash)) {
+        setActiveTab(hash);
       } else if (hash === 'guard') {
         setActiveTab('guard');
       } else if (hash === 'scanner' || hash === 'network' || hash === 'tunnel') {
@@ -85,13 +90,13 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'landing':
-        return (
-          <LandingPage 
-            onNavigateToDashboard={() => handleTabChange('dashboard')} 
-            onNavigateToInboxShield={() => handleTabChange('phishing')} 
-            onNavigateToScanner={() => handleTabChange('scanner')} 
-          />
-        );
+        return <Start navigate={handleTabChange} />;
+      case 'osint':
+        return <DomainOSINT />;
+      case 'intelligence':
+        return <Intelligence />;
+      case 'deception':
+        return <Intelligence initialView="deception" />;
       case 'dashboard':
         return <Dashboard />;
       case 'phishing':

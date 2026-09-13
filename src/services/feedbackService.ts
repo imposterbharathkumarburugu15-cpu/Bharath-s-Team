@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../lib/apiClient';
 import { FeedbackRecord, FeedbackLabel, FeedbackMetrics, CalibrationResult, ReviewStatus, FeedbackType } from '@/types/feedback';
 
 const LOCAL_STORAGE_KEY = 'neuroshield_hitl_feedback_records_v1';

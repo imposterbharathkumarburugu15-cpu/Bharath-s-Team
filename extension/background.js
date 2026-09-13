@@ -76,6 +76,9 @@ if (chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
     }
 
     try {
+      const preferences = await chrome.storage.local.get(['autoCheckUrls', 'apiUrl']);
+      if (preferences.autoCheckUrls === false) return;
+      if (url.startsWith(preferences.apiUrl || DEFAULT_API_URL)) return;
       // 1. Fast preflight check
       const localCheck = runLocalUrlHeuristics(url);
 
@@ -93,8 +96,9 @@ if (chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
       ) {
         console.warn(`[NeuroShield Guard] Navigation blocked to malicious destination: ${url}`);
 
-        // Record enforcement event to backend
-        recordEnforcementEvent({
+        const currentTab = await chrome.tabs.get(details.tabId);
+        if ((currentTab.pendingUrl || currentTab.url) !== url) return;
+        const enforcementRecord = {
           incidentId: evaluation.incidentId || `nav-block-${Date.now()}`,
           requestedAction: 'VISIT_WEBSITE',
           risk: evaluation.riskScore,
@@ -103,7 +107,7 @@ if (chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
           client: 'chrome_extension',
           url,
           failureReason: undefined
-        });
+        };
 
         // Redirect tab to authoritative blocked screen
         const blockedPageUrl = chrome.runtime.getURL(
@@ -115,7 +119,8 @@ if (chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
           `&evidence=${encodeURIComponent(JSON.stringify(evaluation.evidence || ['Malicious destination blocked']))}`
         );
 
-        chrome.tabs.update(details.tabId, { url: blockedPageUrl });
+        await chrome.tabs.update(details.tabId, { url: blockedPageUrl });
+        await recordEnforcementEvent(enforcementRecord);
       }
     } catch (err) {
       console.warn('[NeuroShield Guard] Navigation inspection error:', err);
@@ -147,19 +152,21 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 });
 
 // Policy Check via NeuroShield Core API (/api/guard/policy-check)
-async function evaluatePolicyWithCore(urlStr, userAction = 'VISIT_WEBSITE', localCheck = null) {
+async function evaluatePolicyWithCore(urlStr, userAction = 'VISIT_WEBSITE', localCheck = null, webObservation = undefined) {
   const settings = await chrome.storage.local.get(['apiUrl']);
   const apiUrl = settings.apiUrl || DEFAULT_API_URL;
   const preflight = localCheck || runLocalUrlHeuristics(urlStr);
 
   try {
     const response = await fetch(`${apiUrl}/api/guard/policy-check`, {
+      signal: AbortSignal.timeout(12000),
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         url: urlStr,
         source: 'web',
         requestedAction: userAction,
+        metadata: { webObservation },
         client: 'chrome_extension',
         clientCapabilities: {
           canBlockNavigation: true,
@@ -213,10 +220,10 @@ async function evaluatePolicyWithCore(urlStr, userAction = 'VISIT_WEBSITE', loca
 }
 
 // Staged URL Inspection (Level 1 Local -> Level 2 Core API)
-async function analyzeUrl(urlStr, userAction = 'CLICK_LINK') {
+async function analyzeUrl(urlStr, userAction = 'CLICK_LINK', webObservation = undefined) {
   const startTime = Date.now();
   const cached = getCachedDecision(urlStr, userAction);
-  if (cached) {
+  if (cached && !webObservation) {
     return {
       success: true,
       cached: true,
@@ -226,7 +233,7 @@ async function analyzeUrl(urlStr, userAction = 'CLICK_LINK') {
   }
 
   const localCheck = runLocalUrlHeuristics(urlStr);
-  const evaluation = await evaluatePolicyWithCore(urlStr, userAction, localCheck);
+  const evaluation = await evaluatePolicyWithCore(urlStr, userAction, localCheck, webObservation);
   setCachedDecision(urlStr, userAction, evaluation);
 
   return {
@@ -244,6 +251,7 @@ async function analyzeText(text, source = 'sms', userAction = 'UNKNOWN') {
 
   try {
     const response = await fetch(`${apiUrl}/api/neuroshield/analyze`, {
+      signal: AbortSignal.timeout(12000),
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -294,6 +302,7 @@ async function recordEnforcementEvent(record) {
     const apiUrl = settings.apiUrl || DEFAULT_API_URL;
 
     await fetch(`${apiUrl}/api/guard/enforce-event`, {
+      signal: AbortSignal.timeout(12000),
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(record)
@@ -370,6 +379,7 @@ async function analyzeGmailMessage(data) {
 
   try {
     const response = await fetch(`${apiUrl}/api/guard/policy-check`, {
+      signal: AbortSignal.timeout(12000),
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -391,14 +401,6 @@ async function analyzeGmailMessage(data) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const evaluation = await response.json();
 
-    if (data.isInSpamFolder) {
-      evaluation.verdict = evaluation.verdict === 'MALICIOUS' ? 'MALICIOUS' : 'SUSPICIOUS';
-      evaluation.riskScore = Math.max(evaluation.riskScore || 0, 85);
-      evaluation.protectionDecision = 'BLOCK_VIEW';
-      if (!evaluation.threatTypes || evaluation.threatTypes.length === 0) {
-        evaluation.threatTypes = ['Untrusted Spam / Suspicious Inbound Email'];
-      }
-    }
 
     return {
       success: true,
@@ -411,10 +413,10 @@ async function analyzeGmailMessage(data) {
     return {
       success: false,
       riskScore: isObviousPhish ? 85 : 30,
-      verdict: isObviousPhish ? 'SUSPICIOUS' : 'SAFE',
+      verdict: 'UNKNOWN',
       threatTypes: isObviousPhish ? ['Untrusted Spam / Suspicious Inbound Email'] : [],
-      protectionDecision: isObviousPhish ? 'BLOCK_VIEW' : 'ALLOW',
-      evidence: [isObviousPhish ? 'Local heuristic: Suspicious urgency/spam markers detected' : 'Normal communication']
+      protectionDecision: 'WARN',
+      evidence: [isObviousPhish ? 'Local heuristic: Suspicious urgency/spam markers detected' : 'Backend unavailable; email not verified']
     };
   }
 }
@@ -422,7 +424,7 @@ async function analyzeGmailMessage(data) {
 // Message Dispatcher
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'ANALYZE_URL') {
-    analyzeUrl(request.url, request.userAction).then(sendResponse);
+    analyzeUrl(request.url, request.userAction, request.webObservation).then(sendResponse);
     return true; // async
   }
   if (request.type === 'ANALYZE_TEXT') {
@@ -454,7 +456,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const apiUrl = res.apiUrl || DEFAULT_API_URL;
       try {
         const resp = await fetch(`${apiUrl}/api/feedback`, {
-          method: 'POST',
+          signal: AbortSignal.timeout(12000),
+      method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(request.feedback)
         });

@@ -11,6 +11,7 @@ async function main() {
     bundle: true,
     platform: 'node',
     format: 'cjs',
+    define: { 'import.meta.env': '{}' },
     packages: 'external',
     sourcemap: true,
     outfile: 'dist/server.cjs',

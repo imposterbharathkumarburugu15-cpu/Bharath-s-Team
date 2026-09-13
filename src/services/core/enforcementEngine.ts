@@ -87,13 +87,7 @@ export class EnforcementEngine {
         threatTypes: threatTypes.length > 0 ? threatTypes : ['UNVERIFIED_SOURCE'],
         protectionDecision: isDangerousAction ? 'BLOCK_ACTION' : 'WARN',
         enforcementLevel: 'FAIL_SAFE_OFFLINE_CAUTION',
-        enforcementStatus: actualEnforcementApplied
-          ? 'ENFORCED'
-          : client === 'chrome_extension'
-          ? isDangerousAction
-            ? 'ENFORCED'
-            : 'WARNED'
-          : 'UNKNOWN',
+        enforcementStatus: actualEnforcementApplied ? 'ENFORCED' : 'UNKNOWN',
         evidence: [
           'Central verification offline or insufficient telemetry.',
           'Fail-safe posture active: unverified action held.',
@@ -136,7 +130,7 @@ export class EnforcementEngine {
     if (riskScore < 65 || verdict === 'SUSPICIOUS') {
       let status: EnforcementStatus = 'PENDING';
       if (client === 'chrome_extension' || client === 'web_app') {
-        status = 'ENFORCED'; // Warning displayed on client
+        status = actualEnforcementApplied ? 'ENFORCED' : 'PENDING'; // Await a client acknowledgement
       } else if (client === 'gmail_api') {
         status = 'NOT_SUPPORTED'; // Gmail API alone cannot show client modal
       }
@@ -180,20 +174,8 @@ export class EnforcementEngine {
 
     if (actualEnforcementApplied) {
       enforcementStatus = 'ENFORCED';
-    } else if (client === 'chrome_extension') {
-      if (decision === 'BLOCK_VIEW' && clientCapabilities.canBlockNavigation !== false) {
-        enforcementStatus = 'ENFORCED';
-      } else if (decision === 'BLOCK_ACTION' && clientCapabilities.canBlockFormSubmit !== false) {
-        enforcementStatus = 'ENFORCED';
-      } else {
-        enforcementStatus = 'PARTIALLY_ENFORCED';
-      }
-    } else if (client === 'web_app') {
-      if (clientCapabilities.canDisarmLinks) {
-        enforcementStatus = 'ENFORCED';
-      } else {
-        enforcementStatus = 'PARTIALLY_ENFORCED';
-      }
+    } else if (client === 'chrome_extension' || client === 'web_app') {
+      enforcementStatus = 'PENDING'; // Capability is not proof of execution.
     } else if (client === 'gmail_api') {
       // Truth in enforcement: Gmail API alone cannot block UI clicks or forms without Chrome Extension
       enforcementStatus = 'NOT_SUPPORTED';

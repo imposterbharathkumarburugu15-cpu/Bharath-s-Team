@@ -10,6 +10,20 @@
   if (window.__neuroshield_guard_injected__) return;
   window.__neuroshield_guard_injected__ = true;
 
+
+  async function structuralObservation() {
+    const hash = async text => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))).map(b => b.toString(16).padStart(2, '0')).join('');
+    // Structure only: never field values, DOM text, account names or inline scripts.
+    const elements = Array.from(document.querySelectorAll('form,input,button,iframe,script')).slice(0, 400);
+    const structure = elements.map(el => `${el.tagName}:${el.tagName === 'INPUT' ? el.type : ''}`).join('|');
+    const scripts = Array.from(document.querySelectorAll('script[src]')).slice(0, 40).map(el => {
+      try { const u = new URL(el.src, location.href); return `${u.origin}:${u.pathname.split('/').length}:${u.pathname.split('.').pop().slice(0, 6)}`; } catch { return 'unavailable'; }
+    }).sort().join('|');
+    return { domHash: await hash(structure), scriptPatternHash: scripts ? await hash(scripts) : undefined,
+      credentialFields: Boolean(document.querySelector('input[type="password"]')),
+      externalFormAction: Array.from(document.forms).some(form => { try { return new URL(form.action || location.href, location.href).origin !== location.origin; } catch { return false; } }) };
+  }
+
   const IS_GMAIL = window.location.hostname === 'mail.google.com';
 
   function unwrapTargetUrl(href) {
@@ -55,14 +69,14 @@
       justify-content: center;
       padding: 24px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #f8fafc;
+      color: #f8fcf9;
       box-sizing: border-box;
       animation: nsFadeIn 0.2s ease-out;
     `;
 
     const card = document.createElement('div');
     card.style.cssText = `
-      background: #0f172a;
+      background: #17221b;
       border: 2px solid #ef4444;
       border-radius: 14px;
       box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.35);
@@ -94,18 +108,18 @@
           transition: opacity 0.15s;
         }
         .ns-btn:hover { opacity: 0.9; }
-        .ns-btn-primary { background: #3b82f6; color: #ffffff; }
-        .ns-btn-secondary { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+        .ns-btn-primary { background: #5dd489; color: #ffffff; }
+        .ns-btn-secondary { background: #1e3b29; color: #94b8a1; border: 1px solid #335540; }
         .ns-fb-btn {
           padding: 5px 10px;
           font-size: 11px;
           border-radius: 4px;
-          background: #1e293b;
-          color: #94a3b8;
-          border: 1px solid #334155;
+          background: #1e3b29;
+          color: #94b8a1;
+          border: 1px solid #335540;
           cursor: pointer;
         }
-        .ns-fb-btn:hover { background: #334155; color: #ffffff; }
+        .ns-fb-btn:hover { background: #335540; color: #ffffff; }
       </style>
 
       <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 14px;">
@@ -116,29 +130,29 @@
       </div>
 
       <div style="margin-bottom: 14px;">
-        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Risk</div>
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94b8a1; letter-spacing: 0.5px;">Risk</div>
         <div style="margin-top: 2px;"><span class="ns-badge">${risk}</span></div>
       </div>
 
       <div style="margin-bottom: 14px;">
-        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Threat</div>
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94b8a1; letter-spacing: 0.5px;">Threat</div>
         <div style="font-size: 15px; font-weight: 700; color: #f87171; margin-top: 2px;">${escapeHtml(threat)}</div>
       </div>
 
       <div style="margin-bottom: 14px;">
-        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Requested Action</div>
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94b8a1; letter-spacing: 0.5px;">Requested Action</div>
         <div style="font-size: 14px; font-weight: 600; color: #ffffff; margin-top: 2px;">${escapeHtml(action)}</div>
       </div>
 
       <div style="margin-bottom: 20px;">
-        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Evidence</div>
-        <div style="background: #020617; border-left: 3px solid #ef4444; border-radius: 6px; padding: 10px 14px; margin-top: 4px; font-size: 12px; color: #cbd5e1; line-height: 1.6;">
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94b8a1; letter-spacing: 0.5px;">Evidence</div>
+        <div style="background: #0a0f0c; border-left: 3px solid #ef4444; border-radius: 6px; padding: 10px 14px; margin-top: 4px; font-size: 12px; color: #cbe1d3; line-height: 1.6;">
           ${evidenceItems.slice(0, 4).map(e => `<div>• ${escapeHtml(typeof e === 'string' ? e : e.evidence || e.signal || JSON.stringify(e))}</div>`).join('')}
         </div>
       </div>
 
-      <div style="background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 10px 12px; margin-bottom: 20px;">
-        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;">Report to SOC / Calibrate Engine</div>
+      <div style="background: #0a0f0c; border: 1px solid #1e3b29; border-radius: 6px; padding: 10px 12px; margin-bottom: 20px;">
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94b8a1; margin-bottom: 6px;">Report to SOC / Calibrate Engine</div>
         <div style="display: flex; gap: 6px;">
           <button id="ns-fb-tp" class="ns-fb-btn">Threat Confirmed</button>
           <button id="ns-fb-fp" class="ns-fb-btn">False Alarm</button>
@@ -270,12 +284,14 @@
   // 3. Credential & Sensitive Form Interception (LOGIN / ENTER_PASSWORD / OTP)
   // ──────────────────────────────────────────────────────────────────────────
 
-  document.addEventListener('submit', (e) => {
+  const allowedSubmissions = new WeakSet();
+  document.addEventListener('submit', async (e) => {
     const form = e.target;
     if (!form || !(form instanceof HTMLFormElement)) return;
 
     // Check if form was already verified safe by NeuroShield in this session
-    if (form.getAttribute('data-neuroshield-verified') === 'true') {
+    if (allowedSubmissions.has(form)) {
+      allowedSubmissions.delete(form);
       return;
     }
 
@@ -301,7 +317,8 @@
       chrome.runtime.sendMessage({
         type: 'ANALYZE_URL',
         url: currentUrl,
-        userAction: requestedAction
+        userAction: requestedAction,
+        webObservation: await structuralObservation().catch(() => ({ credentialFields: hasPassword }))
       }, (response) => {
         const isHighRisk = response && (response.riskScore >= 65 || response.verdict === 'MALICIOUS');
         const isBlock = response && (response.protectionDecision === 'BLOCK_ACTION' || response.protectionDecision === 'BLOCK_VIEW');
@@ -329,10 +346,12 @@
             requestedAction,
             evidence: ['Untrusted origin attempting to collect credentials/secrets']
           });
+        } else if (response?.protectionDecision === 'ALLOW' && response?.verdict !== 'UNKNOWN') {
+          // Resume the original submit flow only after an explicit backend allow.
+          allowedSubmissions.add(form);
+          form.requestSubmit(e.submitter || undefined);
         } else {
-          // Genuine / verified login: allow submission
-          form.setAttribute('data-neuroshield-verified', 'true');
-          form.submit();
+          showBlockOverlay({ ...response, verdict: 'UNKNOWN', riskScore: response?.riskScore || 50, requestedAction, evidence: ['Verification unavailable or review required. The sensitive form remains paused.'] });
         }
       });
     }
@@ -449,18 +468,18 @@
               </div>
               <div style="font-size: 13px; color: #fca5a5; line-height: 1.5; margin-bottom: 10px;">
                 <strong>Classification:</strong> ${escapeHtml(threatTitle)}<br>
-                <span style="color: #cbd5e1; font-size: 12px;">
+                <span style="color: #cbe1d3; font-size: 12px;">
                   NeuroShield automatically analyzed this message. All ${externalLinks.length} external link(s) have been <strong>pre-emptively disarmed</strong> to prevent credential harvesting and malicious redirects.
                 </span>
               </div>
-              <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; color: #94a3b8;">
-                <span style="background: rgba(15, 23, 42, 0.85); padding: 4px 10px; border-radius: 4px; border: 1px solid #334155;">
-                  Sender: <strong style="color: #e2e8f0;">${escapeHtml(sender || 'Unverified External Sender')}</strong>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; color: #94b8a1;">
+                <span style="background: rgba(15, 23, 42, 0.85); padding: 4px 10px; border-radius: 4px; border: 1px solid #335540;">
+                  Sender: <strong style="color: #e2f0e7;">${escapeHtml(sender || 'Unverified External Sender')}</strong>
                 </span>
-                <span style="background: rgba(15, 23, 42, 0.85); padding: 4px 10px; border-radius: 4px; border: 1px solid #334155;">
+                <span style="background: rgba(15, 23, 42, 0.85); padding: 4px 10px; border-radius: 4px; border: 1px solid #335540;">
                   Neutralized Links: <strong style="color: #f87171;">${externalLinks.length}</strong>
                 </span>
-                <span style="background: rgba(15, 23, 42, 0.85); padding: 4px 10px; border-radius: 4px; border: 1px solid #334155;">
+                <span style="background: rgba(15, 23, 42, 0.85); padding: 4px 10px; border-radius: 4px; border: 1px solid #335540;">
                   Status: <strong style="color: #34d399;">Active Auto-Protection</strong>
                 </span>
               </div>
@@ -508,17 +527,7 @@
         };
 
         // 1. Instant zero-latency enforcement for known spam folder or dangerous markers
-        if (isImmediateThreat) {
-          const instantTitle = isSpamFolder
-            ? 'Untrusted Spam / Suspicious Inbound Email'
-            : hasTunnelLink
-            ? 'Cloudflare Quick Tunnel / Reverse Proxy Evasion'
-            : hasCredentialLure
-            ? 'Credential Harvesting & Account Takeover Lure'
-            : 'Executive Smishing & Wire Fraud Attempt';
-          const instantScore = isSpamFolder ? 88 : 82;
-          enforceGmailThreat(instantTitle, instantScore);
-        }
+        // Local signals select what to inspect; the backend decides protection.
 
         // 2. Asynchronous deep analysis with NeuroShield Core & Sandbox
         if (isSpamFolder || hasFinancialCoercion || hasCredentialLure || hasTunnelLink || externalLinks.length > 0) {
@@ -532,17 +541,17 @@
               isInSpamFolder: isSpamFolder
             }
           }, (response) => {
-            const isThreat = isSpamFolder || hasTunnelLink || (response && (
+            const isThreat = response && (
               response.protectionDecision === 'BLOCK_VIEW' ||
               response.protectionDecision === 'BLOCK_ACTION' ||
               response.verdict === 'MALICIOUS' ||
               response.verdict === 'SUSPICIOUS' ||
               (response.riskScore && response.riskScore >= 50)
-            ));
+            );
 
             if (isThreat) {
-              const finalTitle = (response?.threatTypes?.[0]) || (isSpamFolder ? 'Untrusted Spam / Suspicious Inbound Email' : 'Phishing / Deceptive Email');
-              const finalScore = response?.riskScore || (isSpamFolder ? 88 : 75);
+              const finalTitle = response?.verdict === 'UNKNOWN' ? 'Unverified email — analysis unavailable' : (response?.threatTypes?.[0] || 'Review required');
+              const finalScore = response?.riskScore ?? 50;
               enforceGmailThreat(finalTitle, finalScore);
             }
           });

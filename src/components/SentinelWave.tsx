@@ -118,7 +118,7 @@ export const WAVE_SCENARIOS: ScenarioDefinition[] = [
         story: "Without security protection, the employee feels pressured by the 'CEO' and prepares to release the company payment.",
         redFlag: "Never bypass corporate accounting approval rules, even if an email claims to come from executive management.",
         defenseAction: "NeuroShield displays an unmissable red banner in the employee's mail client warning of impersonation.",
-        color: '#00f5ff',
+        color: '#36c96c',
         delay: 7
       },
       {
@@ -214,7 +214,7 @@ export const WAVE_SCENARIOS: ScenarioDefinition[] = [
         story: "The user enters their company password and 2FA authentication code into the fake website.",
         redFlag: "Once entered on a fake page, passwords are sent directly to the hacker's database.",
         defenseAction: "NeuroShield's browser agent prevents password entry on unauthorized hostnames.",
-        color: '#00f5ff',
+        color: '#36c96c',
         delay: 7
       },
       {
@@ -310,7 +310,7 @@ export const WAVE_SCENARIOS: ScenarioDefinition[] = [
         story: "Thinking they are protecting their money, the user enters their debit card PIN and one-time password.",
         redFlag: "Never share OTP security codes with anyone, including people claiming to be bank fraud agents.",
         defenseAction: "NeuroShield displays an active warning screen preventing page load on mobile.",
-        color: '#00f5ff',
+        color: '#36c96c',
         delay: 7
       },
       {
@@ -406,7 +406,7 @@ export const WAVE_SCENARIOS: ScenarioDefinition[] = [
         story: "The tricked AI searches its internal memory for private customer records to send back to the attacker.",
         redFlag: "Unprotected AI integrations can accidentally leak confidential business data.",
         defenseAction: "NeuroShield blocks the AI from accessing sensitive tools or querying unauthorized databases.",
-        color: '#00f5ff',
+        color: '#36c96c',
         delay: 7
       },
       {
@@ -559,7 +559,7 @@ export function SentinelWave({
       label: viewMode === 'beginner' ? '4. YOU (THE TARGET)' : 'TARGET ENDPOINT / USER',
       sublabel: viewMode === 'beginner' ? currentScenario.targetLabel : 'Target Mailbox',
       icon: User,
-      color: '#00f5ff',
+      color: '#36c96c',
       pos: { x: 750, y: 400 },
       stepIndex: 3,
       info: target || currentScenario.target,
@@ -598,7 +598,7 @@ export function SentinelWave({
   const paths = [
     { id: 'p1', d: "M 150 350 C 250 350, 250 500, 350 500", color: '#ffb703', activeStep: 1 },
     { id: 'p2', d: "M 350 500 C 450 500, 450 600, 550 600", color: '#f72585', activeStep: 2 },
-    { id: 'p3', d: "M 550 600 C 650 600, 650 400, 750 400", color: '#00f5ff', activeStep: 3 },
+    { id: 'p3', d: "M 550 600 C 650 600, 650 400, 750 400", color: '#36c96c', activeStep: 3 },
     { id: 'p4', d: "M 750 400 C 850 400, 750 150, 650 150", color: '#adb5bd', activeStep: 4 },
     { id: 'p-shield', d: "M 450 220 C 450 380, 500 520, 550 600", color: '#00ff66', activeStep: 5 }
   ];
@@ -606,7 +606,7 @@ export function SentinelWave({
   return (
     <div
       className={cn(
-        "relative w-full bg-[#020512] overflow-hidden rounded-xl border border-cyber-border/40 font-sans flex flex-col justify-between shadow-[inset_0_0_80px_rgba(0,0,0,0.8)] select-none",
+        "relative w-full bg-[#080c09] overflow-hidden rounded-xl border border-cyber-border/40 font-sans flex flex-col justify-between shadow-[inset_0_0_80px_rgba(0,0,0,0.8)] select-none",
         compact ? "h-[500px]" : "h-full min-h-[720px]"
       )}
       onMouseMove={handleMouseMove}
@@ -617,8 +617,8 @@ export function SentinelWave({
         className="absolute inset-0 opacity-20 pointer-events-none"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(0, 245, 255, 0.12) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 245, 255, 0.12) 1px, transparent 1px)
+            linear-gradient(rgba(105, 230, 165, 0.12) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(105, 230, 165, 0.12) 1px, transparent 1px)
           `,
           backgroundSize: '32px 32px',
           transform: `translate(${mousePos.x * -8}px, ${mousePos.y * -8}px) scale(1.05)`
@@ -630,7 +630,7 @@ export function SentinelWave({
       <div className="relative z-30 px-4 sm:px-6 py-3.5 bg-black/60 border-b border-white/10 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
         {/* Title & Beginner Badge */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-cyber-blue/10 border border-cyber-blue/40 flex items-center justify-center shadow-[0_0_15px_rgba(0,245,255,0.2)]">
+          <div className="w-9 h-9 rounded-xl bg-cyber-blue/10 border border-cyber-blue/40 flex items-center justify-center shadow-[0_0_15px_rgba(105,230,165,0.2)]">
             <Shield className="w-5 h-5 text-cyber-blue" />
           </div>
           <div>
@@ -700,7 +700,7 @@ export function SentinelWave({
                   initial={{ opacity: 0, y: 8, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  className="absolute top-full right-0 mt-2 w-80 sm:w-96 bg-[#0a0f1e] border border-cyber-blue/30 rounded-2xl shadow-2xl backdrop-blur-2xl p-2 z-[100] overflow-hidden"
+                  className="absolute top-full right-0 mt-2 w-80 sm:w-96 bg-[#101813] border border-cyber-blue/30 rounded-2xl shadow-2xl backdrop-blur-2xl p-2 z-[100] overflow-hidden"
                 >
                   <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
                     <span className="text-[11px] font-mono font-bold text-cyber-blue tracking-wider uppercase">
@@ -772,7 +772,7 @@ export function SentinelWave({
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="bg-[#0b1022] border border-cyber-blue/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative"
+              className="bg-[#121b15] border border-cyber-blue/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-cyber-blue/15 border border-cyber-blue/40 flex items-center justify-center">
@@ -822,7 +822,7 @@ export function SentinelWave({
             key={currentStep.id}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="px-4 py-2 rounded-full bg-black/75 border border-cyber-blue/40 backdrop-blur-xl shadow-[0_0_20px_rgba(0,245,255,0.15)] flex items-center gap-2.5 text-xs text-white max-w-xl text-center"
+            className="px-4 py-2 rounded-full bg-black/75 border border-cyber-blue/40 backdrop-blur-xl shadow-[0_0_20px_rgba(105,230,165,0.15)] flex items-center gap-2.5 text-xs text-white max-w-xl text-center"
           >
             <span
               className="w-2.5 h-2.5 rounded-full animate-ping"
@@ -942,13 +942,13 @@ export function SentinelWave({
                   className={cn(
                     "relative w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 cursor-pointer shadow-xl",
                     isStepActive
-                      ? "scale-110 shadow-[0_0_30px_rgba(0,245,255,0.4)]"
+                      ? "scale-110 shadow-[0_0_30px_rgba(105,230,165,0.4)]"
                       : isPast
                       ? "opacity-90 hover:scale-105"
                       : "opacity-60 hover:opacity-100 hover:scale-105"
                   )}
                   style={{
-                    backgroundColor: '#0a0e20',
+                    backgroundColor: '#111914',
                     border: `2px solid ${isStepActive ? node.color : `${node.color}60`}`,
                     boxShadow: isStepActive ? `0 0 25px ${node.color}60` : undefined
                   }}
@@ -996,7 +996,7 @@ export function SentinelWave({
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.9, y: 10 }}
                       className={cn(
-                        "absolute top-full mt-3 w-64 bg-[#0a0f24] border border-cyber-blue/40 rounded-xl p-3.5 shadow-2xl backdrop-blur-2xl z-[80] text-left text-xs pointer-events-auto",
+                        "absolute top-full mt-3 w-64 bg-[#121c16] border border-cyber-blue/40 rounded-xl p-3.5 shadow-2xl backdrop-blur-2xl z-[80] text-left text-xs pointer-events-auto",
                         node.pos.x > 600 ? "-right-12" : node.pos.x < 300 ? "-left-12" : "-left-20"
                       )}
                     >
@@ -1027,7 +1027,7 @@ export function SentinelWave({
       {/* BOTTOM STORYBOARD & TIMELINE CONTROLS */}
       <div className="relative z-30 bg-black/85 border-t border-white/10 backdrop-blur-2xl px-4 sm:px-6 py-4 flex flex-col gap-3">
         {/* Interactive Story Narrative Box */}
-        <div className="bg-gradient-to-r from-[#0a1128] to-[#0d1b3a] border border-cyber-blue/30 rounded-2xl p-3 sm:p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
+        <div className="bg-gradient-to-r from-[#141e18] to-[#1c2b22] border border-cyber-blue/30 rounded-2xl p-3 sm:p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
           <div className="flex items-start gap-3 flex-1">
             <div
               className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center border font-bold text-white"
@@ -1084,7 +1084,7 @@ export function SentinelWave({
 
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="px-4 py-2 rounded-xl bg-cyber-blue text-black font-bold text-xs flex items-center gap-2 hover:bg-cyber-blue/90 shadow-[0_0_15px_rgba(0,245,255,0.3)] transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-cyber-blue text-black font-bold text-xs flex items-center gap-2 hover:bg-cyber-blue/90 shadow-[0_0_15px_rgba(105,230,165,0.3)] transition-all cursor-pointer"
             >
               {isPlaying ? (
                 <>
@@ -1145,7 +1145,7 @@ export function SentinelWave({
                   className={cn(
                     "px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer border",
                     isSelected
-                      ? "bg-cyber-blue/20 text-white border-cyber-blue shadow-[0_0_12px_rgba(0,245,255,0.25)] font-bold"
+                      ? "bg-cyber-blue/20 text-white border-cyber-blue shadow-[0_0_12px_rgba(105,230,165,0.25)] font-bold"
                       : "bg-white/5 text-gray-400 hover:text-gray-200 border-white/10 hover:border-white/20"
                   )}
                 >

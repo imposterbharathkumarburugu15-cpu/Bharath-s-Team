@@ -690,7 +690,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: [1, 1.05, 1], opacity: [1, 1, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-24 h-24 bg-black/40 border border-cyber-blue/50 rounded-3xl flex items-center justify-center shadow-[0_0_40px_rgba(0,245,255,0.4)] mb-6 relative backdrop-blur-xl overflow-hidden group"
+                  className="w-24 h-24 bg-black/40 border border-cyber-blue/50 rounded-3xl flex items-center justify-center shadow-[0_0_40px_rgba(105,230,165,0.4)] mb-6 relative backdrop-blur-xl overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_var(--color-cyber-blue)_0%,_transparent_60%)] opacity-20" />
                   <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')] mix-blend-overlay" />
@@ -703,26 +703,26 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                   <div className="absolute bottom-0 right-0 w-4 h-4 border-b-[3px] border-r-[3px] border-cyber-blue" />
                 </motion.div>
                 
-                <h1 className="text-4xl md:text-6xl font-black tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00f5ff] to-white mb-3 text-center filter drop-shadow-[0_0_15px_rgba(0,245,255,0.4)] uppercase">
+                <h1 className="text-4xl md:text-6xl font-black tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white via-[#36c96c] to-white mb-3 text-center filter drop-shadow-[0_0_15px_rgba(105,230,165,0.4)] uppercase">
                   {t('scanner_title')}
                 </h1>
                 
                 <div className="flex items-center gap-3 mb-6">
-                  <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#00f5ff]"></span>
-                  <p className="text-[#00f5ff] text-xs md:text-sm tracking-[0.4em] text-center font-bold uppercase drop-shadow-[0_0_5px_rgba(0,245,255,0.5)]">
+                  <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#36c96c]"></span>
+                  <p className="text-[#36c96c] text-xs md:text-sm tracking-[0.4em] text-center font-bold uppercase drop-shadow-[0_0_5px_rgba(105,230,165,0.5)]">
                     {t('scanner_subtitle')}
                   </p>
-                  <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#00f5ff]"></span>
+                  <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#36c96c]"></span>
                 </div>
 
                 {/* Mode Selector Tabs */}
-                <div className="inline-flex p-1 bg-[#05080f]/90 border border-white/10 rounded-2xl backdrop-blur-md shadow-2xl mb-4">
+                <div className="inline-flex p-1 bg-[#080c09]/90 border border-white/10 rounded-2xl backdrop-blur-md shadow-2xl mb-4">
                   <button
                     onClick={() => setScannerMode('payload')}
                     className={cn(
                       "px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer",
                       scannerMode === 'payload'
-                        ? "bg-cyber-blue text-black shadow-[0_0_20px_rgba(0,245,255,0.4)]"
+                        ? "bg-cyber-blue text-black shadow-[0_0_20px_rgba(105,230,165,0.4)]"
                         : "text-gray-400 hover:text-white"
                     )}
                   >
@@ -734,7 +734,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                     className={cn(
                       "px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer",
                       scannerMode === 'dns-lookup'
-                        ? "bg-cyber-blue text-black shadow-[0_0_20px_rgba(0,245,255,0.4)]"
+                        ? "bg-cyber-blue text-black shadow-[0_0_20px_rgba(105,230,165,0.4)]"
                         : "text-gray-400 hover:text-white"
                     )}
                   >
@@ -810,7 +810,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                 </div>
 
                 <div ref={demoMenuRef} className="relative flex items-center shrink-0 self-end sm:self-auto">
-                  <div className="flex items-stretch rounded-xl shadow-lg border border-cyan-500/40 bg-cyan-950/60 backdrop-blur-md overflow-hidden hover:border-cyan-400 transition-all hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]">
+                  <div className="flex items-stretch rounded-xl shadow-lg border border-cyan-500/40 bg-cyan-950/60 backdrop-blur-md overflow-hidden hover:border-cyan-400 transition-all hover:shadow-[0_0_20px_rgba(105,230,165,0.25)]">
                     <button
                       type="button"
                       onClick={() => handleLoadDemo(selectedDemoIndex)}
@@ -846,7 +846,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -6, scale: 0.96 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full mt-2 w-72 bg-[#060a14] border border-cyan-500/40 rounded-xl shadow-2xl p-1.5 z-50 backdrop-blur-xl"
+                        className="absolute right-0 top-full mt-2 w-72 bg-[#0a100c] border border-cyan-500/40 rounded-xl shadow-2xl p-1.5 z-50 backdrop-blur-xl"
                       >
                         <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-gray-400 border-b border-white/5 font-bold flex items-center justify-between">
                           <span>{t('threat_vector_samples')}</span>
@@ -887,19 +887,19 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
 
               <div className="relative group w-full max-w-4xl mx-auto mb-auto z-20">
                 {/* Glowing Outer Halo */}
-                <div className="absolute -inset-[2px] bg-gradient-to-r from-cyber-blue via-[#7000ff] to-[#00ff66] rounded-xl opacity-30 group-focus-within:opacity-100 blur-lg transition-all duration-700 pointer-events-none" />
+                <div className="absolute -inset-[2px] bg-gradient-to-r from-cyber-blue via-[#36c96c] to-[#00ff66] rounded-xl opacity-30 group-focus-within:opacity-100 blur-lg transition-all duration-700 pointer-events-none" />
                 
                 {/* Main Terminal Frame */}
-                <div className="relative bg-[#020408]/90 backdrop-blur-3xl rounded-xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col focus-within:border-[#00f5ff]/70 transition-colors duration-500 overflow-hidden group-focus-within:shadow-[0_0_30px_rgba(0,245,255,0.2)]">
+                <div className="relative bg-[#040605]/90 backdrop-blur-3xl rounded-xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col focus-within:border-[#36c96c]/70 transition-colors duration-500 overflow-hidden group-focus-within:shadow-[0_0_30px_rgba(105,230,165,0.2)]">
                   
                   {/* Terminal Header */}
-                  <div className="h-10 bg-[#060913] border-b border-white/10 flex items-center justify-between px-5">
+                  <div className="h-10 bg-[#0a0f0c] border-b border-white/10 flex items-center justify-between px-5">
                     <div className="flex gap-2">
                        <span className="w-3 h-3 rounded-full bg-[#ff2a55]/30 border border-[#ff2a55] shadow-[0_0_5px_#ff2a55]" />
                        <span className="w-3 h-3 rounded-full bg-[#ffea00]/30 border border-[#ffea00] shadow-[0_0_5px_#ffea00]" />
                        <span className="w-3 h-3 rounded-full bg-[#00ff66]/30 border border-[#00ff66] shadow-[0_0_5px_#00ff66]" />
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-[#8a99af] group-focus-within:text-[#00f5ff] transition-colors">
+                    <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-[#8aaf98] group-focus-within:text-[#36c96c] transition-colors">
                       <Cpu className="w-3.5 h-3.5" />
                       SECURE_DROPZONE_v9.2
                     </div>
@@ -915,7 +915,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                   <div className="absolute top-12 right-2 w-4 h-4 border-t border-r border-white/20 pointer-events-none" />
 
                   {previewUrl && (
-                    <div className="relative w-32 h-32 mt-6 ml-6 rounded-lg overflow-hidden border-2 border-[#00f5ff]/50 shadow-[0_0_20px_rgba(0,245,255,0.3)]">
+                    <div className="relative w-32 h-32 mt-6 ml-6 rounded-lg overflow-hidden border-2 border-[#36c96c]/50 shadow-[0_0_20px_rgba(105,230,165,0.3)]">
                       <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                       <button onClick={removeFile} className="absolute top-2 right-2 bg-black/80 hover:bg-[#ff2a55] p-1.5 rounded-full text-white transition-all backdrop-blur-md">
                         <X className="w-4 h-4" />
@@ -945,7 +945,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                         handleScan();
                       }
                     }}
-                    className="w-full min-h-[120px] max-h-[300px] bg-transparent text-white font-mono text-sm leading-relaxed p-6 pb-16 outline-none resize-none z-10 custom-scrollbar placeholder:text-[#3a495f]"
+                    className="w-full min-h-[120px] max-h-[300px] bg-transparent text-white font-mono text-sm leading-relaxed p-6 pb-16 outline-none resize-none z-10 custom-scrollbar placeholder:text-[#3a5f48]"
                     spellCheck="false"
                     placeholder={placeholders[placeholderIdx]}
                     rows={3}
@@ -955,7 +955,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                     <div className="flex items-center gap-3">
                         <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-[#8a99af] hover:text-[#00f5ff] transition-colors p-2 rounded-lg bg-white/5 hover:bg-[#00f5ff]/10 border border-transparent hover:border-[#00f5ff]/30 relative group shadow-sm flex items-center gap-2"
+                        className="text-[#8aaf98] hover:text-[#36c96c] transition-colors p-2 rounded-lg bg-white/5 hover:bg-[#36c96c]/10 border border-transparent hover:border-[#36c96c]/30 relative group shadow-sm flex items-center gap-2"
                         title={t('attach_file')}
                       >
                         <Paperclip className="w-4 h-4" />
@@ -965,7 +965,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                       <button 
                         type="button"
                         onClick={() => handleLoadDemo(selectedDemoIndex)}
-                        className="text-[#8a99af] hover:text-[#00f5ff] transition-colors p-2 rounded-lg bg-white/5 hover:bg-[#00f5ff]/10 border border-transparent hover:border-[#00f5ff]/30 relative group shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        className="text-[#8aaf98] hover:text-[#36c96c] transition-colors p-2 rounded-lg bg-white/5 hover:bg-[#36c96c]/10 border border-transparent hover:border-[#36c96c]/30 relative group shadow-sm flex items-center gap-1.5 cursor-pointer"
                         title={t('load_demo_payload')}
                       >
                         <Zap className="w-4 h-4 text-cyan-400" />
@@ -973,7 +973,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                       </button>
                       
                       {attachedFile && !previewUrl && (
-                        <div className="flex items-center gap-2 text-[#00f5ff] text-xs bg-[#00f5ff]/10 px-3 py-1.5 rounded-lg border border-[#00f5ff]/30 max-w-[200px] shadow-[0_0_10px_rgba(0,245,255,0.2)]">
+                        <div className="flex items-center gap-2 text-[#36c96c] text-xs bg-[#36c96c]/10 px-3 py-1.5 rounded-lg border border-[#36c96c]/30 max-w-[200px] shadow-[0_0_10px_rgba(105,230,165,0.2)]">
                           <FileText className="w-4 h-4 shrink-0" />
                           <span className="truncate font-bold tracking-wider">{attachedFile.name}</span>
                           <button onClick={removeFile} className="hover:text-[#ff2a55] ml-auto shrink-0 transition-colors"><X className="w-4 h-4" /></button>
@@ -987,8 +987,8 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                       className={cn(
                         "h-10 px-6 rounded-lg flex items-center justify-center font-bold tracking-[0.2em] uppercase transition-all duration-300 gap-2 overflow-hidden relative group",
                         (inputText.trim() || attachedFile)
-                          ? "bg-gradient-to-r from-[#00f5ff] to-[#00ff66] text-[#020408] hover:shadow-[0_0_30px_rgba(0,245,255,0.6)] hover:scale-105" 
-                          : "bg-white/5 text-[#8a99af] border border-white/10 cursor-not-allowed"
+                          ? "bg-gradient-to-r from-[#36c96c] to-[#00ff66] text-[#040605] hover:shadow-[0_0_30px_rgba(105,230,165,0.6)] hover:scale-105"
+                          : "bg-white/5 text-[#8aaf98] border border-white/10 cursor-not-allowed"
                       )}
                     >
                       {/* Shine effect */}
@@ -1018,11 +1018,11 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
               transition={{ duration: 0.5 }}
-              className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#020408]/95 backdrop-blur-3xl overflow-hidden"
+              className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#040605]/95 backdrop-blur-3xl overflow-hidden"
             >
               {/* Massive Scanning Grid Background */}
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 animate-[pulse_2s_infinite]" />
-              <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#00f5ff]/20 to-transparent opacity-50" />
+              <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#36c96c]/20 to-transparent opacity-50" />
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#ff2a55]/20 to-transparent opacity-50" />
               
               <div className="scanline" />
@@ -1031,21 +1031,21 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", damping: 20 }}
-                className="relative w-full max-w-4xl text-center z-10 p-12 border border-[#00f5ff]/30 bg-[#060913]/80 shadow-[0_0_150px_rgba(0,245,255,0.15)] rounded-3xl backdrop-blur-xl overflow-hidden"
+                className="relative w-full max-w-4xl text-center z-10 p-12 border border-[#36c96c]/30 bg-[#0a0f0c]/80 shadow-[0_0_150px_rgba(105,230,165,0.15)] rounded-3xl backdrop-blur-xl overflow-hidden"
               >
                 {/* Internal container glow and scanline */}
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_#020408_100%)] opacity-80 pointer-events-none" />
                 <motion.div 
                   animate={{ top: ['-20%', '120%'] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                  className="absolute left-0 right-0 h-[3px] bg-[#00f5ff] shadow-[0_0_50px_#00f5ff,_0_0_20px_#00f5ff] z-20"
+                  className="absolute left-0 right-0 h-[3px] bg-[#36c96c] shadow-[0_0_50px_#36c96c,_0_0_20px_#36c96c] z-20"
                 />
                 
                 {/* Advanced Central Core */}
                 <div className="flex justify-center mb-16 relative">
                   <div className="relative w-56 h-56 flex items-center justify-center">
                     {/* Ring 1 - Outer fast dashed */}
-                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border-t-[4px] border-l-[1px] border-dashed border-[#00f5ff] opacity-80 shadow-[0_0_20px_#00f5ff]" />
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border-t-[4px] border-l-[1px] border-dashed border-[#36c96c] opacity-80 shadow-[0_0_20px_#36c96c]" />
                     {/* Ring 2 - Inner counter-spin green */}
                     <motion.div animate={{ rotate: -360 }} transition={{ duration: 5, repeat: Infinity, ease: "linear" }} className="absolute inset-4 rounded-full border-b-[4px] border-r-[2px] border-dotted border-[#00ff66] opacity-70 shadow-[0_0_15px_#00ff66]" />
                     {/* Ring 3 - Solid red pulse */}
@@ -1061,7 +1061,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                       {Array.from({ length: 12 }).map((_, i) => (
                         <motion.div
                           key={i}
-                          className="absolute left-1/2 top-1/2 w-1.5 h-6 bg-[#00f5ff] rounded-full shadow-[0_0_8px_#00f5ff]"
+                          className="absolute left-1/2 top-1/2 w-1.5 h-6 bg-[#36c96c] rounded-full shadow-[0_0_8px_#36c96c]"
                           style={{
                              rotate: `${i * 30}deg`,
                              transformOrigin: '0 0',
@@ -1090,7 +1090,7 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                       initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
                       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                       exit={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
-                      className="text-3xl md:text-5xl font-black tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00f5ff] uppercase drop-shadow-[0_0_15px_rgba(0,245,255,0.5)]"
+                      className="text-3xl md:text-5xl font-black tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-white to-[#36c96c] uppercase drop-shadow-[0_0_15px_rgba(105,230,165,0.5)]"
                     >
                       {scanProgress < 40 ? t('decrypting_payload') : scanProgress < 75 ? t('neural_threat_analysis') : t('compiling_risks')}
                     </motion.div>
@@ -1098,21 +1098,21 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                   
                   <div className="flex justify-between items-end border-b border-white/10 pb-2">
                     <div className="flex flex-col text-left space-y-1">
-                      <span className="text-[10px] text-[#8a99af] tracking-[0.2em] font-mono">SYS.PROCESS.ID // 0x8F92A</span>
+                      <span className="text-[10px] text-[#8aaf98] tracking-[0.2em] font-mono">SYS.PROCESS.ID // 0x8F92A</span>
                       <span className="text-xs text-[#00ff66] font-mono font-bold animate-pulse">{t('connection_secure')}</span>
                     </div>
                     <div className="text-right">
-                       <span className="text-[10px] text-[#8a99af] tracking-widest block font-mono">{t('estimated_completion')}</span>
+                       <span className="text-[10px] text-[#8aaf98] tracking-widest block font-mono">{t('estimated_completion')}</span>
                        <span className="text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_10px_white]">
-                         {Math.floor(scanProgress)}<span className="text-[#00f5ff] text-xl">%</span>
+                         {Math.floor(scanProgress)}<span className="text-[#36c96c] text-xl">%</span>
                        </span>
                     </div>
                   </div>
                   
                   {/* High-Tech Progress Bar */}
-                  <div className="w-full h-3 bg-[#020408] border border-[#00f5ff]/30 rounded-r-lg rounded-l-sm p-[1px] relative shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] overflow-hidden">
+                  <div className="w-full h-3 bg-[#040605] border border-[#36c96c]/30 rounded-r-lg rounded-l-sm p-[1px] relative shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] overflow-hidden">
                     <motion.div 
-                      className="h-full bg-gradient-to-r from-[#00f5ff] via-[#00ff66] to-[#ff2a55] relative"
+                      className="h-full bg-gradient-to-r from-[#36c96c] via-[#00ff66] to-[#ff2a55] relative"
                       initial={{ width: "0%" }}
                       animate={{ width: `${scanProgress}%` }}
                     >
@@ -1121,10 +1121,10 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
                     </motion.div>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5 text-[10px] font-mono text-[#8a99af] text-left uppercase tracking-widest">
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5 text-[10px] font-mono text-[#8aaf98] text-left uppercase tracking-widest">
                      <div>
                         <span className="block opacity-50 mb-1">{t('target_engine')}</span>
-                        <span className="text-[#00f5ff] font-bold">NEUROSHIELD-CORE-V2</span>
+                        <span className="text-[#36c96c] font-bold">NEUROSHIELD-CORE-V2</span>
                      </div>
                      <div className="text-center">
                         <span className="block opacity-50 mb-1">{t('status_label')}</span>
@@ -1166,11 +1166,11 @@ https://auth-session-recovery-9281.trycloudflare.com/login`
             background: rgba(255,255,255,0.02); 
           }
           .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(0, 245, 255, 0.2); 
+            background: rgba(105, 230, 165, 0.2);
             border-radius: 4px;
           }
           .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 245, 255, 0.5); 
+            background: rgba(105, 230, 165, 0.5);
           }
         `}</style>
       </div>

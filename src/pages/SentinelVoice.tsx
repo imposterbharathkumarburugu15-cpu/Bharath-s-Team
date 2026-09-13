@@ -321,7 +321,7 @@ export default function SentinelVoice() {
       {/* =========================================================================
           HERO BANNER & ACOUSTIC DEFENSE HUD
          ========================================================================= */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c1228] via-[#060a16] to-[#120e2a] border border-purple-500/30 shadow-[0_0_50px_rgba(0,0,0,0.8)] p-6 md:p-8 backdrop-blur-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#151f19] via-[#0b110d] to-[#16221b] border border-purple-500/30 shadow-[0_0_50px_rgba(0,0,0,0.8)] p-6 md:p-8 backdrop-blur-2xl">
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/15 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
 
@@ -340,7 +340,7 @@ export default function SentinelVoice() {
           </div>
 
           {/* Quick Status Tag */}
-          <div className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-purple-950/60 border border-purple-500/40 text-purple-200 font-mono text-xs font-bold shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-purple-950/60 border border-purple-500/40 text-purple-200 font-mono text-xs font-bold shadow-[0_0_15px_rgba(126,176,147,0.2)]">
             <Radio className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
             <span>SPECTRAL ANALYZER ONLINE</span>
           </div>
@@ -374,9 +374,9 @@ export default function SentinelVoice() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 8 cols: Audio Capture & Waveform Visualizer */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="rounded-3xl bg-[#080e1b]/95 border border-slate-800 p-6 md:p-7 shadow-2xl space-y-6 relative overflow-hidden">
+          <div className="rounded-3xl bg-[#0e1511]/95 border border-slate-800 p-6 md:p-7 shadow-2xl space-y-6 relative overflow-hidden">
             {/* Visualizer Canvas Area */}
-            <div className="h-64 relative flex flex-col items-center justify-center bg-[#050914] rounded-2xl border border-slate-800/80 overflow-hidden p-4">
+            <div className="h-64 relative flex flex-col items-center justify-center bg-[#0a0f0c] rounded-2xl border border-slate-800/80 overflow-hidden p-4">
               {/* Dynamic Animated Waveform Bars */}
               <div className="absolute inset-0 flex items-center justify-around px-6 pointer-events-none opacity-40">
                 {Array.from({ length: 48 }).map((_, i) => (
@@ -385,7 +385,7 @@ export default function SentinelVoice() {
                     className={cn(
                       "w-1 rounded-full",
                       status === 'recording' ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]" 
-                        : status === 'analyzing' ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                        : status === 'analyzing' ? "bg-cyan-400 shadow-[0_0_8px_rgba(86,170,118,0.8)]"
                         : "bg-purple-500/40"
                     )}
                     animate={{
@@ -413,7 +413,7 @@ export default function SentinelVoice() {
                       onClick={startRecording}
                       variant="cyber"
                       size="lg"
-                      className="gap-2.5 h-12 shadow-[0_0_25px_rgba(6,182,212,0.4)]"
+                      className="gap-2.5 h-12 shadow-[0_0_25px_rgba(86,170,118,0.4)]"
                     >
                       <Mic className="w-5 h-5 text-slate-950" />
                       <span>START LIVE MICROPHONE CAPTURE</span>
@@ -501,7 +501,7 @@ export default function SentinelVoice() {
 
               <div 
                 ref={scrollRef}
-                className="h-44 overflow-y-auto font-mono text-xs space-y-2 pr-2 custom-scrollbar bg-[#050914] p-3.5 rounded-2xl border border-slate-800/80"
+                className="h-44 overflow-y-auto font-mono text-xs space-y-2 pr-2 custom-scrollbar bg-[#0a0f0c] p-3.5 rounded-2xl border border-slate-800/80"
               >
                 {transcript.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-slate-500 italic">
@@ -535,7 +535,7 @@ export default function SentinelVoice() {
 
         {/* Right 4 cols: Authenticity Meters & Signals */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="rounded-3xl bg-[#080e1b]/95 border border-slate-800 p-6 shadow-2xl space-y-6 flex flex-col justify-between h-full">
+          <div className="rounded-3xl bg-[#0e1511]/95 border border-slate-800 p-6 shadow-2xl space-y-6 flex flex-col justify-between h-full">
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3 font-mono">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
@@ -562,7 +562,7 @@ export default function SentinelVoice() {
                     cx="88"
                     cy="88"
                     r="72"
-                    stroke={status === 'finished' ? (authenticity < 40 ? '#f43f5e' : '#10b981') : '#00f0ff'}
+                    stroke={status === 'finished' ? (authenticity < 40 ? '#f43f5e' : '#10b981') : '#36c96c'}
                     strokeWidth="10"
                     fill="transparent"
                     strokeDasharray="452"

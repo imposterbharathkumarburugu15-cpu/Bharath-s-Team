@@ -296,14 +296,14 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
       ctx.fill();
 
       // Atmospheric Rim Glow
-      ctx.strokeStyle = 'rgba(0, 245, 255, 0.35)';
+      ctx.strokeStyle = 'rgba(105, 230, 165, 0.35)';
       ctx.lineWidth = 2;
       ctx.stroke();
 
       // 2. Render Lat/Lng Cyber Grids
       ctx.lineWidth = 0.5;
       for (let lat = -60; lat <= 60; lat += 30) {
-        ctx.strokeStyle = 'rgba(0, 245, 255, 0.12)';
+        ctx.strokeStyle = 'rgba(105, 230, 165, 0.12)';
         ctx.beginPath();
         let first = true;
         for (let lng = -180; lng <= 180; lng += 10) {
@@ -323,7 +323,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
       }
 
       for (let lng = -180; lng < 180; lng += 45) {
-        ctx.strokeStyle = 'rgba(0, 245, 255, 0.12)';
+        ctx.strokeStyle = 'rgba(105, 230, 165, 0.12)';
         ctx.beginPath();
         let first = true;
         for (let lat = -85; lat <= 85; lat += 5) {
@@ -343,8 +343,8 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
       }
 
       // 3. Render Landmass Outlines & Fill
-      ctx.fillStyle = 'rgba(0, 245, 255, 0.08)';
-      ctx.strokeStyle = 'rgba(0, 245, 255, 0.45)';
+      ctx.fillStyle = 'rgba(105, 230, 165, 0.08)';
+      ctx.strokeStyle = 'rgba(105, 230, 165, 0.45)';
       ctx.lineWidth = 1.2;
 
       CONTINENT_POLYGONS.forEach((poly) => {
@@ -436,10 +436,10 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
           ctx.fillStyle = '#ef4444';
           ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
           ctx.fillText(`TARGET: ${activeIntel.ip.slice(0, 16)}`, tagX + 6, tagY + 12);
-          ctx.fillStyle = '#38bdf8';
+          ctx.fillStyle = '#5cd488';
           ctx.font = '7.5px "JetBrains Mono", monospace';
           ctx.fillText(`${activeIntel.city || 'City'}, ${activeIntel.countryCode || activeIntel.country || 'Region'}`, tagX + 6, tagY + 22);
-          ctx.fillStyle = '#94a3b8';
+          ctx.fillStyle = '#94b8a1';
           ctx.font = '7px "JetBrains Mono", monospace';
           ctx.fillText(`${activeIntel.asn || 'AS-TRANSIT'}`, tagX + 6, tagY + 31);
         }
@@ -457,7 +457,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
       }
 
       // 7. Outer Compass Ring
-      ctx.strokeStyle = 'rgba(0, 245, 255, 0.15)';
+      ctx.strokeStyle = 'rgba(105, 230, 165, 0.15)';
       ctx.lineWidth = 1;
       ctx.setLineDash([2, 6]);
       ctx.beginPath();
@@ -479,11 +479,11 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
   }, [viewMode, originLat, originLng, targetLocation, activeIntel, isAutoRotating, zoomLevel]);
 
   return (
-    <div className={`relative bg-[#070c18] border border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-all ${
+    <div className={`relative bg-[#0c130f] border border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-all ${
       isExpanded ? 'fixed inset-4 z-50 flex flex-col' : 'w-full'
     }`}>
       {/* Top Cyber HUD Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-[#0a1224]/90 border-b border-white/10 backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-[#121c16]/90 border-b border-white/10 backdrop-blur-md">
         <div className="flex items-center gap-2.5">
           <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
           <div>
@@ -518,7 +518,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
         </div>
 
         {/* View Mode Switcher & Live Lookup Toggle */}
-        <div className="flex items-center gap-1 bg-[#05080f] p-1 rounded-xl border border-white/10">
+        <div className="flex items-center gap-1 bg-[#080c09] p-1 rounded-xl border border-white/10">
           <button
             onClick={() => setShowSearch(!showSearch)}
             title="Inspect / Geoplot custom IP or Domain"
@@ -578,7 +578,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
 
       {/* Live Target IP / Domain Inspector Bar */}
       {showSearch && (
-        <div className="bg-[#05080f] px-4 py-2.5 border-b border-white/10 flex flex-wrap items-center gap-2 text-xs font-mono">
+        <div className="bg-[#080c09] px-4 py-2.5 border-b border-white/10 flex flex-wrap items-center gap-2 text-xs font-mono">
           <span className="text-gray-400 font-bold flex items-center gap-1">
             <Radio className="w-3.5 h-3.5 text-cyber-blue" />
             LIVE GEO QUERY:
@@ -590,7 +590,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
               onChange={(e) => setSearchTarget(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handlePerformLiveQuery()}
               placeholder="e.g. 104.28.19.44, trycloudflare.com, 185.220.101.45"
-              className="flex-1 bg-[#0a1224] border border-white/15 rounded-lg px-3 py-1.5 text-white placeholder-gray-500 focus:outline-none focus:border-cyber-blue font-mono text-xs"
+              className="flex-1 bg-[#121c16] border border-white/15 rounded-lg px-3 py-1.5 text-white placeholder-gray-500 focus:outline-none focus:border-cyber-blue font-mono text-xs"
             />
             <button
               onClick={() => handlePerformLiveQuery()}
@@ -638,7 +638,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
 
             {/* Tactical 3D HUD Floating Overlays */}
             <div className="absolute top-3 left-3 pointer-events-none space-y-1 font-mono text-[10px]">
-              <div className="bg-[#05080f]/85 backdrop-blur-md border border-white/10 rounded-xl p-2.5 text-gray-300 space-y-1.5 pointer-events-auto shadow-xl max-w-[240px]">
+              <div className="bg-[#080c09]/85 backdrop-blur-md border border-white/10 rounded-xl p-2.5 text-gray-300 space-y-1.5 pointer-events-auto shadow-xl max-w-[240px]">
                 <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-1">
                   <span className="text-gray-400 font-bold">TARGET HOST:</span>
                   <span className="text-red-400 font-bold truncate">{activeIntel.resolvedDomain || activeIntel.ip}</span>
@@ -665,7 +665,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
             </div>
 
             {/* 3D Globe Tactical Controls */}
-            <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-[#05080f]/80 backdrop-blur-md p-1.5 rounded-xl border border-white/10 font-mono text-[10px]">
+            <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-[#080c09]/80 backdrop-blur-md p-1.5 rounded-xl border border-white/10 font-mono text-[10px]">
               <button
                 onClick={handleLockOnTarget}
                 className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 rounded-lg font-bold flex items-center gap-1 transition-all"
@@ -712,7 +712,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
 
         {/* 2. GOOGLE MAPS TACTICAL RADAR MODE */}
         {viewMode === 'tactical-map' && (
-          <div className="w-full h-full relative bg-[#060b14] overflow-hidden">
+          <div className="w-full h-full relative bg-[#0a100c] overflow-hidden">
             <GoogleMapsTacticalRadar
               originIP={activeIntel}
               hops={hops}
@@ -724,7 +724,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
 
         {/* 3. TRANSIT HOPS PHYSICAL TRAIL MODE */}
         {viewMode === 'transit-trail' && (
-          <div className="w-full h-full bg-[#05080f] p-4 overflow-y-auto custom-scrollbar flex flex-col justify-between">
+          <div className="w-full h-full bg-[#080c09] p-4 overflow-y-auto custom-scrollbar flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -752,7 +752,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
                       className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between font-mono text-xs ${
                         isActive
                           ? 'bg-cyber-blue/10 border-cyber-blue shadow-lg text-white'
-                          : 'bg-[#0a0f1c] border-white/5 hover:border-white/15 text-gray-400'
+                          : 'bg-[#0f1712] border-white/5 hover:border-white/15 text-gray-400'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -804,7 +804,7 @@ export const Forensic3DGeoMap: React.FC<Forensic3DGeoMapProps> = ({
       </div>
 
       {/* Bottom Summary Bar */}
-      <div className="px-4 py-2.5 bg-[#05080f] border-t border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+      <div className="px-4 py-2.5 bg-[#080c09] border-t border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
         <div className="flex flex-wrap items-center gap-4 text-gray-400">
           <div>
             <span className="text-[10px] text-gray-500 block">IP TYPE:</span>

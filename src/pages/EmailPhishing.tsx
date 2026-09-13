@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../lib/apiClient';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -13,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { addScanToHistory } from '@/lib/history';
 import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
-import { NeuroShieldCore } from '@/services/core/neuroshieldCore';
+import { IncidentWorkflow } from '@/components/IncidentWorkflow';
 import { UnifiedThreatAnalysis, UnifiedInteractionEvent } from '@/services/core/types';
 import { googleSignIn, googleLogout, initAuth, getAccessToken } from '@/services/googleAuth';
 import { InboxShieldView } from '@/components/InboxShieldView';
@@ -83,7 +84,8 @@ export default function EmailPhishing() {
   const pollingControllerRef = useRef<EmailPollingController | null>(null);
 
   // Optional offline .eml dropzone for analysts
-  const [showOfflineUploader, setShowOfflineUploader] = useState(false);
+  const [showOfflineUploader, setShowOfflineUploader] = useState(() => sessionStorage.getItem('ns-open-eml') === 'true');
+  useEffect(() => { sessionStorage.removeItem('ns-open-eml'); }, []);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Protection stats
@@ -257,6 +259,8 @@ export default function EmailPhishing() {
   const handleSelectEmailIncident = async (item: InboxEmailItem, tab: 'forensics' | 'neural' | 'sih-suite' | 'dns-auth' = 'forensics') => {
     setActiveIncidentTab(tab);
     setIsAnalyzingIncident(true);
+    setCoreAnalysis(null);
+    setDossier(null);
     setFeedbackSubmitted(null);
     setShowTechnicalEvidence(false);
     setShowAdversarialSignals(false);
@@ -278,6 +282,7 @@ export default function EmailPhishing() {
     try {
       // 1. Run NeuroShield Core (Context + Intent + Sensitive Data + Action Risk + Correlation)
       const event: UnifiedInteractionEvent = {
+        id: item.id,
         source: 'email',
         content: item.body,
         sender: {
@@ -288,18 +293,20 @@ export default function EmailPhishing() {
         rawPayload: item.rawHeaders,
       };
 
-      const analysis = await NeuroShieldCore.analyze(event);
+      const response = await fetch('/api/neuroshield/analyze', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...event, rawHeaders: item.rawHeaders, metadata: { client: 'web_app', clientCapabilities: { canDisarmLinks: true } } }),
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!response.ok) throw new Error('Email analysis is unavailable. Please retry; this email has not been verified.');
+      const analysis = await response.json();
       setCoreAnalysis(analysis);
 
       // 2. Run / reuse RFC deep forensic dossier (Authentication, Received routing, URLs)
       let emailDossier = item.dossier;
       if (!emailDossier) {
         try {
-          const domain = item.senderEmail.split('@')[1] || 'relay.net';
-          const rawHeadersFallback = item.rawHeaders && item.rawHeaders.length > 20
-            ? item.rawHeaders
-            : `From: ${item.senderName} <${item.senderEmail}>\nTo: enterprise-user@corp.internal\nSubject: ${item.subject}\nDate: ${new Date().toUTCString()}\nReceived: from mail.${domain} (198.51.100.24) by mx.google.com with ESMTPS; ${new Date().toUTCString()}\nAuthentication-Results: mx.google.com; dkim=pass header.i=@${domain}; spf=pass (google.com: domain of ${item.senderEmail} designates 198.51.100.24 as permitted sender) smtp.mailfrom=${item.senderEmail}; dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=${domain}\n`;
-          emailDossier = await executeEmailForensics(rawHeadersFallback, item.body);
+          if (item.rawHeaders?.trim()) emailDossier = await executeEmailForensics(item.rawHeaders, item.body);
         } catch (dErr) {
           console.warn('RFC dossier calculation notice:', dErr);
         }
@@ -399,8 +406,8 @@ export default function EmailPhishing() {
   // Unified decision styling adhering to Phase 4 Authoritative Contract
   const protectionDetails = useMemo(() => {
     const auth = coreAnalysis?.authoritativeProtectionDecision;
-    const rawDecision = auth?.protectionDecision || (coreAnalysis?.risk_score && coreAnalysis.risk_score >= 75 ? 'BLOCK_ACTION' : coreAnalysis?.risk_score && coreAnalysis.risk_score >= 35 ? 'WARN' : 'ALLOW');
-    const enforcementStatus = auth?.enforcementStatus || (rawDecision === 'ALLOW' ? 'NOT_REQUIRED' : 'NOT_SUPPORTED');
+    const rawDecision = auth?.protectionDecision || 'WARN';
+    const enforcementStatus = auth?.enforcementStatus || 'UNKNOWN';
     const riskScore = auth?.riskScore ?? coreAnalysis?.risk_score ?? (selectedEmail?.dossier?.classification?.riskScore ?? 0);
 
     const isEnforced = enforcementStatus === 'ENFORCED';
@@ -557,9 +564,9 @@ export default function EmailPhishing() {
     } else {
       signals.push(effectiveRiskScore > 75 ? 'Forensic Verdict: MALICIOUS_PHISHING' : 'Forensic Verdict: SUSPICIOUS');
     }
-    const spfStatus = dossier?.authentication?.spf?.status || (effectiveRiskScore > 75 ? 'FAIL' : 'PASS');
-    const dkimStatus = dossier?.authentication?.dkim?.status || (effectiveRiskScore > 75 ? 'NONE' : 'PASS');
-    const dmarcStatus = dossier?.authentication?.dmarc?.status || (effectiveRiskScore > 75 ? 'FAIL' : 'PASS');
+    const spfStatus = dossier?.authentication?.spf?.status || 'UNAVAILABLE';
+    const dkimStatus = dossier?.authentication?.dkim?.status || 'UNAVAILABLE';
+    const dmarcStatus = dossier?.authentication?.dmarc?.status || 'UNAVAILABLE';
     signals.push(`SPF: ${spfStatus} | DKIM: ${dkimStatus} | DMARC: ${dmarcStatus}`);
     signals.push('Header Anomaly: Reply-To Diversion');
     signals.push('Header Anomaly: Return-Path Discrepancy');
@@ -597,8 +604,8 @@ export default function EmailPhishing() {
 
   // AI Explanation Markdown matching user screenshot
   const aiExplanationText = useMemo(() => {
-    const spfStatus = dossier?.authentication?.spf?.status || (effectiveRiskScore > 75 ? 'FAIL' : 'PASS');
-    const dmarcStatus = dossier?.authentication?.dmarc?.status || (effectiveRiskScore > 75 ? 'FAIL' : 'PASS');
+    const spfStatus = dossier?.authentication?.spf?.status || 'UNAVAILABLE';
+    const dmarcStatus = dossier?.authentication?.dmarc?.status || 'UNAVAILABLE';
     const domain = senderDomain || 'm1crosoft-support.com';
 
     return `Protocol Authentication Failure: SPF (${spfStatus}) / DMARC (${dmarcStatus}): Authentication-Results: spf=${spfStatus} smtp.mailfrom=${domain}; dmarc=${dmarcStatus} header.from=${domain}. Reply-To Exfiltration Diversion to External Mailbox: From: ${maskedDataItems[0]?.masked || 's*******@m1crosoft-support.com'} | Reply-To: ${maskedDataItems[2]?.masked || 'm*********************@gmail.com'}. Credential Harvesting Destination Link Detected: Embedded URL: https://microsoft-security-verification.example.com/login. Psychological Coercion & High-Pressure NLP Urgency: Urgency keywords detected: urgent, immediately, within 2 hours Anomalies detected: Reply-To Diversion to external recipient.`;
@@ -606,9 +613,9 @@ export default function EmailPhishing() {
 
   // Comprehensive SOC Report Markdown
   const socReportMarkdown = useMemo(() => {
-    const spfStatus = dossier?.authentication?.spf?.status || (effectiveRiskScore > 75 ? 'FAIL' : 'PASS');
-    const dkimStatus = dossier?.authentication?.dkim?.status || (effectiveRiskScore > 75 ? 'NONE' : 'PASS');
-    const dmarcStatus = dossier?.authentication?.dmarc?.status || (effectiveRiskScore > 75 ? 'FAIL' : 'PASS');
+    const spfStatus = dossier?.authentication?.spf?.status || 'UNAVAILABLE';
+    const dkimStatus = dossier?.authentication?.dkim?.status || 'UNAVAILABLE';
+    const dmarcStatus = dossier?.authentication?.dmarc?.status || 'UNAVAILABLE';
 
     return dossier?.socReportMarkdown || `# SECURITY OPERATIONS CENTER (SOC) INCIDENT REPORT
 **Incident ID:** ${coreAnalysis?.incident_id || (selectedEmail ? 'INC-' + selectedEmail.id.substring(0, 8) : 'INC-001')}
@@ -658,6 +665,10 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
     URL.revokeObjectURL(url);
   };
 
+  if (viewMode === 'incident' && selectedEmail && (isAnalyzingIncident || !coreAnalysis)) {
+    return <main className="ns-workspace"><button className="ns-secondary" onClick={() => setViewMode('inbox')}>Back to inbox</button><h1>{isAnalyzingIncident ? 'Inspecting your email…' : 'Email remains unverified'}</h1><IncidentWorkflow analysis={null} loading={isAnalyzingIncident} />{!isAnalyzingIncident && <p>Return to your inbox and retry when analysis is available.</p>}</main>;
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans pb-16">
       {/* ────────────────────────────────────────────────────────────────────────── */}
@@ -703,7 +714,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
           </div>
 
           {showOfflineUploader && (
-            <div className="bg-[#09101d] border border-cyan-500/30 rounded-2xl p-5 shadow-xl text-center space-y-3">
+            <div className="bg-[#0f1712] border border-cyan-500/30 rounded-2xl p-5 shadow-xl text-center space-y-3">
               <UploadCloud className="w-8 h-8 text-cyan-400 mx-auto" />
               <h4 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
                 Inspect Raw RFC 5322 EML File
@@ -750,8 +761,9 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
       {/* ────────────────────────────────────────────────────────────────────────── */}
       {viewMode === 'incident' && selectedEmail && (
         <div className="space-y-6">
+          <IncidentWorkflow analysis={coreAnalysis} loading={isAnalyzingIncident} />
           {/* Top Bar: Return to Inbox + Multi-Modal Layer Switcher + Incident Metadata */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-[#070d1e]/80 border border-cyber-border/40 p-4 sm:p-5 rounded-2xl backdrop-blur-xl shadow-xl">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-[#0f1612]/80 border border-cyber-border/40 p-4 sm:p-5 rounded-2xl backdrop-blur-xl shadow-xl">
             <div className="flex items-center gap-3.5">
               <button
                 onClick={() => setViewMode('inbox')}
@@ -775,13 +787,13 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
             </div>
 
             {/* Multi-Modal View Switcher Tabs matching TextScannerResult */}
-            <div className="flex flex-wrap items-center bg-[#050914] p-1 rounded-xl border border-cyber-border/40 gap-1 w-full lg:w-auto justify-start sm:justify-end shadow-inner">
+            <div className="flex flex-wrap items-center bg-[#0a0f0c] p-1 rounded-xl border border-cyber-border/40 gap-1 w-full lg:w-auto justify-start sm:justify-end shadow-inner">
               <button
                 onClick={() => setActiveIncidentTab('neural')}
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
                   activeIncidentTab === 'neural'
-                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_10px_rgba(126,176,147,0.3)]"
                     : "text-gray-400 hover:text-white"
                 )}
               >
@@ -794,7 +806,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 cursor-pointer",
                   activeIncidentTab === 'forensics'
-                    ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-[0_0_10px_rgba(0,240,255,0.3)]"
+                    ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40 shadow-[0_0_10px_rgba(105,230,165,0.3)]"
                     : "text-gray-400 hover:text-white"
                 )}
               >
@@ -903,7 +915,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
           </div>
 
           {/* 2. EMAIL HEADER & MESSAGE CARD */}
-          <div className="bg-[#070d1e]/80 border border-cyber-border/40 rounded-2xl p-5 shadow-xl space-y-4 backdrop-blur-xl">
+          <div className="bg-[#0f1612]/80 border border-cyber-border/40 rounded-2xl p-5 shadow-xl space-y-4 backdrop-blur-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-white/5 font-mono text-xs">
               <div className="space-y-1">
                 <div className="text-gray-500 text-[10px] uppercase tracking-wider">From</div>
@@ -962,10 +974,10 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
           {activeIncidentTab === 'forensics' && (
             <div className="space-y-6">
               {isAnalyzingIncident && !dossier ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-[#09101d] rounded-2xl border border-cyan-500/20 shadow-xl">
+                <div className="flex flex-col items-center justify-center p-12 bg-[#0f1712] rounded-2xl border border-cyan-500/20 shadow-xl">
                   <Sparkles className="w-8 h-8 text-cyan-400 animate-spin mb-4" />
                   <p className="text-sm font-mono text-white">Reconstructing RFC 5322 Forensic Dossier & Mail Relay Graph...</p>
-                  <p className="text-xs text-gray-400 font-mono mt-1">Verifying SPF, DKIM, DMARC, ARC cryptographic signatures and IP reputation</p>
+                  <p className="text-xs text-gray-400 font-mono mt-1">Reading reported authentication results and observed relay metadata</p>
                 </div>
               ) : dossier ? (
                 <EmailForensicsPanel 
@@ -973,26 +985,10 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                   hideNeuralProfile={true} 
                 />
               ) : (
-                <div className="p-8 text-center bg-[#09101d] rounded-2xl border border-white/10 shadow-xl space-y-4">
+                <div className="p-8 text-center bg-[#0f1712] rounded-2xl border border-white/10 shadow-xl space-y-4">
                   <Mail className="w-10 h-10 text-gray-500 mx-auto" />
                   <p className="text-sm text-gray-300 font-mono">No raw RFC 5322 headers available to parse protocol forensics.</p>
-                  <button
-                    onClick={async () => {
-                      setIsAnalyzingIncident(true);
-                      try {
-                        const rawToAnalyze = `From: ${selectedEmail.sender}\nTo: enterprise-user@corp.internal\nSubject: ${selectedEmail.subject}\nDate: ${new Date().toUTCString()}\nReceived: from mail.${senderDomain} (198.51.100.24) by mx.google.com with ESMTPS; ${new Date().toUTCString()}\nAuthentication-Results: mx.google.com; dkim=pass header.i=@${senderDomain}; spf=pass smtp.mailfrom=${selectedEmail.sender}; dmarc=pass header.from=${senderDomain}\n`;
-                        const gen = await executeEmailForensics(rawToAnalyze, selectedEmail.body);
-                        setDossier(gen);
-                      } catch (e) {
-                        console.error(e);
-                      } finally {
-                        setIsAnalyzingIncident(false);
-                      }
-                    }}
-                    className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold rounded-xl transition-all cursor-pointer"
-                  >
-                    Synthesize & Run Protocol Forensics
-                  </button>
+                  <p className="text-xs text-gray-400">Import the original .eml or reconnect Gmail to obtain actual headers. Authentication and relay evidence stay unavailable until then.</p>
                 </div>
               )}
             </div>
@@ -1007,7 +1003,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                 <div className="lg:col-span-5 flex flex-col gap-6">
                   {/* Risk Score Card */}
                   <div className={cn(
-                    "bg-[#070d1e]/80 backdrop-blur-xl border rounded-2xl p-6 flex items-center gap-6 transition-all duration-500 shadow-xl",
+                    "bg-[#0f1612]/80 backdrop-blur-xl border rounded-2xl p-6 flex items-center gap-6 transition-all duration-500 shadow-xl",
                     effectiveRiskScore > 75 ? "border-cyber-red/30 shadow-[0_0_25px_rgba(244,63,94,0.15)]" : 
                     effectiveRiskScore > 40 ? "border-amber-500/30 shadow-[0_0_25px_rgba(245,158,11,0.15)]" : 
                     "border-cyber-green/30 shadow-[0_0_25px_rgba(16,185,129,0.15)]"
@@ -1015,7 +1011,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                     <div className="w-28 h-28 relative flex items-center justify-center shrink-0">
                       <svg className={cn(
                         "w-full h-full transform -rotate-90",
-                        effectiveRiskScore > 75 ? "drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]" : "drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]"
+                        effectiveRiskScore > 75 ? "drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]" : "drop-shadow-[0_0_15px_rgba(105,230,165,0.3)]"
                       )} viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.06)" strokeWidth="8" fill="none" />
                         <motion.circle 
@@ -1060,7 +1056,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                   {/* AI Explanation */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase font-mono">{t('ai_explanation') || 'AI EXPLANATION'}</div>
+                      <div className="text-[11px] font-bold tracking-widest text-[#8aaf98] uppercase font-mono">{t('ai_explanation') || 'AI EXPLANATION'}</div>
                       <button
                         type="button"
                         onClick={() => setShowSocModal(true)}
@@ -1070,7 +1066,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                         <span>{t('full_soc_report_btn') || 'Full SOC Incident Report'}</span>
                       </button>
                     </div>
-                    <div className="bg-[#070d1e]/80 border border-cyber-border/40 rounded-2xl p-4 sm:p-5 text-sm text-white/95 leading-relaxed overflow-hidden shadow-inner font-mono text-xs backdrop-blur-xl">
+                    <div className="bg-[#0f1612]/80 border border-cyber-border/40 rounded-2xl p-4 sm:p-5 text-sm text-white/95 leading-relaxed overflow-hidden shadow-inner font-mono text-xs backdrop-blur-xl">
                       <div className="markdown-body prose prose-invert prose-p:leading-relaxed prose-strong:text-cyber-blue prose-strong:font-bold prose-code:text-cyber-blue prose-code:bg-white/5 prose-code:px-1 prose-code:py-0.5 prose-code:rounded text-xs max-w-none space-y-2">
                         <Markdown>
                           {aiExplanationText}
@@ -1082,7 +1078,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                   {/* Keywords and Signals */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase font-mono">{t('threat_signals') || 'THREAT SIGNALS'}</div>
+                      <div className="text-[11px] font-bold tracking-widest text-[#8aaf98] uppercase font-mono">{t('threat_signals') || 'THREAT SIGNALS'}</div>
                       <div className="flex flex-col gap-2">
                         {threatSignalsList.map((sig, i) => {
                           const isUrgent = sig.includes('CRITICAL') || sig.includes('FAIL') || sig.includes('HARVESTING') || sig.includes('MALICIOUS');
@@ -1108,7 +1104,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <div className="text-[11px] font-bold tracking-widest text-[#8a99af] uppercase font-mono">{t('suspicious_keywords') || 'SUSPICIOUS KEYWORDS'}</div>
+                      <div className="text-[11px] font-bold tracking-widest text-[#8aaf98] uppercase font-mono">{t('suspicious_keywords') || 'SUSPICIOUS KEYWORDS'}</div>
                       <div className="flex flex-col gap-2">
                         {suspiciousKeywordsList.map((kw, i) => (
                           <motion.div 
@@ -1116,7 +1112,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 + (i * 0.04) }}
-                            className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-xs text-[#8a99af] hover:border-cyber-blue/30 transition-colors font-mono"
+                            className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-xs text-[#8aaf98] hover:border-cyber-blue/30 transition-colors font-mono"
                           >
                             <Activity className="w-3.5 h-3.5 shrink-0 text-cyber-blue" />
                             <span className="truncate">"{kw}"</span>
@@ -1146,7 +1142,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                 <div className="lg:col-span-7 flex flex-col gap-6">
                   {/* Threat Vector Profile Radar */}
                   {vectorData.length > 0 && (
-                    <div className="bg-[#070d1e]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl p-5 flex flex-col shrink-0 h-[260px] shadow-xl">
+                    <div className="bg-[#0f1612]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl p-5 flex flex-col shrink-0 h-[260px] shadow-xl">
                       <div className="flex items-center gap-2 mb-2 text-white border-b border-white/5 pb-2">
                         <Activity className="w-4 h-4 text-cyber-blue" />
                         <h3 className="text-xs font-bold font-mono tracking-widest uppercase">{t('threat_vector_profile') || 'THREAT VECTOR PROFILE'}</h3>
@@ -1165,7 +1161,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                   )}
 
                   {/* Privacy Protection with ScrambleText */}
-                  <div className="bg-[#070d1e]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl flex flex-col shrink-0 overflow-hidden relative shadow-xl">
+                  <div className="bg-[#0f1612]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl flex flex-col shrink-0 overflow-hidden relative shadow-xl">
                     <div className="bg-black/40 px-6 py-4 flex items-center gap-3 border-b border-cyber-border/40 relative z-10">
                       <Shield className="w-4 h-4 text-cyber-blue" />
                       <h3 className="font-bold tracking-widest text-white uppercase flex items-center gap-2 text-xs font-mono">
@@ -1180,7 +1176,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                     </div>
                     
                     <div className="p-6 relative z-10 max-h-[300px] overflow-y-auto custom-scrollbar">
-                      <div className="text-[10px] font-bold tracking-[0.2em] text-[#8a99af] uppercase mb-4 font-mono">
+                      <div className="text-[10px] font-bold tracking-[0.2em] text-[#8aaf98] uppercase mb-4 font-mono">
                         {t('sensitive_data_detected') || 'SENSITIVE DATA DETECTED'}
                       </div>
                       
@@ -1202,17 +1198,17 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center py-6 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
-                          <Shield className="w-7 h-7 text-[#8a99af] mb-2 opacity-50" />
-                          <div className="text-xs text-[#8a99af] uppercase tracking-widest font-mono">{t('no_sensitive_data') || 'NO SENSITIVE DATA DETECTED'}</div>
+                          <Shield className="w-7 h-7 text-[#8aaf98] mb-2 opacity-50" />
+                          <div className="text-xs text-[#8aaf98] uppercase tracking-widest font-mono">{t('no_sensitive_data') || 'NO SENSITIVE DATA DETECTED'}</div>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Attack Kill Chain Visualization */}
-                  <div className="bg-[#070d1e]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl overflow-hidden flex flex-col flex-1 min-h-[320px] shadow-xl">
+                  <div className="bg-[#0f1612]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl overflow-hidden flex flex-col flex-1 min-h-[320px] shadow-xl">
                     <div className="px-5 py-3.5 border-b border-cyber-border/40 flex items-center justify-between shadow-sm z-10 bg-black/20">
-                      <div className="text-[10px] tracking-widest text-[#8a99af] uppercase font-mono font-bold">{t('attack_kill_chain') || 'ATTACK KILL CHAIN VISUALIZATION'}</div>
+                      <div className="text-[10px] tracking-widest text-[#8aaf98] uppercase font-mono font-bold">{t('attack_kill_chain') || 'ATTACK KILL CHAIN VISUALIZATION'}</div>
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-cyber-red animate-pulse shadow-[0_0_8px_#f43f5e]"></span>
                         <span className="text-[10px] text-cyber-red tracking-widest uppercase font-mono font-bold">{t('live_trace_active')}</span>
@@ -1232,7 +1228,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
               </div>
 
               {/* 2. Cognitive Sender Telemetry & Deep Structural Intelligence */}
-              <div className="bg-[#070d1e]/80 border border-cyber-border/40 rounded-2xl p-6 shadow-xl space-y-5 backdrop-blur-xl">
+              <div className="bg-[#0f1612]/80 border border-cyber-border/40 rounded-2xl p-6 shadow-xl space-y-5 backdrop-blur-xl">
                 <div className="flex items-center justify-between border-b border-white/5 pb-3">
                   <div className="flex items-center gap-2.5">
                     <Brain className="w-5 h-5 text-purple-400 animate-pulse" />
@@ -1418,7 +1414,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
               {dossier ? (
                 <SihForensicSuite dossier={dossier} />
               ) : (
-                <div className="p-8 text-center bg-[#09101d] rounded-2xl border border-white/10 shadow-xl space-y-4">
+                <div className="p-8 text-center bg-[#0f1712] rounded-2xl border border-white/10 shadow-xl space-y-4">
                   <Server className="w-10 h-10 text-cyan-400 mx-auto animate-pulse" />
                   <p className="text-sm text-gray-300 font-mono">Synthesizing SIH26106 5-Pillar forensic dossier...</p>
                 </div>
@@ -1427,7 +1423,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
           )}
 
           {/* 6. INCIDENT FOOTER & FEEDBACK */}
-          <div className="bg-[#09101d] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+          <div className="bg-[#0f1712] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setViewMode('inbox')}
@@ -1478,7 +1474,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-4xl max-h-[85vh] bg-[#070b14] border border-cyber-blue/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+              className="w-full max-w-4xl max-h-[85vh] bg-[#0b100d] border border-cyber-blue/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             >
               <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/40">
                 <div className="flex items-center gap-2">

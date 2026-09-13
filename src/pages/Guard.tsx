@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../lib/apiClient';
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
@@ -202,11 +203,11 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-2 font-sans text-slate-200">
       {/* Hero: Proactive Protection Layer (Part A & B) */}
-      <div className="rounded-2xl bg-[#070d1e]/80 border border-cyber-border/40 p-6 md:p-8 space-y-6 backdrop-blur-xl shadow-xl">
+      <div className="rounded-2xl bg-[#0f1612]/80 border border-cyber-border/40 p-6 md:p-8 space-y-6 backdrop-blur-xl shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2.5">
-              <span className="p-2 rounded-xl bg-cyber-blue/10 text-cyber-blue border border-cyber-blue/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+              <span className="p-2 rounded-xl bg-cyber-blue/10 text-cyber-blue border border-cyber-blue/30 shadow-[0_0_15px_rgba(105,230,165,0.2)]">
                 <ShieldCheck className="w-6 h-6" />
               </span>
               <span className="text-xs font-mono font-bold tracking-widest uppercase text-cyber-blue">
@@ -238,7 +239,7 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setIsExtensionModalOpen(true)}
-              className="px-4 py-2.5 bg-cyber-blue hover:bg-cyber-blue/90 text-black text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all flex items-center gap-2 cursor-pointer font-mono active:scale-95"
+              className="px-4 py-2.5 bg-cyber-blue hover:bg-cyber-blue/90 text-black text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(105,230,165,0.3)] transition-all flex items-center gap-2 cursor-pointer font-mono active:scale-95"
             >
               <Chrome className="w-4 h-4" />
               Chrome Extension Settings
@@ -256,7 +257,7 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
         {/* Protection Channels Matrix (Part A1 & B1) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/5">
           {/* Channel 1: Chrome Browser */}
-          <div className="p-4 rounded-xl bg-[#050914]/80 border border-cyber-border/40 space-y-2 shadow-inner">
+          <div className="p-4 rounded-xl bg-[#0a0f0c]/80 border border-cyber-border/40 space-y-2 shadow-inner">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
                 <Chrome className="w-4 h-4 text-cyber-blue" />
@@ -275,7 +276,7 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
           </div>
 
           {/* Channel 2: Email (Gmail) */}
-          <div className="p-4 rounded-xl bg-[#050914]/80 border border-cyber-border/40 space-y-2 shadow-inner">
+          <div className="p-4 rounded-xl bg-[#0a0f0c]/80 border border-cyber-border/40 space-y-2 shadow-inner">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
                 <Globe className="w-4 h-4 text-cyber-green" />
@@ -294,7 +295,7 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
           </div>
 
           {/* Channel 3: Mobile SMS (Part A1 Truthful Classification) */}
-          <div className="p-4 rounded-xl bg-[#050914]/80 border border-amber-500/30 space-y-2 shadow-inner">
+          <div className="p-4 rounded-xl bg-[#0a0f0c]/80 border border-amber-500/30 space-y-2 shadow-inner">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
                 <Smartphone className="w-4 h-4 text-amber-400" />

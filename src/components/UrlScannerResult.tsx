@@ -48,7 +48,7 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
   return (
     <div className="flex-1 flex flex-col w-full h-full text-white overflow-y-auto custom-scrollbar">
       {/* Top Header Area */}
-      <div className="mb-6 flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#070d1e]/80 border border-cyber-border/40 p-4 sm:p-5 rounded-2xl backdrop-blur-xl shadow-lg">
+      <div className="mb-6 flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0f1612]/80 border border-cyber-border/40 p-4 sm:p-5 rounded-2xl backdrop-blur-xl shadow-lg">
         <div className="flex items-center gap-3">
           <div className={cn(
             "w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 transition-transform",
@@ -86,7 +86,7 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
           </button>
           <button 
             onClick={onReset}
-            className="p-2 bg-[#0a1128]/80 text-cyber-muted hover:text-white rounded-xl border border-white/10 hover:border-cyber-blue/40 transition-all cursor-pointer"
+            className="p-2 bg-[#141e18]/80 text-cyber-muted hover:text-white rounded-xl border border-white/10 hover:border-cyber-blue/40 transition-all cursor-pointer"
             title={t('close')}
           >
             <X className="w-5 h-5" />
@@ -120,7 +120,7 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
       <div className="mb-6 flex-shrink-0">
         <div className="relative group w-full">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-cyber-blue/20 via-cyber-purple/20 to-cyber-blue/20 rounded-2xl blur opacity-75 group-hover:opacity-100 transition-opacity" />
-          <div className="relative bg-[#070d1e] border border-cyber-border/60 rounded-2xl flex items-center p-2 focus-within:border-cyber-blue/60 transition-colors shadow-xl">
+          <div className="relative bg-[#0f1612] border border-cyber-border/60 rounded-2xl flex items-center p-2 focus-within:border-cyber-blue/60 transition-colors shadow-xl">
             <div className="pl-3 pr-2 text-cyber-blue flex items-center gap-2">
               <Globe className="w-4 h-4" />
               <span className="text-[10px] font-mono text-cyber-muted uppercase tracking-wider hidden sm:inline">TARGET_URI:</span>
@@ -145,7 +145,7 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
         
         {/* Column 1: Risk Gauge Meter */}
         <div className={cn(
-          "col-span-1 bg-[#070d1e]/80 backdrop-blur-xl rounded-2xl p-6 flex flex-col relative border transition-all shadow-xl",
+          "col-span-1 bg-[#0f1612]/80 backdrop-blur-xl rounded-2xl p-6 flex flex-col relative border transition-all shadow-xl",
           isHighRisk 
             ? "border-cyber-red/30 shadow-[0_0_30px_rgba(244,63,94,0.15)]" 
             : "border-cyber-green/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]"
@@ -200,7 +200,7 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
         </div>
 
         {/* Column 2: Threat Indicators */}
-        <div className="col-span-1 bg-[#070d1e]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl p-6 h-full flex flex-col shadow-xl">
+        <div className="col-span-1 bg-[#0f1612]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl p-6 h-full flex flex-col shadow-xl">
           <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-3">
             <Shield className="w-4 h-4 text-cyber-blue" />
             <h3 className="text-xs font-mono font-bold tracking-wider text-white uppercase">{t('threat_indicators')}</h3>
@@ -230,7 +230,7 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
         </div>
 
         {/* Column 3: Risk Profile (Radar Chart) */}
-        <div className="col-span-1 bg-[#070d1e]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl p-6 h-full flex flex-col shadow-xl">
+        <div className="col-span-1 bg-[#0f1612]/80 backdrop-blur-xl border border-cyber-border/40 rounded-2xl p-6 h-full flex flex-col shadow-xl">
           <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-3">
             <ActivityIcon className="w-4 h-4 text-cyber-blue" />
             <h3 className="text-xs font-mono font-bold tracking-wider text-white uppercase">{t('risk_profile')}</h3>
@@ -251,8 +251,8 @@ export function UrlScannerResult({ scanResult, inputText, onReset }: UrlScannerR
                   <Radar
                     name="Risk"
                     dataKey="A"
-                    stroke={isHighRisk ? "#f43f5e" : "#00f0ff"}
-                    fill={isHighRisk ? "#f43f5e" : "#00f0ff"}
+                    stroke={isHighRisk ? "#f43f5e" : "#36c96c"}
+                    fill={isHighRisk ? "#f43f5e" : "#36c96c"}
                     fillOpacity={0.25}
                     strokeWidth={2}
                   />

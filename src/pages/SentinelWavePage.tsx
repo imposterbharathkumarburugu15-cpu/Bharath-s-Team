@@ -34,19 +34,19 @@ export function SentinelWavePage() {
       icon: Lock,
       title: "4. Never Share One-Time Passwords (OTP)",
       desc: "Real banks, companies, and IT departments will never ask you to read back a multi-factor authentication code or password.",
-      color: "#00f5ff"
+      color: "#36c96c"
     }
   ];
 
   return (
     <div className="w-full flex flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto overflow-y-auto custom-scrollbar">
       {/* Page Introduction Banner for Beginners */}
-      <div className="bg-gradient-to-r from-[#0a0f26] via-[#0e1738] to-[#070b1c] border border-cyber-blue/30 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#131d17] via-[#1c2a21] to-[#0e1511] border border-cyber-blue/30 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-cyber-blue/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-cyber-blue/15 border border-cyber-blue/40 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(0,245,255,0.25)]">
+            <div className="w-12 h-12 rounded-2xl bg-cyber-blue/15 border border-cyber-blue/40 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(105,230,165,0.25)]">
               <Sparkles className="w-6 h-6 text-cyber-blue" />
             </div>
             <div>
@@ -76,7 +76,7 @@ export function SentinelWavePage() {
                   className={cn(
                     "px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer border",
                     isSelected
-                      ? "bg-cyber-blue text-black border-cyber-blue font-bold shadow-[0_0_15px_rgba(0,245,255,0.3)]"
+                      ? "bg-cyber-blue text-black border-cyber-blue font-bold shadow-[0_0_15px_rgba(105,230,165,0.3)]"
                       : "bg-white/5 text-gray-300 hover:text-white border-white/10 hover:border-white/20"
                   )}
                 >
@@ -101,7 +101,7 @@ export function SentinelWavePage() {
       </div>
 
       {/* Educational Guide: Cyber Safety Rules for Beginners */}
-      <div className="bg-[#0a0e20] border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+      <div className="bg-[#111914] border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2.5">
             <Lightbulb className="w-5 h-5 text-[#ffb703]" />

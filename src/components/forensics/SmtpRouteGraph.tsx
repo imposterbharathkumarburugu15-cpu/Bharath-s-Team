@@ -18,7 +18,7 @@ export function SmtpRouteGraph({ dossier, onDrillDown }: SmtpRouteGraphProps) {
   return (
     <section 
       id="smtp-hop-route-graph"
-      className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl font-mono text-white space-y-4"
+      className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl font-mono text-white space-y-4"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
         <div>
@@ -59,7 +59,7 @@ export function SmtpRouteGraph({ dossier, onDrillDown }: SmtpRouteGraphProps) {
       <div className="space-y-3 py-2">
         {/* Step 0: Sender Origin */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 text-xs shrink-0 shadow-[0_0_10px_rgba(0,245,255,0.2)]">
+          <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 text-xs shrink-0 shadow-[0_0_10px_rgba(105,230,165,0.2)]">
             <Server className="w-4 h-4" />
           </div>
           <div className="p-2 px-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300 font-sans flex-1">
@@ -108,7 +108,7 @@ export function SmtpRouteGraph({ dossier, onDrillDown }: SmtpRouteGraphProps) {
                 className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
                   isSuspicious 
                     ? 'bg-red-950/20 border-red-500/40 hover:border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.15)]' 
-                    : 'bg-[#0a0f1c] border-white/10 hover:border-cyan-400/50'
+                    : 'bg-[#0f1712] border-white/10 hover:border-cyan-400/50'
                 }`}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">

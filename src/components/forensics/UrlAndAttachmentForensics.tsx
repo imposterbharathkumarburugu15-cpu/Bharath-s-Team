@@ -29,7 +29,7 @@ export function UrlAndAttachmentForensics({ dossier, onDrillDown }: UrlAndAttach
       {/* SECTION 12: URL FORENSICS */}
       <section 
         id="url-forensics-section"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
           <div>
@@ -183,7 +183,7 @@ export function UrlAndAttachmentForensics({ dossier, onDrillDown }: UrlAndAttach
       {/* SECTION 13: ATTACHMENT FORENSICS */}
       <section 
         id="attachment-forensics-section"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
           <div>

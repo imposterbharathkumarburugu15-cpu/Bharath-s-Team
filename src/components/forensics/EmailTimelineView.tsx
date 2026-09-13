@@ -84,7 +84,7 @@ export function EmailTimelineView({ dossier }: EmailTimelineViewProps) {
   return (
     <section 
       id="email-timeline-section"
-      className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl font-mono text-white space-y-4"
+      className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl font-mono text-white space-y-4"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
         <div>
@@ -119,7 +119,7 @@ export function EmailTimelineView({ dossier }: EmailTimelineViewProps) {
                     ? 'bg-red-500 border-red-300 shadow-[0_0_10px_#ef4444]' 
                     : isUnavailable 
                       ? 'bg-gray-800 border-gray-600' 
-                      : 'bg-[#080d1a] border-cyan-400 shadow-[0_0_8px_rgba(0,245,255,0.4)]'
+                      : 'bg-[#0e1410] border-cyan-400 shadow-[0_0_8px_rgba(105,230,165,0.4)]'
                 }`}
               >
                 <div className={`w-1.5 h-1.5 rounded-full ${isSuspicious ? 'bg-white' : isUnavailable ? 'bg-gray-500' : 'bg-cyan-400'}`} />
@@ -131,7 +131,7 @@ export function EmailTimelineView({ dossier }: EmailTimelineViewProps) {
                   ? 'bg-red-950/20 border-red-500/40' 
                   : isUnavailable
                     ? 'bg-black/40 border-white/5 opacity-80'
-                    : 'bg-[#0b1326] border-white/10 hover:border-cyan-500/30'
+                    : 'bg-[#141d17] border-white/10 hover:border-cyan-500/30'
               }`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-1">
                   <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">

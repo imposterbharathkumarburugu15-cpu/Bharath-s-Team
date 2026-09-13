@@ -61,7 +61,7 @@ export function Settings() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Detection Engine Parameters */}
-        <Card className="bg-[#0a0f1c] border-cyber-border/40">
+        <Card className="bg-[#0f1712] border-cyber-border/40">
           <CardHeader className="pb-3 border-b border-white/5">
             <CardTitle className="text-sm font-mono flex items-center gap-2 text-white">
               <Shield className="w-4 h-4 text-cyber-blue" />
@@ -134,7 +134,7 @@ export function Settings() {
         </Card>
 
         {/* System Language & Interface */}
-        <Card className="bg-[#0a0f1c] border-cyber-border/40">
+        <Card className="bg-[#0f1712] border-cyber-border/40">
           <CardHeader className="pb-3 border-b border-white/5">
             <CardTitle className="text-sm font-mono flex items-center gap-2 text-white">
               <Globe className="w-4 h-4 text-cyber-green" />

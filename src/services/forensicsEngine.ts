@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../lib/apiClient';
 /**
  * NeuroShield ForensicsEngine
  * Comprehensive RFC 5322 Ingestion, Multi-Hop SMTP Relay Reconstruction,

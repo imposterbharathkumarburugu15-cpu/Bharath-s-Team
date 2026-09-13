@@ -56,7 +56,7 @@ export function SihForensicSuite({
       {/* ────────────────────────────────────────────────────────────────────────── */}
       {/* 5-PILLAR HERO HEADER (EXACTLY MATCHING USER SPECIFICATION)                */}
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-[#070d1e] via-[#09152e] to-[#070d1e] border-2 border-cyan-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#0f1612] via-[#16211a] to-[#0f1612] border-2 border-cyan-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
         <div className="absolute -right-20 -top-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -97,7 +97,7 @@ export function SihForensicSuite({
             className={cn(
               "p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between",
               activeTab === 'all'
-                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(0,245,255,0.25)] text-white"
+                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(105,230,165,0.25)] text-white"
                 : "bg-black/40 border-white/10 text-gray-400 hover:text-white hover:border-white/20"
             )}
           >
@@ -110,7 +110,7 @@ export function SihForensicSuite({
             className={cn(
               "p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between",
               activeTab === 'relay'
-                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(0,245,255,0.25)] text-white"
+                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(105,230,165,0.25)] text-white"
                 : "bg-black/40 border-white/10 text-gray-400 hover:text-white hover:border-white/20"
             )}
           >
@@ -123,7 +123,7 @@ export function SihForensicSuite({
             className={cn(
               "p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between",
               activeTab === 'geo'
-                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(0,245,255,0.25)] text-white"
+                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(105,230,165,0.25)] text-white"
                 : "bg-black/40 border-white/10 text-gray-400 hover:text-white hover:border-white/20"
             )}
           >
@@ -136,7 +136,7 @@ export function SihForensicSuite({
             className={cn(
               "p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between",
               activeTab === 'infra'
-                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(0,245,255,0.25)] text-white"
+                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(105,230,165,0.25)] text-white"
                 : "bg-black/40 border-white/10 text-gray-400 hover:text-white hover:border-white/20"
             )}
           >
@@ -149,7 +149,7 @@ export function SihForensicSuite({
             className={cn(
               "p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between",
               activeTab === 'confidence'
-                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(0,245,255,0.25)] text-white"
+                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(105,230,165,0.25)] text-white"
                 : "bg-black/40 border-white/10 text-gray-400 hover:text-white hover:border-white/20"
             )}
           >
@@ -162,7 +162,7 @@ export function SihForensicSuite({
             className={cn(
               "p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between",
               activeTab === 'mutation'
-                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(0,245,255,0.25)] text-white"
+                ? "bg-cyan-500/20 border-cyan-400 shadow-[0_0_15px_rgba(105,230,165,0.25)] text-white"
                 : "bg-black/40 border-white/10 text-gray-400 hover:text-white hover:border-white/20"
             )}
           >
@@ -178,11 +178,11 @@ export function SihForensicSuite({
       {(activeTab === 'all' || activeTab === 'relay') && (
         <section 
           id="upgrade-1-relay-reconstruction"
-          className="bg-[#080d1a] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
+          className="bg-[#0e1410] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0 text-cyan-300 shadow-[0_0_15px_rgba(0,245,255,0.2)]">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0 text-cyan-300 shadow-[0_0_15px_rgba(105,230,165,0.2)]">
                 <Server className="w-5 h-5" />
               </div>
               <div>
@@ -231,7 +231,7 @@ export function SihForensicSuite({
                   className={cn(
                     "p-3.5 rounded-xl border transition-all cursor-pointer",
                     selectedHopIdx === idx 
-                      ? "bg-cyan-950/30 border-cyan-500/50 shadow-[0_0_15px_rgba(0,245,255,0.1)]"
+                      ? "bg-cyan-950/30 border-cyan-500/50 shadow-[0_0_15px_rgba(105,230,165,0.1)]"
                       : "bg-black/40 border-white/10 hover:border-white/20"
                   )}
                   onClick={() => setSelectedHopIdx(idx)}
@@ -305,11 +305,11 @@ export function SihForensicSuite({
       {(activeTab === 'all' || activeTab === 'geo') && (
         <section 
           id="upgrade-2-evidence-aware-geo"
-          className="bg-[#080d1a] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
+          className="bg-[#0e1410] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0 text-purple-300 shadow-[0_0_15px_rgba(126,176,147,0.2)]">
                 <Globe className="w-5 h-5" />
               </div>
               <div>
@@ -373,7 +373,7 @@ export function SihForensicSuite({
           </div>
 
           {/* Evidence Analysis Banner */}
-          <div className="bg-[#05080f] border border-white/10 rounded-xl p-4 space-y-2 text-xs">
+          <div className="bg-[#080c09] border border-white/10 rounded-xl p-4 space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-bold text-white uppercase flex items-center gap-1.5">
                 <Compass className="w-3.5 h-3.5 text-cyan-400" />
@@ -396,7 +396,7 @@ export function SihForensicSuite({
       {(activeTab === 'all' || activeTab === 'infra') && (
         <section 
           id="upgrade-3-infrastructure-relationship-graph"
-          className="bg-[#080d1a] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
+          className="bg-[#0e1410] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
             <div className="flex items-start gap-3">
@@ -431,7 +431,7 @@ export function SihForensicSuite({
           <div className="p-5 rounded-xl bg-black/60 border border-white/10 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
               {/* Node 1: Inbound Artifact */}
-              <div className="p-3.5 rounded-xl bg-[#09101d] border border-cyan-500/40 space-y-2 shadow-md">
+              <div className="p-3.5 rounded-xl bg-[#0f1712] border border-cyan-500/40 space-y-2 shadow-md">
                 <div className="flex items-center justify-between text-[10px] text-cyan-400 font-bold uppercase">
                   <span>Inbound Artifact</span>
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
@@ -441,7 +441,7 @@ export function SihForensicSuite({
               </div>
 
               {/* Node 2: Intermediate Infrastructure Pivot */}
-              <div className="p-3.5 rounded-xl bg-[#09101d] border border-purple-500/40 space-y-2 shadow-md">
+              <div className="p-3.5 rounded-xl bg-[#0f1712] border border-purple-500/40 space-y-2 shadow-md">
                 <div className="flex items-center justify-between text-[10px] text-purple-400 font-bold uppercase">
                   <span>Correlated MTA Infrastructure</span>
                   <Server className="w-3 h-3 text-purple-400" />
@@ -451,7 +451,7 @@ export function SihForensicSuite({
               </div>
 
               {/* Node 3: Target Campaign Cluster */}
-              <div className="p-3.5 rounded-xl bg-[#09101d] border border-red-500/40 space-y-2 shadow-md">
+              <div className="p-3.5 rounded-xl bg-[#0f1712] border border-red-500/40 space-y-2 shadow-md">
                 <div className="flex items-center justify-between text-[10px] text-red-400 font-bold uppercase">
                   <span>Associated Threat Cluster</span>
                   <AlertOctagon className="w-3 h-3 text-red-400" />
@@ -487,11 +487,11 @@ export function SihForensicSuite({
       {(activeTab === 'all' || activeTab === 'confidence') && (
         <section 
           id="upgrade-4-forensic-confidence-engine"
-          className="bg-[#080d1a] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
+          className="bg-[#0e1410] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0 text-blue-300 shadow-[0_0_15px_rgba(94,175,128,0.2)]">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
@@ -591,7 +591,7 @@ export function SihForensicSuite({
       {(activeTab === 'all' || activeTab === 'mutation') && (
         <section 
           id="upgrade-5-campaign-mutation-detection"
-          className="bg-[#080d1a] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
+          className="bg-[#0e1410] border-2 border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
             <div className="flex items-start gap-3">
@@ -691,9 +691,9 @@ export function SihForensicSuite({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0a0f1c] border-2 border-cyan-500/40 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl font-mono"
+              className="bg-[#0f1712] border-2 border-cyan-500/40 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl font-mono"
             >
-              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#05080f]">
+              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#080c09]">
                 <div className="flex items-center gap-2">
                   <Radio className="w-4 h-4 text-cyan-400 animate-pulse" />
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">

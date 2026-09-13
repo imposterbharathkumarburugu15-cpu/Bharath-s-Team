@@ -156,15 +156,15 @@ export default function SentinelWaveModule() {
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden bg-[#020408] p-4 lg:p-6 gap-6 relative">
+    <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden bg-[#040605] p-4 lg:p-6 gap-6 relative">
       {/* Node Graph Centerpiece */}
-      <div className="flex-1 relative overflow-hidden bg-[#0a0d1a] border border-[#00f5ff]/20 rounded-2xl shadow-[inset_0_0_50px_rgba(0,245,255,0.05)] group">
+      <div className="flex-1 relative overflow-hidden bg-[#0e1611] border border-[#36c96c]/20 rounded-2xl shadow-[inset_0_0_50px_rgba(105,230,165,0.05)] group">
         <div className="absolute top-6 left-6 z-10 flex gap-4">
           <div className="bg-black/50 border border-white/10 px-4 py-2 rounded-lg backdrop-blur-md">
-            <h2 className="text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00f5ff] uppercase">
+            <h2 className="text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#36c96c] uppercase">
               NeuroShield Wave
             </h2>
-            <p className="text-[10px] text-[#00f5ff] font-mono tracking-[0.2em] mt-1 drop-shadow-[0_0_5px_#00f5ff]">TOPOLOGY VISUALIZER</p>
+            <p className="text-[10px] text-[#36c96c] font-mono tracking-[0.2em] mt-1 drop-shadow-[0_0_5px_#36c96c]">TOPOLOGY VISUALIZER</p>
           </div>
         </div>
 
@@ -176,7 +176,7 @@ export default function SentinelWaveModule() {
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
             <linearGradient id="edgeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-               <stop offset="0%" stopColor="rgba(0, 245, 255, 0.1)" />
+               <stop offset="0%" stopColor="rgba(105, 230, 165, 0.1)" />
                <stop offset="100%" stopColor="rgba(0, 255, 102, 0.4)" />
             </linearGradient>
             <linearGradient id="edgeGradientAlert" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -229,7 +229,7 @@ export default function SentinelWaveModule() {
                 <motion.circle
                   key={p.id}
                   r={p.threat ? 5 : 3}
-                  fill={p.threat ? '#ff2a55' : '#00f5ff'}
+                  fill={p.threat ? '#ff2a55' : '#36c96c'}
                   initial={{ cx: `${fromNode.x}%`, cy: `${fromNode.y}%`, opacity: 0 }}
                   animate={{ cx: `${toNode.x}%`, cy: `${toNode.y}%`, opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -267,14 +267,14 @@ export default function SentinelWaveModule() {
                "relative p-4 rounded-xl border backdrop-blur-xl transition-all duration-300 flex items-center justify-center",
                node.status === 'threat' ? 'border-[#ff2a55] bg-[#ff2a55]/20 shadow-[0_0_30px_#ff2a55]' : 
                node.status === 'isolated' ? 'border-white/20 bg-black/60 opacity-60' :
-               node.id === 'gw' ? 'border-[#00f5ff] bg-[#00f5ff]/10 shadow-[0_0_20px_var(--color-cyber-blue-glow)]' :
+               node.id === 'gw' ? 'border-[#36c96c] bg-[#36c96c]/10 shadow-[0_0_20px_var(--color-cyber-blue-glow)]' :
                'border-[#00ff66]/40 bg-[#00ff66]/10 hover:border-[#00ff66] hover:shadow-[0_0_15px_rgba(0,255,102,0.3)]'
             )}>
               <div className={cn(
                  "transition-colors",
                  node.status === 'threat' ? 'text-[#ff2a55]' : 
                  node.status === 'isolated' ? 'text-gray-500' :
-                 node.id === 'gw' ? 'text-[#00f5ff]' : 'text-[#00ff66]'
+                 node.id === 'gw' ? 'text-[#36c96c]' : 'text-[#00ff66]'
               )}>
                 {node.status === 'isolated' ? <ShieldOff className="w-6 h-6" /> : getIcon(node.type)}
               </div>
@@ -292,7 +292,7 @@ export default function SentinelWaveModule() {
                <span className="text-[9px] font-mono font-bold text-white uppercase tracking-widest bg-black/80 px-2 py-0.5 rounded border border-white/10 shadow-lg">
                  {node.label}
                </span>
-               <span className="text-[8px] font-mono text-[#8a99af] mt-1 tracking-wider">
+               <span className="text-[8px] font-mono text-[#8aaf98] mt-1 tracking-wider">
                  {node.ip}
                </span>
             </div>
@@ -303,10 +303,10 @@ export default function SentinelWaveModule() {
       {/* Right Sidebar UI */}
       <div className="w-full md:w-80 flex flex-col gap-6">
         {/* Selected Node Inspector */}
-        <Card className="bg-[#0a0d1a] border-[#00f5ff]/20 backdrop-blur-xl relative overflow-hidden flex-shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+        <Card className="bg-[#0e1611] border-[#36c96c]/20 backdrop-blur-xl relative overflow-hidden flex-shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
-               <h3 className="text-xs font-mono tracking-[0.2em] font-bold uppercase text-[#00f5ff]">Node Analysis</h3>
+               <h3 className="text-xs font-mono tracking-[0.2em] font-bold uppercase text-[#36c96c]">Node Analysis</h3>
                <div className="flex gap-1">
                   <span className="w-2 h-2 rounded-full bg-[#ff2a55]" />
                   <span className="w-2 h-2 rounded-full bg-[#ffea00]" />
@@ -326,14 +326,14 @@ export default function SentinelWaveModule() {
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white tracking-widest uppercase">{selectedNode.label}</div>
-                    <div className="text-xs text-[#8a99af] font-mono">{selectedNode.ip}</div>
+                    <div className="text-xs text-[#8aaf98] font-mono">{selectedNode.ip}</div>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3 text-[10px] font-mono">
                   <div className="bg-black/50 p-3 rounded border border-white/10">
                     <div className="opacity-50 mb-1 uppercase tracking-widest">Inbound Traffic</div>
-                    <div className="text-[#00f5ff] font-bold tracking-widest text-lg">12.4 <span className="text-[10px]">MB/s</span></div>
+                    <div className="text-[#36c96c] font-bold tracking-widest text-lg">12.4 <span className="text-[10px]">MB/s</span></div>
                   </div>
                   <div className="bg-black/50 p-3 rounded border border-white/10">
                     <div className="opacity-50 mb-1 uppercase tracking-widest">Avg Latency</div>
@@ -365,22 +365,22 @@ export default function SentinelWaveModule() {
               </div>
             ) : (
               <div className="text-center py-6 opacity-50">
-                 <Network className="w-8 h-8 mx-auto mb-2 text-[#8a99af]" />
-                 <p className="text-[10px] font-mono text-[#8a99af] uppercase tracking-widest">Select a node in the topography</p>
+                 <Network className="w-8 h-8 mx-auto mb-2 text-[#8aaf98]" />
+                 <p className="text-[10px] font-mono text-[#8aaf98] uppercase tracking-widest">Select a node in the topography</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Terminal / Packet Feed */}
-        <Card className="flex-1 bg-[#0a0d1a] border-[#00f5ff]/20 backdrop-blur-xl relative overflow-hidden min-h-[300px] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+        <Card className="flex-1 bg-[#0e1611] border-[#36c96c]/20 backdrop-blur-xl relative overflow-hidden min-h-[300px] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
           <CardContent className="p-4 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-2">
                <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-[#00f5ff] animate-pulse" />
+                 <div className="w-2 h-2 rounded-full bg-[#36c96c] animate-pulse" />
                  <h3 className="text-[10px] font-mono tracking-[0.2em] font-bold uppercase text-white">Live Event Stream</h3>
                </div>
-               <span className="text-[9px] font-mono text-[#8a99af]">PORT_LISTEN: 443</span>
+               <span className="text-[9px] font-mono text-[#8aaf98]">PORT_LISTEN: 443</span>
             </div>
             
             <div className="flex-1 font-mono text-[10px] space-y-2 overflow-y-auto custom-scrollbar pr-2 pb-4">
@@ -388,7 +388,7 @@ export default function SentinelWaveModule() {
                 <div key={i} className={cn(
                    "flex gap-3 leading-relaxed", 
                    entry.type === 'crit' ? 'text-[#ff2a55] font-bold bg-[#ff2a55]/10 p-1.5 rounded -mx-1.5 px-1.5' : 
-                   entry.type === 'warn' ? 'text-[#ffea00]' : 'text-[#8a99af]'
+                   entry.type === 'warn' ? 'text-[#ffea00]' : 'text-[#8aaf98]'
                 )}>
                   <span className="opacity-60 whitespace-nowrap shrink-0">{entry.time}</span>
                   <span className="break-words">

@@ -54,10 +54,10 @@ export function ForensicDrillDownModal({ target, onClose }: ForensicDrillDownMod
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#080d1a] border border-cyan-500/30 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col text-white font-mono"
+          className="w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0e1410] border border-cyan-500/30 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col text-white font-mono"
         >
           {/* Header */}
-          <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[#0b1326] sticky top-0 z-10">
+          <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[#141d17] sticky top-0 z-10">
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
                 <Terminal className="w-4 h-4" />
@@ -174,7 +174,7 @@ export function ForensicDrillDownModal({ target, onClose }: ForensicDrillDownMod
           </div>
 
           {/* Footer */}
-          <div className="p-3 border-t border-white/10 bg-[#0b1326] flex justify-end">
+          <div className="p-3 border-t border-white/10 bg-[#141d17] flex justify-end">
             <button
               onClick={onClose}
               className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-colors cursor-pointer"

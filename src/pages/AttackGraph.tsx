@@ -236,7 +236,7 @@ export function AttackGraph() {
       return 'border-cyber-red bg-cyber-red/30 ring-4 ring-cyber-red animate-pulse shadow-[0_0_24px_rgba(239,68,68,0.8)]';
     }
     if (isSelected) {
-      return 'border-cyber-blue bg-cyber-blue/30 ring-4 ring-cyber-blue shadow-[0_0_20px_rgba(0,245,255,0.7)]';
+      return 'border-cyber-blue bg-cyber-blue/30 ring-4 ring-cyber-blue shadow-[0_0_20px_rgba(105,230,165,0.7)]';
     }
     switch (type) {
       case 'attacker':
@@ -279,7 +279,7 @@ export function AttackGraph() {
                 <Workflow className="w-5 h-5 text-cyber-blue" />
                 {t('attack_graph_title')}
               </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyber-blue/15 text-cyber-blue border border-cyber-blue/30 shadow-[0_0_10px_rgba(0,245,255,0.15)]">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyber-blue/15 text-cyber-blue border border-cyber-blue/30 shadow-[0_0_10px_rgba(105,230,165,0.15)]">
                 {activeModel.badge}
               </span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
@@ -301,7 +301,7 @@ export function AttackGraph() {
               className={`font-mono text-xs font-bold transition-all ${
                 isSimulating 
                   ? 'bg-cyber-red text-white hover:bg-cyber-red/80 shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
-                  : 'bg-cyber-blue text-black hover:bg-cyber-blue/90 shadow-[0_0_15px_rgba(0,245,255,0.4)]'
+                  : 'bg-cyber-blue text-black hover:bg-cyber-blue/90 shadow-[0_0_15px_rgba(105,230,165,0.4)]'
               }`}
             >
               {isSimulating ? (
@@ -316,7 +316,7 @@ export function AttackGraph() {
             </Button>
 
             {/* Layout Mode Selector */}
-            <div className="flex items-center bg-[#05080f] rounded-lg border border-white/10 p-0.5 text-xs font-mono">
+            <div className="flex items-center bg-[#080c09] rounded-lg border border-white/10 p-0.5 text-xs font-mono">
               <button
                 onClick={() => setLayoutMode('killchain')}
                 className={`px-2.5 py-1 rounded transition-colors ${layoutMode === 'killchain' ? 'bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/40' : 'text-gray-400 hover:text-white'}`}
@@ -341,7 +341,7 @@ export function AttackGraph() {
             </div>
 
             {/* Zoom Controls */}
-            <div className="flex items-center bg-[#05080f] rounded-lg border border-white/10 p-0.5">
+            <div className="flex items-center bg-[#080c09] rounded-lg border border-white/10 p-0.5">
               <button
                 onClick={() => setZoomLevel(prev => Math.max(0.7, prev - 0.15))}
                 className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-white"
@@ -382,8 +382,8 @@ export function AttackGraph() {
                 onClick={() => handleSelectModel(model.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-mono shrink-0 transition-all flex items-center gap-2 border ${
                   isSelected 
-                    ? 'bg-cyber-blue/15 text-cyber-blue border-cyber-blue/50 shadow-[0_0_12px_rgba(0,245,255,0.2)] font-bold' 
-                    : 'bg-[#05080f]/80 text-gray-400 border-white/10 hover:border-white/20 hover:text-gray-200'
+                    ? 'bg-cyber-blue/15 text-cyber-blue border-cyber-blue/50 shadow-[0_0_12px_rgba(105,230,165,0.2)] font-bold'
+                    : 'bg-[#080c09]/80 text-gray-400 border-white/10 hover:border-white/20 hover:text-gray-200'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${model.threatLevel === 'CRITICAL' ? 'bg-cyber-red' : 'bg-[#f59e0b]'}`} />
@@ -397,7 +397,7 @@ export function AttackGraph() {
               className={`px-3 py-1.5 rounded-lg text-xs font-mono shrink-0 transition-all flex items-center gap-2 border ${
                 selectedModelId === 'live-session'
                   ? 'bg-cyber-green/15 text-cyber-green border-cyber-green/50 shadow-[0_0_12px_rgba(0,255,102,0.2)] font-bold'
-                  : 'bg-[#05080f]/80 text-gray-400 border-white/10 hover:border-white/20 hover:text-gray-200'
+                  : 'bg-[#080c09]/80 text-gray-400 border-white/10 hover:border-white/20 hover:text-gray-200'
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-cyber-green animate-pulse" />
@@ -410,11 +410,11 @@ export function AttackGraph() {
       {/* Main Canvas & Inspector Layout */}
       <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
         {/* Canvas Graph Area */}
-        <Card className="flex-[3] relative overflow-hidden bg-[#05080f] border-cyber-border/50 min-h-[440px] lg:min-h-[520px] flex flex-col shadow-2xl">
+        <Card className="flex-[3] relative overflow-hidden bg-[#080c09] border-cyber-border/50 min-h-[440px] lg:min-h-[520px] flex flex-col shadow-2xl">
           <div className="radar-bg"></div>
           
           {/* Top Canvas Legend & Status */}
-          <div className="absolute top-3 left-3 z-20 flex items-center gap-2 sm:gap-3 bg-[#0a0f1c]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-mono text-gray-300 overflow-x-auto max-w-[calc(100%-24px)]">
+          <div className="absolute top-3 left-3 z-20 flex items-center gap-2 sm:gap-3 bg-[#0f1712]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-mono text-gray-300 overflow-x-auto max-w-[calc(100%-24px)]">
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyber-red" /> {t('legend_threat_mta')}</span>
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#f59e0b]" /> {t('legend_deceptive_domain')}</span>
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyber-blue" /> {t('legend_claimed_sender')}</span>
@@ -452,7 +452,7 @@ export function AttackGraph() {
                     <polygon points="0 0, 8 3, 0 6" fill="rgba(255,255,255,0.25)" />
                   </marker>
                   <marker id="arrowhead-active" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                    <polygon points="0 0, 8 3, 0 6" fill="#00f5ff" />
+                    <polygon points="0 0, 8 3, 0 6" fill="#36c96c" />
                   </marker>
                   <marker id="arrowhead-sim" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
                     <polygon points="0 0, 9 3.5, 0 7" fill="#ef4444" />
@@ -476,7 +476,7 @@ export function AttackGraph() {
                       <motion.line
                         x1={`${srcPos.x}%`} y1={`${srcPos.y}%`}
                         x2={`${tgtPos.x}%`} y2={`${tgtPos.y}%`}
-                        stroke={isSimActive ? '#ef4444' : isSelected ? '#00f5ff' : 'rgba(255,255,255,0.2)'}
+                        stroke={isSimActive ? '#ef4444' : isSelected ? '#36c96c' : 'rgba(255,255,255,0.2)'}
                         strokeWidth={isSimActive ? 3.5 : isSelected ? 2.5 : 1.5}
                         strokeDasharray={isSimActive ? '6 3' : edge.type === 'phished' || edge.type === 'payload' ? '4 3' : undefined}
                         markerEnd={isSimActive ? "url(#arrowhead-sim)" : isSelected ? "url(#arrowhead-active)" : "url(#arrowhead)"}
@@ -488,7 +488,7 @@ export function AttackGraph() {
                       <text
                         x={`${(srcPos.x + tgtPos.x) / 2}%`}
                         y={`${(srcPos.y + tgtPos.y) / 2 - 2}%`}
-                        fill={isSimActive ? '#ef4444' : isSelected ? '#00f5ff' : 'rgba(156, 163, 175, 0.7)'}
+                        fill={isSimActive ? '#ef4444' : isSelected ? '#36c96c' : 'rgba(156, 163, 175, 0.7)'}
                         fontSize="9"
                         fontFamily="monospace"
                         textAnchor="middle"
@@ -522,10 +522,10 @@ export function AttackGraph() {
                     {/* Node Tag Tooltip below */}
                     <div className={`absolute top-11 sm:top-13 whitespace-nowrap font-mono text-[9px] sm:text-[10px] px-2 py-0.5 rounded border max-w-[170px] sm:max-w-[210px] truncate shadow-lg pointer-events-none transition-all ${
                       isSelected
-                        ? 'bg-cyber-blue text-black font-bold border-cyber-blue shadow-[0_0_12px_rgba(0,245,255,0.4)]'
+                        ? 'bg-cyber-blue text-black font-bold border-cyber-blue shadow-[0_0_12px_rgba(105,230,165,0.4)]'
                         : isSimTarget
                         ? 'bg-cyber-red text-white font-bold border-cyber-red shadow-[0_0_12px_rgba(239,68,68,0.5)]'
-                        : 'bg-[#0a0f1c]/90 text-gray-200 border-white/10'
+                        : 'bg-[#0f1712]/90 text-gray-200 border-white/10'
                     }`}>
                       {node.label}
                     </div>
@@ -536,7 +536,7 @@ export function AttackGraph() {
 
             {/* Bottom Quick-Action Bar */}
             <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
-              <div className="flex items-center gap-2 pointer-events-auto bg-[#0a0f1c]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-mono text-gray-300">
+              <div className="flex items-center gap-2 pointer-events-auto bg-[#0f1712]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-mono text-gray-300">
                 <span className="text-gray-400">CHOKEPOINT:</span>
                 <span className="text-cyber-blue font-bold">{activeModel.gnnMetrics.chokepointNodeLabel}</span>
               </div>
@@ -555,9 +555,9 @@ export function AttackGraph() {
         </Card>
 
         {/* Forensic Entity & GNN Inspector Card */}
-        <Card className="flex-[1] flex flex-col bg-[#0a0f1c] border-cyber-border/50 shadow-2xl min-w-[300px]">
+        <Card className="flex-[1] flex flex-col bg-[#0f1712] border-cyber-border/50 shadow-2xl min-w-[300px]">
           {/* Tab Switcher: Node Telemetry vs GNN Engine */}
-          <div className="flex border-b border-white/10 bg-[#05080f]">
+          <div className="flex border-b border-white/10 bg-[#080c09]">
             <button
               onClick={() => setInspectorTab('node')}
               className={`flex-1 py-3 px-3 text-xs font-mono font-bold flex items-center justify-center gap-1.5 border-b-2 transition-colors ${
@@ -591,7 +591,7 @@ export function AttackGraph() {
                     <div>
                       <span className="text-gray-400 text-[10px] block mb-1 uppercase tracking-wider">{t('entity_classification')}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-white text-xs uppercase px-2.5 py-1 bg-[#05080f] border border-white/10 rounded inline-block font-bold">
+                        <span className="text-white text-xs uppercase px-2.5 py-1 bg-[#080c09] border border-white/10 rounded inline-block font-bold">
                           {selectedNode.type}
                         </span>
                         {selectedNode.mitreTechnique && (
@@ -604,7 +604,7 @@ export function AttackGraph() {
 
                     <div>
                       <span className="text-gray-400 text-[10px] block mb-1 uppercase tracking-wider">{t('identifier_label')}</span>
-                      <div className="text-cyber-blue text-xs break-all bg-[#05080f] p-2.5 rounded-lg border border-white/10 font-mono font-bold">
+                      <div className="text-cyber-blue text-xs break-all bg-[#080c09] p-2.5 rounded-lg border border-white/10 font-mono font-bold">
                         {selectedNode.label}
                       </div>
                     </div>
@@ -612,7 +612,7 @@ export function AttackGraph() {
                     {selectedNode.details && (
                       <div>
                         <span className="text-gray-400 text-[10px] block mb-1 uppercase tracking-wider">{t('evidence_details')}</span>
-                        <p className="text-xs text-gray-200 leading-relaxed bg-[#05080f] p-3 rounded-lg border border-white/10">
+                        <p className="text-xs text-gray-200 leading-relaxed bg-[#080c09] p-3 rounded-lg border border-white/10">
                           {selectedNode.details}
                         </p>
                       </div>
@@ -636,7 +636,7 @@ export function AttackGraph() {
                         {activeModel.edges.filter(e => e.source === selectedNode.id).map((e, idx) => {
                           const peer = activeModel.nodes.find(n => n.id === e.target);
                           return (
-                            <li key={`out-${idx}`} className="text-gray-300 bg-[#05080f] p-2 rounded border border-white/5 flex items-center justify-between gap-2">
+                            <li key={`out-${idx}`} className="text-gray-300 bg-[#080c09] p-2 rounded border border-white/5 flex items-center justify-between gap-2">
                               <span className="text-cyber-red text-[10px] font-bold uppercase shrink-0">➔ {e.relationship || e.type || 'LINK'}:</span>
                               <span className="text-white text-[11px] truncate">{peer?.label || e.target}</span>
                             </li>
@@ -645,14 +645,14 @@ export function AttackGraph() {
                         {activeModel.edges.filter(e => e.target === selectedNode.id).map((e, idx) => {
                           const peer = activeModel.nodes.find(n => n.id === e.source);
                           return (
-                            <li key={`in-${idx}`} className="text-gray-300 bg-[#05080f] p-2 rounded border border-white/5 flex items-center justify-between gap-2">
+                            <li key={`in-${idx}`} className="text-gray-300 bg-[#080c09] p-2 rounded border border-white/5 flex items-center justify-between gap-2">
                               <span className="text-cyber-green text-[10px] font-bold uppercase shrink-0">⬅ {e.relationship || e.type || 'LINK'}:</span>
                               <span className="text-white text-[11px] truncate">{peer?.label || e.source}</span>
                             </li>
                           );
                         })}
                         {activeModel.edges.filter(e => e.source === selectedNode.id || e.target === selectedNode.id).length === 0 && (
-                          <li className="text-gray-500 text-[11px] italic p-2 bg-[#05080f] rounded">
+                          <li className="text-gray-500 text-[11px] italic p-2 bg-[#080c09] rounded">
                             {t('isolated_vertex')}
                           </li>
                         )}
@@ -669,7 +669,7 @@ export function AttackGraph() {
             ) : (
               /* GNN Graph AI Inference Panel */
               <div className="space-y-4">
-                <div className="bg-[#05080f] p-3 rounded-lg border border-white/10 space-y-2">
+                <div className="bg-[#080c09] p-3 rounded-lg border border-white/10 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-[10px] uppercase">GNN Architecture:</span>
                     <span className="text-cyber-blue font-bold text-[10px]">R-GCN v4.2</span>
@@ -681,14 +681,14 @@ export function AttackGraph() {
 
                 {/* Blast Radius & Link Prediction */}
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#05080f] p-2.5 rounded-lg border border-white/10">
+                  <div className="bg-[#080c09] p-2.5 rounded-lg border border-white/10">
                     <span className="text-gray-400 text-[9px] uppercase block mb-1">BLAST RADIUS</span>
                     <span className="text-cyber-red font-bold text-lg">{activeModel.gnnMetrics.blastRadiusScore}%</span>
                     <div className="w-full bg-white/10 h-1 rounded-full mt-1.5 overflow-hidden">
                       <div className="bg-cyber-red h-full" style={{ width: `${activeModel.gnnMetrics.blastRadiusScore}%` }} />
                     </div>
                   </div>
-                  <div className="bg-[#05080f] p-2.5 rounded-lg border border-white/10">
+                  <div className="bg-[#080c09] p-2.5 rounded-lg border border-white/10">
                     <span className="text-gray-400 text-[9px] uppercase block mb-1">LINK PREDICTION</span>
                     <span className="text-cyber-green font-bold text-lg">{activeModel.gnnMetrics.linkPredictionConfidence}%</span>
                     <div className="w-full bg-white/10 h-1 rounded-full mt-1.5 overflow-hidden">
@@ -704,7 +704,7 @@ export function AttackGraph() {
                   </span>
                   <div className="space-y-1.5">
                     {activeModel.gnnMetrics.betweennessRanking.map((rank, idx) => (
-                      <div key={idx} className="bg-[#05080f] p-2 rounded border border-white/5 flex items-center justify-between text-xs">
+                      <div key={idx} className="bg-[#080c09] p-2 rounded border border-white/5 flex items-center justify-between text-xs">
                         <span className="text-gray-300 truncate max-w-[160px]">{rank.label}</span>
                         <span className="text-cyber-blue font-bold">{(rank.score * 100).toFixed(0)}%</span>
                       </div>
@@ -743,7 +743,7 @@ export function AttackGraph() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#0a0f1c] border border-cyber-border rounded-xl p-5 sm:p-6 max-w-lg w-full space-y-4 shadow-2xl font-mono"
+              className="bg-[#0f1712] border border-cyber-border rounded-xl p-5 sm:p-6 max-w-lg w-full space-y-4 shadow-2xl font-mono"
             >
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2 text-cyber-red">
@@ -765,7 +765,7 @@ export function AttackGraph() {
 
                 <div>
                   <span className="text-[10px] text-gray-400 uppercase block mb-1">Generated SOC Containment Command:</span>
-                  <div className="bg-[#05080f] p-3 rounded-lg border border-white/10 text-cyber-green break-all flex items-start justify-between gap-2">
+                  <div className="bg-[#080c09] p-3 rounded-lg border border-white/10 text-cyber-green break-all flex items-start justify-between gap-2">
                     <code>
                       {activeModel.id === 'cloudflare-tunnel'
                         ? 'rpz-block --zone "threats.local" --cname "*.trycloudflare.com." --action DROP'

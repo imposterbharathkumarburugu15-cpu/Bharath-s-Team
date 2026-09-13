@@ -114,7 +114,7 @@ export function Copilot() {
       {/* Top Header */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 px-2">
         <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-2xl bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+          <div className="relative w-10 h-10 rounded-2xl bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center shadow-[0_0_20px_rgba(86,170,118,0.3)]">
             <Bot className="w-5 h-5 text-cyan-300" />
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
           </div>
@@ -147,12 +147,12 @@ export function Copilot() {
       </div>
 
       {/* Main Chat Panel */}
-      <div className="flex-1 overflow-hidden flex flex-col rounded-3xl bg-[#080e1b]/95 border border-slate-800/90 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
+      <div className="flex-1 overflow-hidden flex flex-col rounded-3xl bg-[#0e1511]/95 border border-slate-800/90 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
         {/* Chat Stream */}
         <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 space-y-6 custom-scrollbar">
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 space-y-6 py-8">
-              <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+              <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(86,170,118,0.2)]">
                 <Sparkles className="w-8 h-8 text-cyan-300" />
               </div>
 
@@ -173,7 +173,7 @@ export function Copilot() {
                     <button
                       key={idx}
                       onClick={() => handleSend(item.prompt)}
-                      className="p-3.5 rounded-2xl bg-[#0b1326]/80 hover:bg-cyan-950/40 border border-slate-800/80 hover:border-cyan-500/40 transition-all text-left group cursor-pointer shadow-md flex items-start gap-3"
+                      className="p-3.5 rounded-2xl bg-[#141d17]/80 hover:bg-cyan-950/40 border border-slate-800/80 hover:border-cyan-500/40 transition-all text-left group cursor-pointer shadow-md flex items-start gap-3"
                     >
                       <div className="w-7 h-7 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0 mt-0.5 text-cyan-400 group-hover:scale-110 transition-transform">
                         <Icon className="w-3.5 h-3.5" />
@@ -205,7 +205,7 @@ export function Copilot() {
                 )}
               >
                 {msg.role === 'model' && (
-                  <div className="shrink-0 w-8 h-8 rounded-xl bg-cyan-500/15 flex items-center justify-center border border-cyan-500/40 mt-1 shadow-[0_0_12px_rgba(6,182,212,0.25)] text-cyan-300">
+                  <div className="shrink-0 w-8 h-8 rounded-xl bg-cyan-500/15 flex items-center justify-center border border-cyan-500/40 mt-1 shadow-[0_0_12px_rgba(86,170,118,0.25)] text-cyan-300">
                     <Bot className="w-4 h-4" />
                   </div>
                 )}
@@ -213,8 +213,8 @@ export function Copilot() {
                 <div className={cn(
                   "max-w-[90%] md:max-w-[75%] rounded-2xl px-5 py-4 text-xs relative overflow-hidden shadow-lg leading-relaxed",
                   msg.role === 'user' 
-                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-slate-950 font-semibold border border-cyan-300/40 shadow-[0_0_20px_rgba(6,182,212,0.25)]" 
-                    : "bg-[#0a1224]/90 text-slate-200 border border-slate-800 font-sans"
+                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-slate-950 font-semibold border border-cyan-300/40 shadow-[0_0_20px_rgba(86,170,118,0.25)]"
+                    : "bg-[#121c16]/90 text-slate-200 border border-slate-800 font-sans"
                 )}>
                   {msg.role === 'model' && (
                     <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80 font-mono text-[10px] text-slate-400">
@@ -253,10 +253,10 @@ export function Copilot() {
 
           {isTyping && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex w-full gap-3.5 justify-start">
-              <div className="shrink-0 w-8 h-8 rounded-xl bg-cyan-500/15 flex items-center justify-center border border-cyan-500/40 mt-1 shadow-[0_0_12px_rgba(6,182,212,0.25)] text-cyan-300">
+              <div className="shrink-0 w-8 h-8 rounded-xl bg-cyan-500/15 flex items-center justify-center border border-cyan-500/40 mt-1 shadow-[0_0_12px_rgba(86,170,118,0.25)] text-cyan-300">
                 <Bot className="w-4 h-4" />
               </div>
-              <div className="bg-[#0a1224]/90 text-slate-200 border border-cyan-500/30 rounded-2xl px-5 py-4 flex items-center gap-2.5 font-mono text-xs shadow-lg">
+              <div className="bg-[#121c16]/90 text-slate-200 border border-cyan-500/30 rounded-2xl px-5 py-4 flex items-center gap-2.5 font-mono text-xs shadow-lg">
                 <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
                 <span className="text-cyan-300 font-bold animate-pulse">Running Neural Threat Inference &amp; Telemetry Correlation...</span>
               </div>
@@ -266,7 +266,7 @@ export function Copilot() {
         </div>
 
         {/* Input Bar */}
-        <div className="p-4 bg-[#050a16] border-t border-slate-800/80">
+        <div className="p-4 bg-[#0b100d] border-t border-slate-800/80">
           <div className="relative flex items-center max-w-4xl mx-auto">
             <textarea
               className="w-full bg-slate-900/90 border border-slate-800 focus:border-cyan-500/60 rounded-2xl px-4 py-3 text-xs text-white placeholder-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-cyan-500/40 transition-all min-h-[46px] max-h-[120px] custom-scrollbar font-mono pr-24"
@@ -280,7 +280,7 @@ export function Copilot() {
               <button 
                 onClick={() => handleSend()}
                 disabled={!inputValue.trim() || isTyping}
-                className="px-3.5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.3)] text-xs font-mono"
+                className="px-3.5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(86,170,118,0.3)] text-xs font-mono"
               >
                 <span>Send</span>
                 <Send className="w-3.5 h-3.5" />

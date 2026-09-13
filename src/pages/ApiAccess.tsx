@@ -282,7 +282,7 @@ export function ApiAccess() {
         </div>
 
         {/* ACTIVE PLAN BADGE & TIER SWITCHER */}
-        <div className="flex items-center gap-3 bg-[#0a0f1c] border border-white/10 rounded-xl p-2.5 shadow-lg">
+        <div className="flex items-center gap-3 bg-[#0f1712] border border-white/10 rounded-xl p-2.5 shadow-lg">
           <div className="flex items-center gap-2.5 px-2">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
             <div>
@@ -307,7 +307,7 @@ export function ApiAccess() {
       {/* ENTERPRISE SUBSCRIPTION HERO BANNER */}
       <motion.div 
         variants={itemVariants}
-        className="bg-gradient-to-r from-[#0b1428] via-[#091024] to-[#150a26] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 mb-6 shadow-xl relative overflow-hidden"
+        className="bg-gradient-to-r from-[#141f18] via-[#121b15] to-[#131d17] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 mb-6 shadow-xl relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
@@ -335,7 +335,7 @@ export function ApiAccess() {
             <button
               onClick={handleSimulateApiCall}
               disabled={isSimulating}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(0,245,255,0.4)] active:scale-95 disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(105,230,165,0.4)] active:scale-95 disabled:opacity-50"
             >
               <Play className={cn("w-3.5 h-3.5", isSimulating && "animate-spin")} />
               <span>{isSimulating ? 'Executing...' : 'Simulate API Call'}</span>
@@ -377,7 +377,7 @@ export function ApiAccess() {
       {/* RATE LIMIT METERS & QUOTA GAUGES */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Metric 1: Daily Requests */}
-        <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/10 rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-cyan-500/30 transition-all">
+        <div className="bg-[#0e1611]/60 backdrop-blur-md border border-white/10 rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-cyan-500/30 transition-all">
           <div className="flex items-center justify-between text-xs text-cyber-muted mb-2">
             <span className="uppercase tracking-widest text-[10px]">Daily Request Limit</span>
             <Gauge className="w-4 h-4 text-cyan-400" />
@@ -387,7 +387,7 @@ export function ApiAccess() {
           </div>
           <div className="w-full bg-white/5 h-2 rounded-full mt-3 overflow-hidden">
             <div 
-              className="bg-cyan-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(0,245,255,0.5)]"
+              className="bg-cyan-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(105,230,165,0.5)]"
               style={{ width: `${percentDailyUsed}%` }}
             />
           </div>
@@ -398,7 +398,7 @@ export function ApiAccess() {
         </div>
 
         {/* Metric 2: Burst Per Second */}
-        <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/10 rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-cyan-500/30 transition-all">
+        <div className="bg-[#0e1611]/60 backdrop-blur-md border border-white/10 rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-cyan-500/30 transition-all">
           <div className="flex items-center justify-between text-xs text-cyber-muted mb-2">
             <span className="uppercase tracking-widest text-[10px]">Burst Concurrency</span>
             <Zap className="w-4 h-4 text-amber-400" />
@@ -419,7 +419,7 @@ export function ApiAccess() {
         </div>
 
         {/* Metric 3: Neural Profile Calls */}
-        <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/10 rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-purple-500/30 transition-all">
+        <div className="bg-[#0e1611]/60 backdrop-blur-md border border-white/10 rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-purple-500/30 transition-all">
           <div className="flex items-center justify-between text-xs text-cyber-muted mb-2">
             <span className="uppercase tracking-widest text-[10px]">Neural Profile Inferences</span>
             <Cpu className="w-4 h-4 text-purple-400" />
@@ -429,7 +429,7 @@ export function ApiAccess() {
           </div>
           <div className="w-full bg-white/5 h-2 rounded-full mt-3 overflow-hidden">
             <div 
-              className="bg-purple-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+              className="bg-purple-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(126,176,147,0.5)]"
               style={{ width: `${percentNeuroUsed}%` }}
             />
           </div>
@@ -440,7 +440,7 @@ export function ApiAccess() {
         </div>
 
         {/* Metric 4: Live Latency & Edge Health */}
-        <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/10 rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-emerald-500/30 transition-all">
+        <div className="bg-[#0e1611]/60 backdrop-blur-md border border-white/10 rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-emerald-500/30 transition-all">
           <div className="flex items-center justify-between text-xs text-cyber-muted mb-2">
             <span className="uppercase tracking-widest text-[10px]">Avg Ingress Latency</span>
             <Activity className="w-4 h-4 text-emerald-400" />
@@ -461,7 +461,7 @@ export function ApiAccess() {
       {/* TRAFFIC MONITORING & HEADERS SECTION */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Real-time Usage Chart */}
-        <div className="lg:col-span-2 bg-[#0a0d1a]/60 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-cyan-500/30 transition-all">
+        <div className="lg:col-span-2 bg-[#0e1611]/60 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-cyan-500/30 transition-all">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-cyber-blue" />
@@ -484,29 +484,29 @@ export function ApiAccess() {
               <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00f5ff" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#00f5ff" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#36c96c" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#36c96c" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorNeuro" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#72da99" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#72da99" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                <XAxis dataKey="time" stroke="#4a5568" fontSize={10} tickMargin={10} />
+                <XAxis dataKey="time" stroke="#4a6855" fontSize={10} tickMargin={10} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#060A13', borderColor: '#1a2235', fontSize: '12px' }}
-                  itemStyle={{ color: '#00f5ff' }}
+                  contentStyle={{ backgroundColor: '#0a0f0c', borderColor: '#202f25', fontSize: '12px' }}
+                  itemStyle={{ color: '#36c96c' }}
                 />
-                <Area type="monotone" dataKey="requests" stroke="#00f5ff" fillOpacity={1} fill="url(#colorRequests)" name="Requests" />
-                <Area type="monotone" dataKey="neuroProfileCalls" stroke="#a855f7" fillOpacity={1} fill="url(#colorNeuro)" name="Neuro Inferences" />
+                <Area type="monotone" dataKey="requests" stroke="#36c96c" fillOpacity={1} fill="url(#colorRequests)" name="Requests" />
+                <Area type="monotone" dataKey="neuroProfileCalls" stroke="#72da99" fillOpacity={1} fill="url(#colorNeuro)" name="Neuro Inferences" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* HTTP Rate Limit Protocol Headers Inspector */}
-        <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/10 rounded-xl p-6 flex flex-col justify-between hover:border-white/20 transition-all">
+        <div className="bg-[#0e1611]/60 backdrop-blur-md border border-white/10 rounded-xl p-6 flex flex-col justify-between hover:border-white/20 transition-all">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-white">
@@ -556,7 +556,7 @@ export function ApiAccess() {
       {/* API KEYS TABLE & REST ENDPOINTS */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
         {/* Active API Keys List */}
-        <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all">
+        <div className="bg-[#0e1611]/60 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Key className="w-5 h-5 text-cyber-blue" />
@@ -564,7 +564,7 @@ export function ApiAccess() {
             </div>
             <button 
               onClick={() => setShowNewKeyModal(true)}
-              className="bg-cyber-blue/15 hover:bg-cyber-blue/25 text-cyber-blue border border-cyber-blue/40 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer active:scale-95 shadow-[0_0_10px_rgba(0,245,255,0.2)]"
+              className="bg-cyber-blue/15 hover:bg-cyber-blue/25 text-cyber-blue border border-cyber-blue/40 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer active:scale-95 shadow-[0_0_10px_rgba(105,230,165,0.2)]"
             >
               <Zap className="w-3.5 h-3.5" />
               GENERATE NEW KEY
@@ -630,7 +630,7 @@ export function ApiAccess() {
         </div>
 
         {/* REST Endpoints (Including Neural Profile & Gmail Sync Webhooks) */}
-        <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all">
+        <div className="bg-[#0e1611]/60 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all">
           <div className="flex items-center gap-2 mb-6 text-white">
             <Database className="w-5 h-5 text-cyber-blue" />
             <h2 className="font-semibold tracking-wider">{t('rest_endpoints')} & Webhooks</h2>
@@ -686,7 +686,7 @@ export function ApiAccess() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-5xl bg-[#080d1a] border border-cyan-500/40 rounded-2xl p-6 sm:p-8 shadow-2xl relative"
+              className="w-full max-w-5xl bg-[#0e1410] border border-cyan-500/40 rounded-2xl p-6 sm:p-8 shadow-2xl relative"
             >
               <button
                 onClick={() => setShowTierModal(false)}
@@ -718,7 +718,7 @@ export function ApiAccess() {
                       className={cn(
                         "rounded-2xl p-6 flex flex-col justify-between border transition-all relative",
                         isCurrent 
-                          ? "bg-[#0c1833] border-cyan-400 shadow-[0_0_25px_rgba(0,245,255,0.2)]" 
+                          ? "bg-[#19261e] border-cyan-400 shadow-[0_0_25px_rgba(105,230,165,0.2)]"
                           : "bg-black/40 border-white/10 hover:border-white/20"
                       )}
                     >
@@ -760,7 +760,7 @@ export function ApiAccess() {
                             "w-full py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
                             isCurrent
                               ? "bg-white/10 text-gray-400 cursor-default"
-                              : "bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_15px_rgba(0,245,255,0.4)] active:scale-95"
+                              : "bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_15px_rgba(105,230,165,0.4)] active:scale-95"
                           )}
                         >
                           {isCurrent ? 'Current Plan' : `Switch to ${t.name}`}
@@ -783,7 +783,7 @@ export function ApiAccess() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-lg bg-[#080d1a] border border-cyan-500/40 rounded-2xl p-6 shadow-2xl relative"
+              className="w-full max-w-lg bg-[#0e1410] border border-cyan-500/40 rounded-2xl p-6 shadow-2xl relative"
             >
               <button
                 onClick={() => setShowNewKeyModal(false)}
@@ -861,7 +861,7 @@ export function ApiAccess() {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black transition-all cursor-pointer shadow-[0_0_15px_rgba(0,245,255,0.4)] active:scale-95"
+                    className="px-5 py-2 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black transition-all cursor-pointer shadow-[0_0_15px_rgba(105,230,165,0.4)] active:scale-95"
                   >
                     Create Key
                   </button>

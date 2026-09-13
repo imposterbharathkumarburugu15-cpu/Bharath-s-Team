@@ -1,5 +1,18 @@
 # NeuroShield AI Phishing & Scam Defense Platform
 
+## Start here
+
+This branch adds an emerald/charcoal UI with a guided **Connect Gmail → Open Inbox → Review Evidence → Protection Decision** workflow, a durable campaign/IOC engine, passive domain OSINT and an optional synthetic HoneyTrap.
+
+**Requires Node 22.13+ (Node 24 recommended).** Install with `npm ci`, copy `.env.example` to `.env`, then run `npm run dev`. Open `http://localhost:3000`. For a production build: `npm run build`, then `NODE_ENV=production npm start`.
+
+Read [Intelligence and HoneyTrap setup](docs/INTELLIGENCE_SETUP.md) for SOC keys, Docker isolation, review controls, and deployment configuration. **HoneyTrap is disabled at every startup** and cannot run unless the isolated container image is available and an administrator explicitly enables it.
+
+The existing Vercel configuration serves only the frontend. Deploy the Node backend separately and set `VITE_API_BASE_URL` to its HTTPS origin, or run the full app on the Node server. Static Vercel hosting alone cannot run SQLite or local Docker sandboxes.
+
+Run the new verification suite with `npm run test:intelligence`.
+
+
 NeuroShield is an enterprise-grade threat defense platform engineered for automatic real-time detection, forensic analysis, and authoritative enforcement against sophisticated multi-channel phishing, executive smishing, brand impersonation, and evasive credential harvesting.
 
 ---
@@ -118,7 +131,7 @@ URLSCAN_MAX_RETRIES=10
 ## Run Locally
 
 ### Prerequisites
-- Node.js (v18+ recommended)
+- Node.js 22.13+ (24 recommended)
 - npm
 
 ### 1. Install Dependencies

@@ -135,7 +135,7 @@ export function FeedbackDashboard() {
   });
 
   return (
-    <div className="flex-1 flex flex-col w-full min-h-screen bg-[#030712] text-white p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="flex-1 flex flex-col w-full min-h-screen bg-[#080d0a] text-white p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
@@ -233,7 +233,7 @@ export function FeedbackDashboard() {
       {/* KPI Metrics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* 1. Total Feedback */}
-        <div className="p-3.5 rounded-xl bg-[#0a0f1d] border border-white/10 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-[#101712] border border-white/10 flex flex-col justify-between">
           <span className="text-[11px] font-mono text-gray-400 flex items-center justify-between">
             <span>Total Feedback</span>
             <Database className="w-3.5 h-3.5 text-cyan-400" />
@@ -245,7 +245,7 @@ export function FeedbackDashboard() {
         </div>
 
         {/* 2. Correct Predictions */}
-        <div className="p-3.5 rounded-xl bg-[#0a0f1d] border border-white/10 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-[#101712] border border-white/10 flex flex-col justify-between">
           <span className="text-[11px] font-mono text-gray-400 flex items-center justify-between">
             <span>Correct Matches</span>
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -257,7 +257,7 @@ export function FeedbackDashboard() {
         </div>
 
         {/* 3. False Positives (Safe Corrections) */}
-        <div className="p-3.5 rounded-xl bg-[#0a0f1d] border border-white/10 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-[#101712] border border-white/10 flex flex-col justify-between">
           <span className="text-[11px] font-mono text-gray-400 flex items-center justify-between">
             <span>False Positives</span>
             <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
@@ -269,7 +269,7 @@ export function FeedbackDashboard() {
         </div>
 
         {/* 4. False Negatives (Phishing Corrections) */}
-        <div className="p-3.5 rounded-xl bg-[#0a0f1d] border border-white/10 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-[#101712] border border-white/10 flex flex-col justify-between">
           <span className="text-[11px] font-mono text-gray-400 flex items-center justify-between">
             <span>False Negatives</span>
             <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
@@ -281,7 +281,7 @@ export function FeedbackDashboard() {
         </div>
 
         {/* 5. Not Sure / Unresolved */}
-        <div className="p-3.5 rounded-xl bg-[#0a0f1d] border border-white/10 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-[#101712] border border-white/10 flex flex-col justify-between">
           <span className="text-[11px] font-mono text-gray-400 flex items-center justify-between">
             <span>Unresolved Feedback</span>
             <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
@@ -293,7 +293,7 @@ export function FeedbackDashboard() {
         </div>
 
         {/* 6. Model Accuracy (Verified) */}
-        <div className="p-3.5 rounded-xl bg-gradient-to-br from-[#0a1628] to-[#041a1a] border border-cyan-500/30 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-gradient-to-br from-[#141e18] to-[#0c120e] border border-cyan-500/30 flex flex-col justify-between">
           <span className="text-[11px] font-mono text-cyan-300 flex items-center justify-between">
             <span>Verified Accuracy</span>
             <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
@@ -308,7 +308,7 @@ export function FeedbackDashboard() {
       </div>
 
       {/* Learning Pipeline Architecture Blueprint */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-[#080d1a] border border-white/10 space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#0e1410] border border-white/10 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
@@ -327,7 +327,7 @@ export function FeedbackDashboard() {
         {/* 6-Stage Visual Flow */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-2 pt-2">
           {/* Stage 1: Prediction */}
-          <div className="p-3 rounded-xl bg-[#050811] border border-white/10 flex flex-col justify-between space-y-2">
+          <div className="p-3 rounded-xl bg-[#090d0a] border border-white/10 flex flex-col justify-between space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono text-gray-400 font-bold">1. PREDICTION</span>
               <Cpu className="w-3.5 h-3.5 text-gray-400" />
@@ -342,7 +342,7 @@ export function FeedbackDashboard() {
           </div>
 
           {/* Stage 2: User Feedback */}
-          <div className="p-3 rounded-xl bg-[#050811] border border-cyan-500/25 flex flex-col justify-between space-y-2">
+          <div className="p-3 rounded-xl bg-[#090d0a] border border-cyan-500/25 flex flex-col justify-between space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono text-cyan-400 font-bold">2. USER FEEDBACK</span>
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
@@ -357,7 +357,7 @@ export function FeedbackDashboard() {
           </div>
 
           {/* Stage 3: Feedback DB */}
-          <div className="p-3 rounded-xl bg-[#050811] border border-white/10 flex flex-col justify-between space-y-2">
+          <div className="p-3 rounded-xl bg-[#090d0a] border border-white/10 flex flex-col justify-between space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono text-gray-400 font-bold">3. FEEDBACK DB</span>
               <Database className="w-3.5 h-3.5 text-gray-400" />
@@ -372,7 +372,7 @@ export function FeedbackDashboard() {
           </div>
 
           {/* Stage 4: Validation / Review Layer */}
-          <div className="p-3 rounded-xl bg-[#050811] border border-amber-500/30 flex flex-col justify-between space-y-2">
+          <div className="p-3 rounded-xl bg-[#090d0a] border border-amber-500/30 flex flex-col justify-between space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono text-amber-400 font-bold">4. REVIEW LAYER</span>
               <UserCheck className="w-3.5 h-3.5 text-amber-400" />
@@ -387,7 +387,7 @@ export function FeedbackDashboard() {
           </div>
 
           {/* Stage 5: Verified Dataset */}
-          <div className="p-3 rounded-xl bg-[#050811] border border-emerald-500/30 flex flex-col justify-between space-y-2">
+          <div className="p-3 rounded-xl bg-[#090d0a] border border-emerald-500/30 flex flex-col justify-between space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono text-emerald-400 font-bold">5. VERIFIED DATASET</span>
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -402,7 +402,7 @@ export function FeedbackDashboard() {
           </div>
 
           {/* Stage 6: Model Calibration */}
-          <div className="p-3 rounded-xl bg-[#050811] border border-purple-500/30 flex flex-col justify-between space-y-2">
+          <div className="p-3 rounded-xl bg-[#090d0a] border border-purple-500/30 flex flex-col justify-between space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono text-purple-400 font-bold">6. CALIBRATION</span>
               <Zap className="w-3.5 h-3.5 text-purple-400" />
@@ -422,7 +422,7 @@ export function FeedbackDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Records Table & Triage Filters */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#080d1a] p-3.5 rounded-xl border border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0e1410] p-3.5 rounded-xl border border-white/10">
             {/* Status Filter Tabs */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
               {(['ALL', 'PENDING', 'VERIFIED', 'REJECTED'] as const).map(status => (
@@ -478,7 +478,7 @@ export function FeedbackDashboard() {
           {/* Records List */}
           <div className="space-y-2.5">
             {filteredRecords.length === 0 ? (
-              <div className="p-8 text-center rounded-xl bg-[#080d1a] border border-white/10 font-mono text-sm text-gray-500">
+              <div className="p-8 text-center rounded-xl bg-[#0e1410] border border-white/10 font-mono text-sm text-gray-500">
                 No feedback records found matching active filter.
               </div>
             ) : (
@@ -493,9 +493,9 @@ export function FeedbackDashboard() {
                     key={record.id}
                     onClick={() => setSelectedRecord(record)}
                     className={cn(
-                      "p-4 rounded-xl border transition-all cursor-pointer bg-[#080d1a]/90 hover:bg-[#0c1428]",
+                      "p-4 rounded-xl border transition-all cursor-pointer bg-[#0e1410]/90 hover:bg-[#151f19]",
                       isSelected 
-                        ? "border-cyan-500/60 shadow-[0_0_20px_rgba(0,245,255,0.1)]" 
+                        ? "border-cyan-500/60 shadow-[0_0_20px_rgba(105,230,165,0.1)]"
                         : "border-white/10 hover:border-white/20"
                     )}
                   >
@@ -603,7 +603,7 @@ export function FeedbackDashboard() {
 
         {/* Right Col: Deep Inspection & Audit Panel */}
         <div className="space-y-4">
-          <div className="p-5 rounded-2xl bg-[#080d1a] border border-white/10 space-y-4 sticky top-6">
+          <div className="p-5 rounded-2xl bg-[#0e1410] border border-white/10 space-y-4 sticky top-6">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
                 <Tag className="w-4 h-4 text-cyan-400" />

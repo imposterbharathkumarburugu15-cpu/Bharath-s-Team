@@ -4,14 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node ./node_modules/tsx/dist/cli.mjs server.ts",
+    "dev": "node --import tsx server.ts",
     "build": "node scripts/build.js",
     "build:client": "node -e \"import('vite').then(v=>v.build())\"",
     "build:server": "node scripts/build-server.js",
     "start": "node dist/server.cjs",
     "preview": "node ./node_modules/vite/bin/vite.js preview",
     "clean": "rm -rf dist",
-    "lint": "node ./node_modules/typescript/bin/tsc --noEmit"
+    "lint": "node ./node_modules/typescript/bin/tsc --noEmit",
+    "test:intelligence": "node --import tsx --test test/intelligence.test.ts test/intelligence_api.test.ts test/extension_security.test.ts"
   },
   "dependencies": {
     "@google/genai": "^1.51.0",
@@ -44,5 +45,8 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.3"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   }
 }

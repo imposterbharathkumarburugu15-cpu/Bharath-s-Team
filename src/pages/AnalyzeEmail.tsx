@@ -230,7 +230,7 @@ export function AnalyzeEmail() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-[#10151D] border border-[#00F0FF]/30 flex items-center justify-center text-[#00F0FF]">
+            <div className="w-8 h-8 rounded-xl bg-[#121b15] border border-[#36c96c]/30 flex items-center justify-center text-[#36c96c]">
               <Mail className="w-4 h-4" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white uppercase">
@@ -246,15 +246,15 @@ export function AnalyzeEmail() {
           <div className="flex items-center gap-2 font-mono text-xs">
             <button
               onClick={handleExportJson}
-              className="px-3.5 py-2 rounded-xl bg-[#10151D] hover:bg-[#161D27] text-[#8995A5] hover:text-white border border-white/[0.1] transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-[#121b15] hover:bg-[#18251d] text-[#8995A5] hover:text-white border border-white/[0.1] transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-[#00F0FF]" />
+              <Download className="w-3.5 h-3.5 text-[#36c96c]" />
               <span>Export Audit JSON</span>
             </button>
 
             <button
               onClick={handleReset}
-              className="px-3.5 py-2 rounded-xl bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-lg"
+              className="px-3.5 py-2 rounded-xl bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-lg"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Analyze Another</span>
@@ -277,13 +277,13 @@ export function AnalyzeEmail() {
             className="space-y-6"
           >
             {/* Attack Preset Ribbon */}
-            <div className="p-4 rounded-2xl bg-[#10151D] border border-white/[0.08] space-y-3">
+            <div className="p-4 rounded-2xl bg-[#121b15] border border-white/[0.08] space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold text-[#8995A5] uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-[#00F0FF]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#36c96c]" />
                   Load Real-World Phishing Attack Presets:
                 </span>
-                <span className="text-[10px] font-mono text-[#00F0FF]">1-Click Demo Fill</span>
+                <span className="text-[10px] font-mono text-[#36c96c]">1-Click Demo Fill</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 font-mono text-xs">
@@ -291,9 +291,9 @@ export function AnalyzeEmail() {
                   <button
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset)}
-                    className="p-3 rounded-xl bg-[#080B10] hover:bg-[#161D27] border border-white/[0.06] hover:border-[#00F0FF]/40 text-left transition-all group cursor-pointer"
+                    className="p-3 rounded-xl bg-[#0a0e0b] hover:bg-[#18251d] border border-white/[0.06] hover:border-[#36c96c]/40 text-left transition-all group cursor-pointer"
                   >
-                    <div className="text-[10px] text-[#00F0FF] font-bold mb-1">{preset.tag}</div>
+                    <div className="text-[10px] text-[#36c96c] font-bold mb-1">{preset.tag}</div>
                     <div className="font-bold text-white truncate text-xs">{preset.title}</div>
                   </button>
                 ))}
@@ -301,7 +301,7 @@ export function AnalyzeEmail() {
             </div>
 
             {/* Main Input Form */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] space-y-5 shadow-2xl">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] space-y-5 shadow-2xl">
               
               {/* Optional Subject & Sender Headers */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
@@ -314,7 +314,7 @@ export function AnalyzeEmail() {
                     value={sender}
                     onChange={(e) => setSender(e.target.value)}
                     placeholder='e.g. "CEO" <ceo-urgent@company-board.com>'
-                    className="w-full bg-[#080B10] border border-white/[0.1] rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#00F0FF]"
+                    className="w-full bg-[#0a0e0b] border border-white/[0.1] rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#36c96c]"
                   />
                 </div>
 
@@ -327,7 +327,7 @@ export function AnalyzeEmail() {
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="e.g. STRICT CONFIDENTIAL: Urgent Wire Authorization"
-                    className="w-full bg-[#080B10] border border-white/[0.1] rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#00F0FF]"
+                    className="w-full bg-[#0a0e0b] border border-white/[0.1] rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#36c96c]"
                   />
                 </div>
               </div>
@@ -340,7 +340,7 @@ export function AnalyzeEmail() {
                   </label>
                   
                   {/* File Upload Trigger */}
-                  <label className="text-[#00F0FF] hover:underline cursor-pointer flex items-center gap-1">
+                  <label className="text-[#36c96c] hover:underline cursor-pointer flex items-center gap-1">
                     <UploadCloud className="w-3.5 h-3.5" />
                     <span>Upload .eml / .txt</span>
                     <input
@@ -357,7 +357,7 @@ export function AnalyzeEmail() {
                   value={emailContent}
                   onChange={(e) => setEmailContent(e.target.value)}
                   rows={9}
-                  className="w-full bg-[#080B10] border border-white/[0.1] rounded-xl p-4 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF] custom-scrollbar"
+                  className="w-full bg-[#0a0e0b] border border-white/[0.1] rounded-xl p-4 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#36c96c] focus:ring-1 focus:ring-[#36c96c] custom-scrollbar"
                   placeholder="Paste complete raw email headers, Received: hops, Authentication-Results, or suspicious email body here..."
                 />
               </div>
@@ -371,7 +371,7 @@ export function AnalyzeEmail() {
                 <button
                   onClick={handleRunAnalysis}
                   disabled={!emailContent.trim()}
-                  className="px-6 py-3 rounded-xl bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black font-extrabold text-xs font-mono transition-all shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_30px_rgba(0,240,255,0.5)] cursor-pointer disabled:opacity-40 flex items-center gap-2 active:scale-95"
+                  className="px-6 py-3 rounded-xl bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-extrabold text-xs font-mono transition-all shadow-[0_0_20px_rgba(105,230,165,0.3)] hover:shadow-[0_0_30px_rgba(105,230,165,0.5)] cursor-pointer disabled:opacity-40 flex items-center gap-2 active:scale-95"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
                   <span>Analyze Email</span>
@@ -390,12 +390,12 @@ export function AnalyzeEmail() {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="p-12 rounded-2xl bg-[#10151D] border border-[#00F0FF]/30 shadow-2xl flex flex-col items-center justify-center text-center space-y-6 max-w-2xl mx-auto my-12 relative overflow-hidden"
+            className="p-12 rounded-2xl bg-[#121b15] border border-[#36c96c]/30 shadow-2xl flex flex-col items-center justify-center text-center space-y-6 max-w-2xl mx-auto my-12 relative overflow-hidden"
           >
             {/* Animated Scanner Beam */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent animate-scan-beam" />
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#36c96c] to-transparent animate-scan-beam" />
 
-            <div className="w-16 h-16 rounded-2xl bg-[#00F0FF]/15 border border-[#00F0FF]/40 flex items-center justify-center text-[#00F0FF] shadow-[0_0_30px_rgba(0,240,255,0.3)] animate-pulse">
+            <div className="w-16 h-16 rounded-2xl bg-[#36c96c]/15 border border-[#36c96c]/40 flex items-center justify-center text-[#36c96c] shadow-[0_0_30px_rgba(105,230,165,0.3)] animate-pulse">
               <Cpu className="w-8 h-8" />
             </div>
 
@@ -403,15 +403,15 @@ export function AnalyzeEmail() {
               <h2 className="text-xl font-bold font-mono text-white uppercase tracking-wider">
                 Deconstructing Threat Vectors...
               </h2>
-              <p className="text-xs font-mono text-[#00F0FF] animate-pulse">
+              <p className="text-xs font-mono text-[#36c96c] animate-pulse">
                 {scanStages[scanStage]}
               </p>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-[#080B10] h-2 rounded-full overflow-hidden border border-white/[0.08] max-w-md">
+            <div className="w-full bg-[#0a0e0b] h-2 rounded-full overflow-hidden border border-white/[0.08] max-w-md">
               <motion.div 
-                className="bg-gradient-to-r from-[#00F0FF] to-[#8B5CF6] h-full"
+                className="bg-gradient-to-r from-[#36c96c] to-[#77db9c] h-full"
                 initial={{ width: '10%' }}
                 animate={{ width: `${(scanStage + 1) * 25}%` }}
                 transition={{ duration: 0.3 }}
@@ -471,7 +471,7 @@ export function AnalyzeEmail() {
                   </h2>
 
                   <p className="text-xs text-[#8995A5] font-mono">
-                    Vector Target: <strong className="text-white">{scanResult.target || 'User Gateway'}</strong> • Ingress: <strong className="text-[#00F0FF]">{scanResult.source}</strong>
+                    Vector Target: <strong className="text-white">{scanResult.target || 'User Gateway'}</strong> • Ingress: <strong className="text-[#36c96c]">{scanResult.source}</strong>
                   </p>
                 </div>
               </div>
@@ -492,7 +492,7 @@ export function AnalyzeEmail() {
             </div>
 
             {/* Tabbed Forensic Explorer */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] space-y-6 shadow-2xl">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] space-y-6 shadow-2xl">
               
               {/* Tab Selector */}
               <div className="flex border-b border-white/[0.08] pb-2 gap-2 overflow-x-auto font-mono text-xs">
@@ -500,7 +500,7 @@ export function AnalyzeEmail() {
                   onClick={() => setActiveTab('overview')}
                   className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
                     activeTab === 'overview'
-                      ? 'bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                      ? 'bg-[#36c96c]/15 text-[#36c96c] border border-[#36c96c]/40 shadow-[0_0_12px_rgba(105,230,165,0.2)]'
                       : 'text-[#8995A5] hover:text-white'
                   }`}
                 >
@@ -511,7 +511,7 @@ export function AnalyzeEmail() {
                   onClick={() => setActiveTab('forensics')}
                   className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
                     activeTab === 'forensics'
-                      ? 'bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                      ? 'bg-[#36c96c]/15 text-[#36c96c] border border-[#36c96c]/40 shadow-[0_0_12px_rgba(105,230,165,0.2)]'
                       : 'text-[#8995A5] hover:text-white'
                   }`}
                 >
@@ -522,7 +522,7 @@ export function AnalyzeEmail() {
                   onClick={() => setActiveTab('auth')}
                   className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
                     activeTab === 'auth'
-                      ? 'bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                      ? 'bg-[#36c96c]/15 text-[#36c96c] border border-[#36c96c]/40 shadow-[0_0_12px_rgba(105,230,165,0.2)]'
                       : 'text-[#8995A5] hover:text-white'
                   }`}
                 >
@@ -533,7 +533,7 @@ export function AnalyzeEmail() {
                   onClick={() => setActiveTab('killchain')}
                   className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
                     activeTab === 'killchain'
-                      ? 'bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                      ? 'bg-[#36c96c]/15 text-[#36c96c] border border-[#36c96c]/40 shadow-[0_0_12px_rgba(105,230,165,0.2)]'
                       : 'text-[#8995A5] hover:text-white'
                   }`}
                 >
@@ -545,8 +545,8 @@ export function AnalyzeEmail() {
               {activeTab === 'overview' && (
                 <div className="space-y-6">
                   {/* AI Explanation Box */}
-                  <div className="p-5 rounded-xl bg-[#080B10] border border-white/[0.08] space-y-2 font-mono text-xs">
-                    <span className="text-[10px] text-[#00F0FF] font-bold uppercase flex items-center gap-1.5">
+                  <div className="p-5 rounded-xl bg-[#0a0e0b] border border-white/[0.08] space-y-2 font-mono text-xs">
+                    <span className="text-[10px] text-[#36c96c] font-bold uppercase flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5" />
                       Explainable AI Decision Analysis:
                     </span>
@@ -562,7 +562,7 @@ export function AnalyzeEmail() {
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 font-mono text-xs">
                       {scanResult.signals?.map((signal, idx) => (
-                        <div key={idx} className="p-3 rounded-xl bg-[#080B10] border border-white/[0.06] flex items-center gap-2.5">
+                        <div key={idx} className="p-3 rounded-xl bg-[#0a0e0b] border border-white/[0.06] flex items-center gap-2.5">
                           <AlertTriangle className="w-4 h-4 text-[#F43F5E] shrink-0" />
                           <span className="text-slate-200 text-xs font-semibold">{signal}</span>
                         </div>
@@ -572,7 +572,7 @@ export function AnalyzeEmail() {
 
                   {/* Suspicious Keywords if any */}
                   {scanResult.suspiciousKeywords && scanResult.suspiciousKeywords.length > 0 && (
-                    <div className="p-4 rounded-xl bg-[#080B10] border border-white/[0.06] font-mono text-xs space-y-2">
+                    <div className="p-4 rounded-xl bg-[#0a0e0b] border border-white/[0.06] font-mono text-xs space-y-2">
                       <span className="text-[10px] text-[#8995A5] uppercase font-bold">
                         Linguistic Urgency Triggers:
                       </span>

@@ -149,9 +149,9 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
   }, [markers]);
 
   return (
-    <div className="w-full h-full relative bg-[#060b14] overflow-hidden flex flex-col font-sans">
+    <div className="w-full h-full relative bg-[#0a100c] overflow-hidden flex flex-col font-sans">
       {/* Top Tactical GIS HUD Bar */}
-      <div className="bg-[#05080f]/90 border-b border-white/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2 z-10 font-mono text-xs">
+      <div className="bg-[#080c09]/90 border-b border-white/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2 z-10 font-mono text-xs">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-cyber-blue font-bold">
             <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
@@ -164,7 +164,7 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
 
         <div className="flex items-center gap-1.5">
           {/* Map Type Controls */}
-          <div className="flex items-center bg-[#0a1224] p-0.5 rounded-lg border border-white/10 text-[10px]">
+          <div className="flex items-center bg-[#121c16] p-0.5 rounded-lg border border-white/10 text-[10px]">
             <button
               onClick={() => setMapTypeId('hybrid')}
               className={`px-2 py-0.5 rounded transition-all ${mapTypeId === 'hybrid' ? 'bg-cyber-blue text-black font-bold' : 'text-gray-400 hover:text-white'}`}
@@ -217,7 +217,7 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
 
       {/* Optional In-Map API Key Input Drawer */}
       {showKeyInput && (
-        <div className="bg-[#05080f] px-4 py-2 border-b border-white/10 flex flex-wrap items-center gap-2 text-xs font-mono z-10">
+        <div className="bg-[#080c09] px-4 py-2 border-b border-white/10 flex flex-wrap items-center gap-2 text-xs font-mono z-10">
           <span className="text-gray-300 font-bold flex items-center gap-1">
             <Key className="w-3.5 h-3.5 text-cyber-blue" />
             GOOGLE MAPS API KEY:
@@ -227,7 +227,7 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
             value={customApiKey}
             onChange={(e) => setCustomApiKey(e.target.value)}
             placeholder="Paste your Google Maps API Key or Demo Key"
-            className="flex-1 min-w-[240px] bg-[#0a1224] border border-white/15 rounded-lg px-3 py-1 text-white placeholder-gray-500 font-mono text-xs focus:outline-none focus:border-cyber-blue"
+            className="flex-1 min-w-[240px] bg-[#121c16] border border-white/15 rounded-lg px-3 py-1 text-white placeholder-gray-500 font-mono text-xs focus:outline-none focus:border-cyber-blue"
           />
           <a
             href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_mcp_codeassist_v1_aistudio"
@@ -311,7 +311,7 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
                   onCloseClick={() => setSelectedTarget(null)}
                   maxWidth={320}
                 >
-                  <div className="bg-[#05080f] text-gray-200 p-2.5 rounded-lg font-mono text-xs space-y-2 border border-white/10 shadow-2xl">
+                  <div className="bg-[#080c09] text-gray-200 p-2.5 rounded-lg font-mono text-xs space-y-2 border border-white/10 shadow-2xl">
                     <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-1.5">
                       <span className={`font-bold uppercase tracking-wider text-[11px] ${
                         selectedTarget.type === 'origin' ? 'text-red-400' : selectedTarget.type === 'target' ? 'text-emerald-400' : 'text-amber-400'
@@ -375,7 +375,7 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
           </APIProvider>
         ) : (
           /* Zero-friction Google Maps Setup / Demo Key Quickstart UI */
-          <div className="w-full h-full relative flex flex-col items-center justify-center bg-[#070f1e] p-6 text-center select-none overflow-y-auto">
+          <div className="w-full h-full relative flex flex-col items-center justify-center bg-[#0f1612] p-6 text-center select-none overflow-y-auto">
             {/* Embedded Live GIS Satellite Layer Simulation */}
             <iframe
               title="Tactical Satellite Map Preview"
@@ -383,7 +383,7 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
               className="absolute inset-0 w-full h-full border-0 filter invert contrast-125 brightness-75 hue-rotate-180 opacity-40 pointer-events-none"
             />
 
-            <div className="relative z-10 max-w-md bg-[#05080f]/95 border border-cyber-blue/30 rounded-2xl p-5 shadow-2xl backdrop-blur-xl space-y-4">
+            <div className="relative z-10 max-w-md bg-[#080c09]/95 border border-cyber-blue/30 rounded-2xl p-5 shadow-2xl backdrop-blur-xl space-y-4">
               <div className="flex items-center justify-center gap-2 text-cyber-blue">
                 <div className="w-10 h-10 rounded-xl bg-cyber-blue/10 border border-cyber-blue/30 flex items-center justify-center">
                   <Layers className="w-5 h-5 text-cyber-blue" />
@@ -399,7 +399,7 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
                 </p>
               </div>
 
-              <div className="bg-[#0a1224] border border-white/10 rounded-xl p-3 text-left space-y-2 text-xs font-mono">
+              <div className="bg-[#121c16] border border-white/10 rounded-xl p-3 text-left space-y-2 text-xs font-mono">
                 <div className="text-gray-300 font-bold flex items-center gap-1.5 text-[11px]">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                   <span>Free Prototyping Demo Key:</span>
@@ -445,7 +445,7 @@ export const GoogleMapsTacticalRadar: React.FC<GoogleMapsTacticalRadarProps> = (
       </div>
 
       {/* Bottom Live Geolocation Status Bar */}
-      <div className="bg-[#05080f]/90 border-t border-white/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-gray-400">
+      <div className="bg-[#080c09]/90 border-t border-white/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-gray-400">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="text-gray-500">TARGET:</span>

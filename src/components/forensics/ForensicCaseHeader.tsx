@@ -68,7 +68,7 @@ export function ForensicCaseHeader({
   return (
     <div 
       id="forensic-case-header"
-      className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-4 sm:p-5 shadow-2xl relative overflow-hidden font-mono text-white"
+      className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-4 sm:p-5 shadow-2xl relative overflow-hidden font-mono text-white"
     >
       {/* Top accent glowing bar */}
       <div 
@@ -117,7 +117,7 @@ export function ForensicCaseHeader({
             <button
               id="print-to-pdf-btn"
               onClick={onPrintPdf}
-              className="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(0,245,255,0.3)] active:scale-95 shrink-0"
+              className="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(105,230,165,0.3)] active:scale-95 shrink-0"
               title="Export complete forensic investigation report to PDF with dark aesthetic"
             >
               <Printer className="w-4 h-4" />
@@ -129,7 +129,7 @@ export function ForensicCaseHeader({
             <button
               id="export-soc-report-btn"
               onClick={onOpenSocReport}
-              className="px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_10px_rgba(0,245,255,0.15)] shrink-0"
+              className="px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_10px_rgba(105,230,165,0.15)] shrink-0"
             >
               <FileText className="w-4 h-4" />
               <span>SOC Report</span>
@@ -218,7 +218,7 @@ export function ForensicCaseHeader({
         </div>
 
         {/* Right 5 columns: High-Impact Cyber Telemetry HUD for Threat Score & Evidence Confidence */}
-        <div className="lg:col-span-5 bg-[#060a14] border border-white/15 rounded-2xl p-4 sm:p-5 space-y-4 relative overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.7)] backdrop-blur-md">
+        <div className="lg:col-span-5 bg-[#0a100c] border border-white/15 rounded-2xl p-4 sm:p-5 space-y-4 relative overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.7)] backdrop-blur-md">
           {/* Futuristic corner brackets */}
           <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-cyan-400/70 pointer-events-none" />
           <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-cyan-400/70 pointer-events-none" />
@@ -352,7 +352,7 @@ export function ForensicCaseHeader({
                 <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold tracking-wider">
                   {confidenceTier}
                 </span>
-                <span className="text-xl sm:text-2xl font-black font-mono text-cyan-300 drop-shadow-[0_0_12px_rgba(0,245,255,0.5)]">
+                <span className="text-xl sm:text-2xl font-black font-mono text-cyan-300 drop-shadow-[0_0_12px_rgba(105,230,165,0.5)]">
                   {confidenceScore}%
                 </span>
               </div>
@@ -366,7 +366,7 @@ export function ForensicCaseHeader({
               </div>
 
               <div 
-                className="h-full rounded-md bg-gradient-to-r from-cyan-600 via-cyan-400 to-teal-300 transition-all duration-700 shadow-[0_0_15px_rgba(0,245,255,0.5)] relative overflow-hidden"
+                className="h-full rounded-md bg-gradient-to-r from-cyan-600 via-cyan-400 to-teal-300 transition-all duration-700 shadow-[0_0_15px_rgba(105,230,165,0.5)] relative overflow-hidden"
                 style={{ width: confidenceBarWidth }}
               >
                 {/* Laser Tip */}

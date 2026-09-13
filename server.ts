@@ -1,4 +1,6 @@
 import express from "express";
+import { analyzeWithIntelligence } from './src/services/intelligence/runtime';
+import { intelligenceRoutes, deceptionIngress, deception } from './src/routes/intelligence';
 import path from "path";
 import dns from "dns";
 import { createServer as createViteServer } from "vite";
@@ -524,7 +526,7 @@ function generateLocalScanReport(text: string, language: string) {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = config.port;
 
   // CORS headers
   app.use((req, res, next) => {
@@ -566,6 +568,7 @@ async function startServer() {
     next();
   });
 
+  app.use('/api/deception', express.json({ limit: "2kb" }));
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
@@ -573,7 +576,12 @@ async function startServer() {
   app.use(rateLimiter());
 
   // Apply Auth Middleware (enforces auth if REQUIRE_AUTH=true, public otherwise)
+  app.use(deceptionIngress);
   app.use(authMiddleware);
+  app.use('/api', intelligenceRoutes);
+  for (const signal of ['SIGTERM', 'SIGINT'] as const) process.once(signal, () => {
+    void deception.stopAll().finally(() => process.exit(0));
+  });
 
   // Safe server-side Gemini client retrieval
   const getAiClient = () => {
@@ -705,7 +713,7 @@ async function startServer() {
 
     try {
       // 1. Run NeuroShield Core Analysis Pipeline
-      const coreResult = await NeuroShieldCore.analyze(body);
+      const coreResult = await analyzeWithIntelligence(body);
 
       // Persist incident in hardened repository
       await repository.saveIncident(coreResult);
@@ -926,7 +934,7 @@ ALL RESPONSES AND STRINGS (EXCEPT ENUM VALUES) MUST BE IN ${targetLang}.`,
     } catch (err: any) {
       console.info("Server-side scan fallback engaged:", err?.message || err);
       try {
-        const coreFallback = await NeuroShieldCore.analyze(body);
+        const coreFallback = await analyzeWithIntelligence(body);
         return res.json({
           ...coreFallback,
           ...generateLocalScanReport(text, language)
@@ -940,7 +948,7 @@ ALL RESPONSES AND STRINGS (EXCEPT ENUM VALUES) MUST BE IN ${targetLang}.`,
   // Dedicated NeuroShield Core Detection Endpoint (Phase 2, 3 & 4 Unified Incident contract)
   app.post(["/api/neuroshield/analyze", "/api/core/analyze"], validateScanRequest, async (req, res) => {
     try {
-      const result = await NeuroShieldCore.analyze(req.body);
+      const result = await analyzeWithIntelligence(req.body);
       await repository.saveIncident(result);
       res.json(result);
     } catch (err: any) {
@@ -1484,7 +1492,7 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
                 subject: subject,
                 from: sender
               });
-              const analysis = await NeuroShieldCore.analyze(unifiedInput);
+              const analysis = await analyzeWithIntelligence(unifiedInput);
               riskScore = analysis.risk_score || 0;
               analysisResult = analysis;
             } catch (analysisErr: any) {
@@ -1618,7 +1626,7 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
         subject: detail.payload?.headers?.find((h: any) => h.name?.toLowerCase() === 'subject')?.value || '',
         from: detail.payload?.headers?.find((h: any) => h.name?.toLowerCase() === 'from')?.value || ''
       });
-      const analysis = await NeuroShieldCore.analyze(unifiedInput);
+      const analysis = await analyzeWithIntelligence(unifiedInput);
 
       return res.json({
         messageId,
@@ -1654,7 +1662,7 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
 
       // Case B: NormalizedEmail or raw email input
       const emailPayload = input.email || input;
-      const analysis = await NeuroShieldCore.analyzeEmail(emailPayload);
+      const analysis = await NeuroShieldCore.analyzeEmail(emailPayload, analyzeWithIntelligence);
 
       // Persist incident (sanitized, no raw sensitive content)
       try {
@@ -1844,14 +1852,17 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
 
       const targetAction = requestedAction || user_action || (url ? 'VISIT_WEBSITE' : 'UNKNOWN');
 
-      const analysis = await NeuroShieldCore.analyze({
+      const analysis = await analyzeWithIntelligence({
         source,
         content: content || url || '',
         urls: url ? [url] : [],
         user_action: targetAction,
+        sender: req.body.metadata?.sender ? { identifier: req.body.metadata.sender } : undefined,
+        subject: req.body.metadata?.subject,
         metadata: {
           client,
           clientCapabilities,
+          webObservation: req.body.metadata?.webObservation,
         },
       });
 
@@ -1904,7 +1915,7 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
           authDecision.riskScore = fused.finalRiskScore;
           authDecision.verdict = (fused.finalVerdict === 'PHISHING' ? 'MALICIOUS' : fused.finalVerdict) as any;
           authDecision.confidence = fused.confidence;
-          authDecision.protectionDecision = (fused.protectionDecision === 'BLOCK_VIEW' ? 'BLOCK_ACTION' : fused.protectionDecision) as any;
+          authDecision.protectionDecision = fused.protectionDecision as any;
           authDecision.evidence = fused.combinedEvidence;
 
           if (fused.finalVerdict === 'PHISHING' || (fused.finalVerdict as string) === 'MALICIOUS') {
@@ -2044,7 +2055,7 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
       }
 
       // Step 1: Analyze with existing ML model
-      const mlAnalysis = await NeuroShieldCore.analyze({
+      const mlAnalysis = await analyzeWithIntelligence({
         source: 'web',
         content: targetUrl,
         urls: [targetUrl],
@@ -2253,7 +2264,7 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
    */
   app.post('/api/dashboard/test-event', express.json(), async (req, res) => {
     try {
-      const sampleIncident = await NeuroShieldCore.analyze({
+      const sampleIncident = await analyzeWithIntelligence({
         source: req.body.source || 'web',
         content: req.body.content || 'https://security-verify.update-account.com/login',
         urls: [req.body.content || 'https://security-verify.update-account.com/login'],
@@ -2286,8 +2297,8 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
    */
   app.get('/api/system/status', async (_req, res) => {
     return res.json({
-      gmail: 'CONNECTED',
-      browser: 'PROTECTED',
+      gmail: 'CLIENT_AUTH_REQUIRED',
+      browser: 'CLIENT_ACKNOWLEDGEMENT_REQUIRED',
       coreApi: 'HEALTHY',
       database: 'CONNECTED',
       timestamp: new Date().toISOString()

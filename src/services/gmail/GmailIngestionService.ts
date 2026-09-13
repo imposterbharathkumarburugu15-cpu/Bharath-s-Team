@@ -8,6 +8,7 @@ import { GmailConnector, GmailMessageResource } from './GmailConnector';
 import { NormalizedEmail, UnifiedEmailAnalysisResult } from '../core/types';
 import { EmailAdapter } from '../core/adapters/EmailAdapter';
 import { NeuroShieldCore } from '../core/neuroshieldCore';
+import { analyzeWithIntelligence } from '../intelligence/runtime';
 import { EnforcementEngine } from '../core/enforcementEngine';
 import { repository } from '../../db/repository';
 
@@ -165,7 +166,7 @@ export class GmailIngestionService {
           });
 
           // Execute multi-stage sequence attack transition analysis
-          const seqAnalysis = await NeuroShieldCore.analyzeSequence(sequence);
+          const seqAnalysis = await NeuroShieldCore.analyzeSequence(sequence, analyzeWithIntelligence);
 
           const authDecision = EnforcementEngine.evaluatePolicy({
             incidentId: seqAnalysis.incident_id,
@@ -225,14 +226,14 @@ export class GmailIngestionService {
             timestamp: seqAnalysis.timestamp,
           };
         } else {
-          analysis = await NeuroShieldCore.analyzeEmail(normalized);
+          analysis = await NeuroShieldCore.analyzeEmail(normalized, analyzeWithIntelligence);
         }
       } catch (threadErr) {
         console.warn(`[GmailIngestion] Thread retrieval failed for ${detail.threadId}, falling back to single event:`, threadErr);
-        analysis = await NeuroShieldCore.analyzeEmail(normalized);
+        analysis = await NeuroShieldCore.analyzeEmail(normalized, analyzeWithIntelligence);
       }
     } else {
-      analysis = await NeuroShieldCore.analyzeEmail(normalized);
+      analysis = await NeuroShieldCore.analyzeEmail(normalized, analyzeWithIntelligence);
     }
 
     this.knownMessageIds.add(messageId);

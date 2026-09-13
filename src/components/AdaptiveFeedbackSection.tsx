@@ -81,8 +81,8 @@ export function AdaptiveFeedbackSection({
   return (
     <div 
       className={cn(
-        "rounded-xl border border-white/10 bg-[#080d1a]/90 backdrop-blur-md p-3.5 sm:p-4 transition-all duration-300 relative overflow-hidden",
-        isRecorded ? "border-emerald-500/30 bg-[#06141a]/90 shadow-[0_0_20px_rgba(16,185,129,0.06)]" : "hover:border-cyan-500/25",
+        "rounded-xl border border-white/10 bg-[#0e1410]/90 backdrop-blur-md p-3.5 sm:p-4 transition-all duration-300 relative overflow-hidden",
+        isRecorded ? "border-emerald-500/30 bg-[#0d130f]/90 shadow-[0_0_20px_rgba(16,185,129,0.06)]" : "hover:border-cyan-500/25",
         className
       )}
     >

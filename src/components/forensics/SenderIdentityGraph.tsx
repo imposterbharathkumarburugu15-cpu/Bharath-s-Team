@@ -34,7 +34,7 @@ export function SenderIdentityGraph({ dossier, onDrillDown }: SenderIdentityGrap
   return (
     <section 
       id="sender-identity-graph"
-      className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl font-mono text-white space-y-4"
+      className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl font-mono text-white space-y-4"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
         <div>
@@ -76,11 +76,11 @@ export function SenderIdentityGraph({ dossier, onDrillDown }: SenderIdentityGrap
       </div>
 
       {/* Visual Identity Relationship Graph */}
-      <div className="bg-[#05080f] border border-white/10 rounded-xl p-5 relative overflow-hidden">
+      <div className="bg-[#080c09] border border-white/10 rounded-xl p-5 relative overflow-hidden">
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Top Node: Header From (Claimed Identity) */}
           <div className="flex flex-col items-center">
-            <div className="p-3 px-6 rounded-xl bg-[#0b1326] border border-cyan-400/50 shadow-[0_0_20px_rgba(0,245,255,0.2)] text-center max-w-md w-full">
+            <div className="p-3 px-6 rounded-xl bg-[#141d17] border border-cyan-400/50 shadow-[0_0_20px_rgba(105,230,165,0.2)] text-center max-w-md w-full">
               <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest block mb-0.5">
                 RFC 5322 HEADER FROM (CLAIMED IDENTITY)
               </span>
@@ -271,7 +271,7 @@ export function SenderIdentityGraph({ dossier, onDrillDown }: SenderIdentityGrap
 
       {/* Phase 8: Context & Trust-Chain Intelligence Sub-Card */}
       {dossier.trustChain && (
-        <div className="bg-[#050914] border border-cyan-500/30 rounded-xl p-4 space-y-3">
+        <div className="bg-[#0a0f0c] border border-cyan-500/30 rounded-xl p-4 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />

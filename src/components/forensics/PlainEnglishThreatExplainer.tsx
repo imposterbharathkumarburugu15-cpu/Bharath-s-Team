@@ -56,7 +56,7 @@ export function PlainEnglishThreatExplainer({
   return (
     <div 
       id="plain-english-explainer"
-      className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 sm:p-7 shadow-2xl space-y-7 text-white font-sans"
+      className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-7 shadow-2xl space-y-7 text-white font-sans"
     >
       {/* 1. BIG FRIENDLY VERDICT BANNER */}
       <div className={`p-5 sm:p-6 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-5 ${
@@ -120,7 +120,7 @@ export function PlainEnglishThreatExplainer({
           {onSwitchToTechnicalView && (
             <button
               onClick={onSwitchToTechnicalView}
-              className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs sm:text-sm font-bold font-mono flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(0,245,255,0.3)] active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs sm:text-sm font-bold font-mono flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(105,230,165,0.3)] active:scale-95"
             >
               <span>Switch to Technical SOC View</span>
               <ArrowRight className="w-4 h-4" />
@@ -256,7 +256,7 @@ export function PlainEnglishThreatExplainer({
       </div>
 
       {/* 5. WHAT YOU SHOULD DO RIGHT NOW (Checklist) */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[#05080f] border border-cyan-500/20 space-y-4">
+      <div className="p-5 sm:p-6 rounded-2xl bg-[#080c09] border border-cyan-500/20 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-400" />

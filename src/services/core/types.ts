@@ -734,6 +734,13 @@ export interface CampaignFingerprint {
 }
 
 export interface UnifiedIncidentObject {
+  intelligence?: {
+    incidentId: string;
+    fingerprint: string;
+    campaignId: string | null;
+    matches: { type: string; value: string; sourceId: string }[];
+    label: string;
+  };
   incident_id: string;
   source: ThreatSource;
   verdict: 'SAFE' | 'SUSPICIOUS' | 'MALICIOUS' | 'UNKNOWN';

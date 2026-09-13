@@ -302,7 +302,7 @@ export function Alerts() {
     <div className="space-y-6 max-w-[1400px] mx-auto px-2 md:px-5 py-4 font-sans text-slate-100">
       {/* Toast Feedback */}
       {actionSuccessMessage && (
-        <div className="fixed top-5 right-6 z-50 bg-[#091122]/95 border border-cyan-500/60 text-cyan-200 px-5 py-3.5 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.35)] flex items-center gap-3 text-xs font-mono backdrop-blur-2xl animate-in fade-in slide-in-from-top-3">
+        <div className="fixed top-5 right-6 z-50 bg-[#111a14]/95 border border-cyan-500/60 text-cyan-200 px-5 py-3.5 rounded-2xl shadow-[0_0_30px_rgba(86,170,118,0.35)] flex items-center gap-3 text-xs font-mono backdrop-blur-2xl animate-in fade-in slide-in-from-top-3">
           <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
           <span className="font-semibold">{actionSuccessMessage}</span>
         </div>
@@ -311,7 +311,7 @@ export function Alerts() {
       {/* =========================================================================
           HERO HEADER & SOC METRICS RIBBON
          ========================================================================= */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1224] via-[#060a14] to-[#0d172e] border border-cyan-500/20 shadow-[0_0_50px_rgba(0,0,0,0.8)] p-6 md:p-8 backdrop-blur-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#131c16] via-[#0a100c] to-[#18231c] border border-cyan-500/20 shadow-[0_0_50px_rgba(0,0,0,0.8)] p-6 md:p-8 backdrop-blur-2xl">
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-rose-500/10 rounded-full blur-[100px] pointer-events-none" />
 
@@ -371,7 +371,7 @@ export function Alerts() {
       {/* =========================================================================
           FILTER BAR & SEARCH CONTROLS
          ========================================================================= */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[#080e1b]/90 border border-slate-800 p-4 rounded-2xl shadow-xl">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[#0e1511]/90 border border-slate-800 p-4 rounded-2xl shadow-xl">
         {/* Search */}
         <div className="relative w-full lg:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -428,10 +428,10 @@ export function Alerts() {
       {/* =========================================================================
           INCIDENTS DATA TABLE
          ========================================================================= */}
-      <div className="rounded-3xl bg-[#080e1b]/95 border border-slate-800 shadow-2xl overflow-hidden">
+      <div className="rounded-3xl bg-[#0e1511]/95 border border-slate-800 shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap font-mono">
-            <thead className="bg-[#050a16] border-b border-slate-800 text-slate-400 text-[11px] uppercase">
+            <thead className="bg-[#0b100d] border-b border-slate-800 text-slate-400 text-[11px] uppercase">
               <tr>
                 <th className="px-5 py-4 font-bold">Incident ID</th>
                 <th className="px-5 py-4 font-bold">Threat &amp; Channel</th>
@@ -593,7 +593,7 @@ export function Alerts() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 400 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="w-full max-w-xl h-full bg-[#070c18] border-l border-cyan-500/30 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto custom-scrollbar font-mono text-xs"
+              className="w-full max-w-xl h-full bg-[#0c130f] border-l border-cyan-500/30 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto custom-scrollbar font-mono text-xs"
             >
               <div className="space-y-6">
                 {/* Header */}
@@ -617,7 +617,7 @@ export function Alerts() {
                 </div>
 
                 {/* Score & Verdict Banner */}
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/40 via-[#0a1020] to-slate-900 border border-rose-500/30 flex items-center justify-between">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/40 via-[#111914] to-slate-900 border border-rose-500/30 flex items-center justify-between">
                   <div className="space-y-1">
                     <span className="text-[10px] text-rose-300 uppercase font-bold block">Threat Assessment</span>
                     <div className="text-base font-bold text-white flex items-center gap-2">

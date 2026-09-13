@@ -199,7 +199,7 @@ export function FinalVerdictAndRawEvidence({
       {/* SECTION 19: RAW RFC 5322 EVIDENCE */}
       <section 
         id="raw-rfc-evidence-section"
-        className="bg-[#080d1a] border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4"
+        className="bg-[#0e1410] border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">

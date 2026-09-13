@@ -7,6 +7,7 @@ async function buildServer() {
       bundle: true,
       platform: 'node',
       format: 'cjs',
+    define: { 'import.meta.env': '{}' },
       packages: 'external',
       sourcemap: true,
       outfile: 'dist/server.cjs',

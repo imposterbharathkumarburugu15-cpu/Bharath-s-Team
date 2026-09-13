@@ -177,7 +177,7 @@ export function IocSectionAndTable({
       {/* SECTION 9: IOC INTELLIGENCE & RELATIONSHIPS */}
       <section 
         id="ioc-intelligence-section"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
           <div>
@@ -305,7 +305,7 @@ export function IocSectionAndTable({
       {/* SECTION 10: IOC TABLE */}
       <section 
         id="ioc-table-section"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ export function IocSectionAndTable({
                 onClick={() => setFilterType(type)}
                 className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer text-[10px] font-bold ${
                   filterType === type 
-                    ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(0,245,255,0.3)]' 
+                    ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(105,230,165,0.3)]'
                     : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'
                 }`}
               >
@@ -349,7 +349,7 @@ export function IocSectionAndTable({
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-xs text-left">
             <thead>
-              <tr className="bg-[#0b1326] border-b border-white/10 text-[10px] uppercase tracking-wider text-gray-400">
+              <tr className="bg-[#141d17] border-b border-white/10 text-[10px] uppercase tracking-wider text-gray-400">
                 <th className="p-3">TYPE</th>
                 <th className="p-3">INDICATOR</th>
                 <th className="p-3">SOURCE</th>

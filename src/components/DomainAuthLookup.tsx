@@ -170,7 +170,7 @@ export function DomainAuthLookup({
     <div className={`space-y-6 ${compact ? '' : 'p-1'}`}>
       
       {/* Header & Lookup Control Bar */}
-      <div className="bg-[#0a0f1c] border border-white/10 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+      <div className="bg-[#0f1712] border border-white/10 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-cyber-blue/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -230,7 +230,7 @@ export function DomainAuthLookup({
                 value={domainInput}
                 onChange={(e) => setDomainInput(e.target.value)}
                 placeholder="Enter domain (e.g. google.com, paypal.com, yourcompany.org)..."
-                className="w-full bg-[#03060a] border border-white/15 focus:border-cyber-blue rounded-xl pl-10 pr-4 py-2.5 text-sm text-white font-mono placeholder:text-gray-600 focus:outline-none transition-all"
+                className="w-full bg-[#050806] border border-white/15 focus:border-cyber-blue rounded-xl pl-10 pr-4 py-2.5 text-sm text-white font-mono placeholder:text-gray-600 focus:outline-none transition-all"
               />
             </div>
 
@@ -241,7 +241,7 @@ export function DomainAuthLookup({
                   value={selectorInput}
                   onChange={(e) => setSelectorInput(e.target.value)}
                   placeholder="DKIM Selector (e.g. google, k1)"
-                  className="w-full bg-[#03060a] border border-white/15 focus:border-cyber-blue rounded-xl px-3.5 py-2.5 text-sm text-white font-mono placeholder:text-gray-600 focus:outline-none transition-all"
+                  className="w-full bg-[#050806] border border-white/15 focus:border-cyber-blue rounded-xl px-3.5 py-2.5 text-sm text-white font-mono placeholder:text-gray-600 focus:outline-none transition-all"
                 />
               </div>
             )}
@@ -298,7 +298,7 @@ export function DomainAuthLookup({
 
       {/* Loading Skeleton */}
       {loading && !report && (
-        <div className="bg-[#0a0f1c] border border-white/5 rounded-2xl p-8 text-center space-y-4 animate-pulse">
+        <div className="bg-[#0f1712] border border-white/5 rounded-2xl p-8 text-center space-y-4 animate-pulse">
           <div className="w-12 h-12 rounded-full bg-cyber-blue/20 mx-auto flex items-center justify-center">
             <RefreshCw className="w-6 h-6 text-cyber-blue animate-spin" />
           </div>
@@ -321,7 +321,7 @@ export function DomainAuthLookup({
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-r from-cyan-950/60 via-[#0a1628] to-[#0a0f1c] border border-cyan-500/40 rounded-2xl p-4 sm:p-5 shadow-[0_0_30px_rgba(0,245,255,0.1)] flex flex-col sm:flex-row items-start gap-4"
+              className="bg-gradient-to-r from-cyan-950/60 via-[#141e18] to-[#0f1712] border border-cyan-500/40 rounded-2xl p-4 sm:p-5 shadow-[0_0_30px_rgba(105,230,165,0.1)] flex flex-col sm:flex-row items-start gap-4"
             >
               <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shrink-0 mt-0.5 shadow-sm">
                 <Globe className="w-5 h-5" />
@@ -348,11 +348,11 @@ export function DomainAuthLookup({
           )}
 
           {/* Executive Posture & Score Overview Card */}
-          <div className="bg-[#0a0f1c] border border-white/10 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+          <div className="bg-[#0f1712] border border-white/10 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               
               {/* Left Score Gauge */}
-              <div className="lg:col-span-4 flex items-center gap-5 bg-[#03060a]/80 p-4 rounded-xl border border-white/5">
+              <div className="lg:col-span-4 flex items-center gap-5 bg-[#050806]/80 p-4 rounded-xl border border-white/5">
                 <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                     <path
@@ -537,7 +537,7 @@ export function DomainAuthLookup({
                 </div>
 
                 {/* Executive Summary paragraph */}
-                <div className="bg-[#03060a] p-3 rounded-xl border border-white/5 text-xs text-gray-300 leading-relaxed font-sans">
+                <div className="bg-[#050806] p-3 rounded-xl border border-white/5 text-xs text-gray-300 leading-relaxed font-sans">
                   <span className="text-cyber-blue font-mono font-bold mr-1.5">[FORENSIC ASSESSMENT]</span>
                   {report.executiveSummary}
                 </div>
@@ -547,7 +547,7 @@ export function DomainAuthLookup({
           </div>
 
           {/* Drilldown Navigation Tabs */}
-          <div className="flex items-center gap-1.5 bg-[#0a0f1c] p-1.5 rounded-xl border border-white/5 overflow-x-auto">
+          <div className="flex items-center gap-1.5 bg-[#0f1712] p-1.5 rounded-xl border border-white/5 overflow-x-auto">
             <button
               onClick={() => setActiveTab('domainAge')}
               className={`px-4 py-2 rounded-lg text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 whitespace-nowrap ${
@@ -627,7 +627,7 @@ export function DomainAuthLookup({
           </div>
 
           {/* Drilldown Content */}
-          <div className="bg-[#0a0f1c] border border-white/10 rounded-2xl p-5 shadow-2xl">
+          <div className="bg-[#0f1712] border border-white/10 rounded-2xl p-5 shadow-2xl">
             
             {/* DOMAIN AGE & WHOIS TAB */}
             {activeTab === 'domainAge' && (
@@ -873,7 +873,7 @@ export function DomainAuthLookup({
                 </div>
 
                 {report.spf.rawRecord ? (
-                  <div className="bg-[#03060a] border border-white/10 p-3.5 rounded-xl font-mono text-xs text-cyber-blue break-all selection:bg-cyber-blue selection:text-black">
+                  <div className="bg-[#050806] border border-white/10 p-3.5 rounded-xl font-mono text-xs text-cyber-blue break-all selection:bg-cyber-blue selection:text-black">
                     {report.spf.rawRecord}
                   </div>
                 ) : (
@@ -890,7 +890,7 @@ export function DomainAuthLookup({
                     </h5>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {report.spf.mechanisms.map((mech, idx) => (
-                        <div key={idx} className="bg-[#03060a] border border-white/5 p-3 rounded-xl flex items-start gap-2.5">
+                        <div key={idx} className="bg-[#050806] border border-white/5 p-3 rounded-xl flex items-start gap-2.5">
                           <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
                             mech.type === 'all'
                               ? mech.qualifier === '-' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
@@ -947,7 +947,7 @@ export function DomainAuthLookup({
                 </div>
 
                 {report.dmarc.rawRecord ? (
-                  <div className="bg-[#03060a] border border-white/10 p-3.5 rounded-xl font-mono text-xs text-cyber-blue break-all selection:bg-cyber-blue selection:text-black">
+                  <div className="bg-[#050806] border border-white/10 p-3.5 rounded-xl font-mono text-xs text-cyber-blue break-all selection:bg-cyber-blue selection:text-black">
                     {report.dmarc.rawRecord}
                   </div>
                 ) : (
@@ -958,7 +958,7 @@ export function DomainAuthLookup({
 
                 {/* Parsed DMARC Tags Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  <div className="bg-[#03060a] p-3.5 rounded-xl border border-white/5 space-y-1">
+                  <div className="bg-[#050806] p-3.5 rounded-xl border border-white/5 space-y-1">
                     <span className="text-[10px] font-mono text-gray-500 uppercase">Primary Policy (p)</span>
                     <div className="text-sm font-mono font-bold text-white flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${
@@ -973,7 +973,7 @@ export function DomainAuthLookup({
                     </p>
                   </div>
 
-                  <div className="bg-[#03060a] p-3.5 rounded-xl border border-white/5 space-y-1">
+                  <div className="bg-[#050806] p-3.5 rounded-xl border border-white/5 space-y-1">
                     <span className="text-[10px] font-mono text-gray-500 uppercase">Enforcement Coverage (pct)</span>
                     <div className="text-sm font-mono font-bold text-white">
                       {report.dmarc.percentage}% of mail
@@ -983,7 +983,7 @@ export function DomainAuthLookup({
                     </p>
                   </div>
 
-                  <div className="bg-[#03060a] p-3.5 rounded-xl border border-white/5 space-y-1">
+                  <div className="bg-[#050806] p-3.5 rounded-xl border border-white/5 space-y-1">
                     <span className="text-[10px] font-mono text-gray-500 uppercase">Aggregate Mailbox (rua)</span>
                     <div className="text-xs font-mono font-bold text-cyber-blue truncate">
                       {report.dmarc.ruaReportMailto?.[0] || 'None configured'}
@@ -993,7 +993,7 @@ export function DomainAuthLookup({
                     </p>
                   </div>
 
-                  <div className="bg-[#03060a] p-3.5 rounded-xl border border-white/5 space-y-1">
+                  <div className="bg-[#050806] p-3.5 rounded-xl border border-white/5 space-y-1">
                     <span className="text-[10px] font-mono text-gray-500 uppercase">Subdomain Policy (sp)</span>
                     <div className="text-sm font-mono font-bold text-white">
                       {report.dmarc.subdomainPolicy ? `sp=${report.dmarc.subdomainPolicy}` : 'Inherited from p='}
@@ -1001,7 +1001,7 @@ export function DomainAuthLookup({
                     <p className="text-[11px] text-gray-400">Protects subdomains like *.domain.com</p>
                   </div>
 
-                  <div className="bg-[#03060a] p-3.5 rounded-xl border border-white/5 space-y-1">
+                  <div className="bg-[#050806] p-3.5 rounded-xl border border-white/5 space-y-1">
                     <span className="text-[10px] font-mono text-gray-500 uppercase">DKIM Alignment (adkim)</span>
                     <div className="text-sm font-mono font-bold text-white uppercase">
                       {report.dmarc.dkimAlignment}
@@ -1011,7 +1011,7 @@ export function DomainAuthLookup({
                     </p>
                   </div>
 
-                  <div className="bg-[#03060a] p-3.5 rounded-xl border border-white/5 space-y-1">
+                  <div className="bg-[#050806] p-3.5 rounded-xl border border-white/5 space-y-1">
                     <span className="text-[10px] font-mono text-gray-500 uppercase">SPF Alignment (aspf)</span>
                     <div className="text-sm font-mono font-bold text-white uppercase">
                       {report.dmarc.spfAlignment}
@@ -1060,22 +1060,22 @@ export function DomainAuthLookup({
 
                 {report.dkim.rawRecord ? (
                   <div className="space-y-3">
-                    <div className="bg-[#03060a] border border-white/10 p-3.5 rounded-xl font-mono text-xs text-cyber-blue break-all selection:bg-cyber-blue selection:text-black">
+                    <div className="bg-[#050806] border border-white/10 p-3.5 rounded-xl font-mono text-xs text-cyber-blue break-all selection:bg-cyber-blue selection:text-black">
                       {report.dkim.rawRecord}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="bg-[#03060a] p-3 rounded-xl border border-white/5">
+                      <div className="bg-[#050806] p-3 rounded-xl border border-white/5">
                         <span className="text-[10px] font-mono text-gray-500">Key Algorithm</span>
                         <div className="text-sm font-mono font-bold text-white">{report.dkim.keyType}</div>
                       </div>
-                      <div className="bg-[#03060a] p-3 rounded-xl border border-white/5">
+                      <div className="bg-[#050806] p-3 rounded-xl border border-white/5">
                         <span className="text-[10px] font-mono text-gray-500">Estimated Key Length</span>
                         <div className="text-sm font-mono font-bold text-white">
                           ~{report.dkim.keyLengthEstimate || 2048}-bit
                         </div>
                       </div>
-                      <div className="bg-[#03060a] p-3 rounded-xl border border-white/5">
+                      <div className="bg-[#050806] p-3 rounded-xl border border-white/5">
                         <span className="text-[10px] font-mono text-gray-500">Verified Selector</span>
                         <div className="text-sm font-mono font-bold text-cyber-blue">{report.dkim.selectorTested}</div>
                       </div>
@@ -1132,7 +1132,7 @@ export function DomainAuthLookup({
                 {report.mx.records.length > 0 ? (
                   <div className="space-y-2">
                     {report.mx.records.map((mx, idx) => (
-                      <div key={idx} className="bg-[#03060a] border border-white/5 p-3 rounded-xl flex items-center justify-between">
+                      <div key={idx} className="bg-[#050806] border border-white/5 p-3 rounded-xl flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className="text-[11px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded font-bold">
                             PRIORITY {mx.priority}
@@ -1167,7 +1167,7 @@ export function DomainAuthLookup({
                   </div>
 
                   {report.bimi.found && report.bimi.logoUrl && (
-                    <div className="bg-[#03060a] p-3.5 rounded-xl border border-white/10 flex items-center gap-4">
+                    <div className="bg-[#050806] p-3.5 rounded-xl border border-white/10 flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-white/5 p-2 flex items-center justify-center border border-white/10 shrink-0">
                         <img 
                           src={report.bimi.logoUrl} 

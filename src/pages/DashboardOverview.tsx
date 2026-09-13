@@ -62,10 +62,10 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
       {/* =========================================================================
           A. DASHBOARD HERO / WELCOME SECTION
          ========================================================================= */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#10151D] via-[#121924] to-[#0A0E17] border border-white/[0.08] p-6 sm:p-8 shadow-2xl backdrop-blur-2xl">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#121b15] via-[#16201a] to-[#0d1410] border border-white/[0.08] p-6 sm:p-8 shadow-2xl backdrop-blur-2xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
-            <div className="flex items-center gap-2.5 font-mono text-xs text-[#00F0FF]">
+            <div className="flex items-center gap-2.5 font-mono text-xs text-[#36c96c]">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
               <span className="font-bold">KITSIH ACTIVE DEFENSE MATRIX</span>
               <span className="text-[#8995A5]">• {currentTime || '04:42:00 UTC'}</span>
@@ -83,7 +83,7 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
           <div className="flex items-center gap-3 shrink-0 font-mono text-xs">
             <button
               onClick={onNavigateToAnalyze}
-              className="px-5 py-3 bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black font-extrabold rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+              className="px-5 py-3 bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-extrabold rounded-xl shadow-[0_0_20px_rgba(105,230,165,0.3)] hover:shadow-[0_0_25px_rgba(105,230,165,0.5)] transition-all flex items-center gap-2 cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span>Analyze New Email</span>
@@ -97,10 +97,10 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
          ========================================================================= */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Emails Analyzed */}
-        <div className="p-5 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3">
+        <div className="p-5 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3">
           <div className="flex items-center justify-between text-[#8995A5] text-xs font-mono">
             <span>Total Analyzed</span>
-            <Mail className="w-4 h-4 text-[#00F0FF]" />
+            <Mail className="w-4 h-4 text-[#36c96c]" />
           </div>
           <div className="text-3xl font-extrabold text-white font-mono">
             1,420
@@ -111,7 +111,7 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
         </div>
 
         {/* Card 2: Threats Blocked */}
-        <div className="p-5 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3">
+        <div className="p-5 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3">
           <div className="flex items-center justify-between text-[#8995A5] text-xs font-mono">
             <span>Threats Blocked</span>
             <ShieldAlert className="w-4 h-4 text-[#F43F5E]" />
@@ -125,7 +125,7 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
         </div>
 
         {/* Card 3: Safe Verified */}
-        <div className="p-5 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3">
+        <div className="p-5 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3">
           <div className="flex items-center justify-between text-[#8995A5] text-xs font-mono">
             <span>Safe Emails Verified</span>
             <ShieldCheck className="w-4 h-4 text-[#10B981]" />
@@ -139,15 +139,15 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
         </div>
 
         {/* Card 4: Mean-Time-to-Detect */}
-        <div className="p-5 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3">
+        <div className="p-5 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3">
           <div className="flex items-center justify-between text-[#8995A5] text-xs font-mono">
             <span>Mean Time to Detect (MTTD)</span>
-            <Zap className="w-4 h-4 text-[#00F0FF]" />
+            <Zap className="w-4 h-4 text-[#36c96c]" />
           </div>
           <div className="text-3xl font-extrabold text-white font-mono">
-            18<span className="text-lg text-[#00F0FF] ml-1">ms</span>
+            18<span className="text-lg text-[#36c96c] ml-1">ms</span>
           </div>
-          <div className="text-[11px] text-[#00F0FF] font-mono">
+          <div className="text-[11px] text-[#36c96c] font-mono">
             Sub-Second Ingress Engine
           </div>
         </div>
@@ -158,11 +158,11 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
          ========================================================================= */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Threat Activity Chart */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] space-y-4 shadow-xl">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] space-y-4 shadow-xl">
           <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
             <div>
               <h2 className="text-sm font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#00F0FF]" />
+                <Activity className="w-4 h-4 text-[#36c96c]" />
                 Threat Activity & Ingress Telemetry
               </h2>
               <p className="text-xs text-[#8995A5] font-mono">
@@ -183,28 +183,28 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
                     <stop offset="95%" stopColor="#F43F5E" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="safeGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00F0FF" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#00F0FF" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#36c96c" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#36c96c" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#161D27" />
-                <XAxis dataKey="time" stroke="#64748b" fontSize={11} fontFamily="monospace" />
-                <YAxis stroke="#64748b" fontSize={11} fontFamily="monospace" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#18251d" />
+                <XAxis dataKey="time" stroke="#648b72" fontSize={11} fontFamily="monospace" />
+                <YAxis stroke="#648b72" fontSize={11} fontFamily="monospace" />
                 <RechartsTooltip 
-                  contentStyle={{ backgroundColor: '#10151D', borderColor: '#00F0FF', borderRadius: '12px', fontFamily: 'monospace', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#121b15', borderColor: '#36c96c', borderRadius: '12px', fontFamily: 'monospace', fontSize: '11px' }}
                 />
                 <Area type="monotone" dataKey="threats" stroke="#F43F5E" strokeWidth={2} fillOpacity={1} fill="url(#threatGrad)" name="Threats Intercepted" />
-                <Area type="monotone" dataKey="safe" stroke="#00F0FF" strokeWidth={1.5} fillOpacity={1} fill="url(#safeGrad)" name="Safe Emails" />
+                <Area type="monotone" dataKey="safe" stroke="#36c96c" strokeWidth={1.5} fillOpacity={1} fill="url(#safeGrad)" name="Safe Emails" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Quick Analysis Panel */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] space-y-4 flex flex-col justify-between shadow-xl">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] space-y-4 flex flex-col justify-between shadow-xl">
           <div>
             <div className="flex items-center gap-2 text-white font-mono text-sm font-bold pb-2 border-b border-white/[0.08]">
-              <Terminal className="w-4 h-4 text-[#00F0FF]" />
+              <Terminal className="w-4 h-4 text-[#36c96c]" />
               <span>Quick Email Analysis</span>
             </div>
             <p className="text-xs text-[#8995A5] font-mono mt-2">
@@ -217,12 +217,12 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
             onChange={(e) => setQuickInput(e.target.value)}
             rows={5}
             placeholder="From: ceo@company-internal.com&#10;Subject: Urgent wire transfer...&#10;https://suspicious-login.trycloudflare.com"
-            className="w-full bg-[#080B10] border border-white/[0.1] rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#00F0FF] resize-none"
+            className="w-full bg-[#0a0e0b] border border-white/[0.1] rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#36c96c] resize-none"
           />
 
           <button
             onClick={onNavigateToAnalyze}
-            className="w-full py-3 bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black font-extrabold text-xs font-mono rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            className="w-full py-3 bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-extrabold text-xs font-mono rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>Launch Analysis Engine</span>
@@ -233,11 +233,11 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
       {/* =========================================================================
           E. RECENT SCANS TABLE / LIST
          ========================================================================= */}
-      <section className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] space-y-4 shadow-xl">
+      <section className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] space-y-4 shadow-xl">
         <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
           <div>
             <h2 className="text-sm font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#00F0FF]" />
+              <Clock className="w-4 h-4 text-[#36c96c]" />
               <span>Recent Email Scans & Security Logs</span>
             </h2>
             <p className="text-xs text-[#8995A5] font-mono">
@@ -247,7 +247,7 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
 
           <button
             onClick={onNavigateToHistory}
-            className="text-xs font-mono text-[#00F0FF] hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-xs font-mono text-[#36c96c] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <span>View All Scans</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -291,7 +291,7 @@ export function DashboardOverview({ onNavigateToAnalyze, onNavigateToHistory }: 
                     <td className="py-3 px-3 text-right">
                       <button 
                         onClick={onNavigateToAnalyze}
-                        className="text-[#00F0FF] hover:underline font-bold text-[11px] cursor-pointer"
+                        className="text-[#36c96c] hover:underline font-bold text-[11px] cursor-pointer"
                       >
                         Inspect →
                       </button>

@@ -86,32 +86,32 @@ export function LandingPage({
   };
 
   return (
-    <div className="min-h-screen bg-[#080B10] text-[#F1F5F9] font-sans selection:bg-[#00F0FF] selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0e0b] text-[#f1f9f4] font-sans selection:bg-[#36c96c] selection:text-black overflow-x-hidden">
       
       {/* Background Micro Cyber Grid */}
       <div className="bg-grid opacity-35 fixed inset-0 pointer-events-none" />
-      <div className="fixed top-0 right-1/4 w-96 h-96 bg-[#00F0FF]/5 rounded-full blur-[160px] pointer-events-none" />
-      <div className="fixed bottom-0 left-1/4 w-96 h-96 bg-[#8B5CF6]/5 rounded-full blur-[160px] pointer-events-none" />
+      <div className="fixed top-0 right-1/4 w-96 h-96 bg-[#36c96c]/5 rounded-full blur-[160px] pointer-events-none" />
+      <div className="fixed bottom-0 left-1/4 w-96 h-96 bg-[#77db9c]/5 rounded-full blur-[160px] pointer-events-none" />
 
       {/* =========================================================================
           1. NAVIGATION BAR
          ========================================================================= */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#080B10]/85 border-b border-white/[0.08]">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#0a0e0b]/85 border-b border-white/[0.08]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
-              <svg viewBox="0 0 100 100" className="w-full h-full text-[#00F0FF] drop-shadow-[0_0_10px_rgba(0,240,255,0.8)] fill-current transition-transform duration-300 group-hover:scale-105">
+              <svg viewBox="0 0 100 100" className="w-full h-full text-[#36c96c] drop-shadow-[0_0_10px_rgba(105,230,165,0.8)] fill-current transition-transform duration-300 group-hover:scale-105">
                 <polygon points="50 3 93 25 93 75 50 97 7 75 7 25" fill="none" stroke="currentColor" strokeWidth="4" />
                 <polygon points="50 15 80 32 80 68 50 85 20 68 20 32" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="5 5" className="animate-[spin_12s_linear_infinite_reverse]" />
-                <circle cx="50" cy="50" r="12" className="animate-pulse fill-[#00F0FF]/80" />
+                <circle cx="50" cy="50" r="12" className="animate-pulse fill-[#36c96c]/80" />
               </svg>
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-base tracking-[0.18em] text-white font-mono">
                 NEUROSHIELD
               </span>
-              <span className="text-[9px] text-[#00F0FF] font-mono tracking-[0.25em] uppercase -mt-0.5 font-bold drop-shadow-[0_0_5px_rgba(0,240,255,0.4)]">
+              <span className="text-[9px] text-[#36c96c] font-mono tracking-[0.25em] uppercase -mt-0.5 font-bold drop-shadow-[0_0_5px_rgba(105,230,165,0.4)]">
                 AI SOC GATEWAY
               </span>
             </div>
@@ -119,10 +119,10 @@ export function LandingPage({
 
           {/* Nav Links */}
           <div className="hidden md:flex items-center gap-8 text-xs font-mono text-[#8995A5]">
-            <a href="#features" className="hover:text-[#F1F5F9] transition-colors">Matrix Features</a>
-            <a href="#pipeline" className="hover:text-[#F1F5F9] transition-colors">4-Stage Pipeline</a>
-            <a href="#architecture" className="hover:text-[#F1F5F9] transition-colors">Security Architecture</a>
-            <a href="#demo" className="hover:text-[#F1F5F9] transition-colors">Interactive Demo</a>
+            <a href="#features" className="hover:text-[#f1f9f4] transition-colors">Matrix Features</a>
+            <a href="#pipeline" className="hover:text-[#f1f9f4] transition-colors">4-Stage Pipeline</a>
+            <a href="#architecture" className="hover:text-[#f1f9f4] transition-colors">Security Architecture</a>
+            <a href="#demo" className="hover:text-[#f1f9f4] transition-colors">Interactive Demo</a>
           </div>
 
           {/* Action CTAs */}
@@ -131,13 +131,13 @@ export function LandingPage({
               onClick={onNavigateToInboxShield}
               className="px-3.5 py-1.5 rounded-xl text-[#8995A5] hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer hidden sm:inline-flex items-center gap-1.5"
             >
-              <Mail className="w-3.5 h-3.5 text-[#00F0FF]" />
+              <Mail className="w-3.5 h-3.5 text-[#36c96c]" />
               <span>Inbox Shield</span>
             </button>
 
             <button
               onClick={onNavigateToDashboard}
-              className="px-4 py-2 rounded-xl bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black font-bold transition-all shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] cursor-pointer active:scale-95 flex items-center gap-2"
+              className="px-4 py-2 rounded-xl bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-bold transition-all shadow-[0_0_20px_rgba(105,230,165,0.3)] hover:shadow-[0_0_25px_rgba(105,230,165,0.5)] cursor-pointer active:scale-95 flex items-center gap-2"
             >
               <Zap className="w-3.5 h-3.5 fill-current" />
               <span>Enter Defense Console</span>
@@ -151,8 +151,8 @@ export function LandingPage({
          ========================================================================= */}
       <section className="relative pt-16 pb-24 lg:pt-24 lg:pb-32 overflow-hidden">
         {/* Glow Spheres */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#00F0FF]/[0.06] rounded-full blur-[160px] pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-[#8B5CF6]/[0.05] rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#36c96c]/[0.06] rounded-full blur-[160px] pointer-events-none" />
+        <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-[#77db9c]/[0.05] rounded-full blur-[140px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
@@ -161,7 +161,7 @@ export function LandingPage({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#10151D] border border-[#00F0FF]/30 text-[#00F0FF] text-xs font-mono font-medium shadow-[0_0_15px_rgba(0,240,255,0.15)]"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#121b15] border border-[#36c96c]/30 text-[#36c96c] text-xs font-mono font-medium shadow-[0_0_15px_rgba(105,230,165,0.15)]"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>NEUROSHIELD • AUTONOMOUS MULTI-CHANNEL THREAT INTERCEPTION</span>
@@ -196,7 +196,7 @@ export function LandingPage({
             >
               <button
                 onClick={onNavigateToDashboard}
-                className="px-6 py-3.5 rounded-xl bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black font-extrabold transition-all shadow-[0_0_25px_rgba(0,240,255,0.4)] hover:shadow-[0_0_35px_rgba(0,240,255,0.6)] cursor-pointer flex items-center gap-2.5 active:scale-95"
+                className="px-6 py-3.5 rounded-xl bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-extrabold transition-all shadow-[0_0_25px_rgba(105,230,165,0.4)] hover:shadow-[0_0_35px_rgba(105,230,165,0.6)] cursor-pointer flex items-center gap-2.5 active:scale-95"
               >
                 <span>Launch Defense Console</span>
                 <ArrowRight className="w-4 h-4" />
@@ -204,9 +204,9 @@ export function LandingPage({
 
               <button
                 onClick={onNavigateToInboxShield}
-                className="px-6 py-3.5 rounded-xl bg-[#10151D] hover:bg-[#161D27] text-white font-bold border border-white/[0.12] hover:border-[#00F0FF]/40 transition-all shadow-lg cursor-pointer flex items-center gap-2"
+                className="px-6 py-3.5 rounded-xl bg-[#121b15] hover:bg-[#18251d] text-white font-bold border border-white/[0.12] hover:border-[#36c96c]/40 transition-all shadow-lg cursor-pointer flex items-center gap-2"
               >
-                <Mail className="w-4 h-4 text-[#00F0FF]" />
+                <Mail className="w-4 h-4 text-[#36c96c]" />
                 <span>Inbox Shield & Forensics</span>
                 <ChevronRight className="w-4 h-4 text-[#8995A5]" />
               </button>
@@ -228,10 +228,10 @@ export function LandingPage({
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mt-14 max-w-4xl mx-auto rounded-2xl bg-[#10151D] border border-white/[0.1] shadow-[0_20px_60px_rgba(0,0,0,0.8)] p-4 sm:p-6 backdrop-blur-2xl relative overflow-hidden"
+            className="mt-14 max-w-4xl mx-auto rounded-2xl bg-[#121b15] border border-white/[0.1] shadow-[0_20px_60px_rgba(0,0,0,0.8)] p-4 sm:p-6 backdrop-blur-2xl relative overflow-hidden"
           >
             {/* Top Scanning Beam */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent animate-scan-beam" />
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#36c96c] to-transparent animate-scan-beam" />
 
             {/* Window Header */}
             <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] text-xs font-mono">
@@ -242,7 +242,7 @@ export function LandingPage({
                   <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
                 </div>
                 <span className="text-[#8995A5] ml-2 font-bold flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-[#00F0FF]" />
+                  <Terminal className="w-3.5 h-3.5 text-[#36c96c]" />
                   NEUROSHIELD THREAT INTERCEPTION ENGINE v2.4
                 </span>
               </div>
@@ -262,8 +262,8 @@ export function LandingPage({
                   onClick={() => handleRunSampleScan(sample)}
                   className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all border cursor-pointer ${
                     selectedAttack.id === sample.id
-                      ? 'bg-[#00F0FF]/15 text-[#00F0FF] border-[#00F0FF]/50 shadow-[0_0_12px_rgba(0,240,255,0.2)]'
-                      : 'bg-[#080B10] text-[#8995A5] border-white/[0.08] hover:text-white hover:border-white/[0.2]'
+                      ? 'bg-[#36c96c]/15 text-[#36c96c] border-[#36c96c]/50 shadow-[0_0_12px_rgba(105,230,165,0.2)]'
+                      : 'bg-[#0a0e0b] text-[#8995A5] border-white/[0.08] hover:text-white hover:border-white/[0.2]'
                   }`}
                 >
                   {sample.title}
@@ -272,23 +272,23 @@ export function LandingPage({
             </div>
 
             {/* Simulated Email Card */}
-            <div className="bg-[#080B10] rounded-xl border border-white/[0.08] p-4 font-mono text-xs space-y-3">
+            <div className="bg-[#0a0e0b] rounded-xl border border-white/[0.08] p-4 font-mono text-xs space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/[0.06] text-[11px]">
                 <div className="truncate">
                   <span className="text-[#8995A5]">From: </span>
                   <span className="text-white font-bold">{selectedAttack.sender}</span>
                 </div>
-                <div className="text-[#00F0FF] text-[10px] bg-[#00F0FF]/10 px-2 py-0.5 rounded border border-[#00F0FF]/20 self-start sm:self-auto font-bold">
+                <div className="text-[#36c96c] text-[10px] bg-[#36c96c]/10 px-2 py-0.5 rounded border border-[#36c96c]/20 self-start sm:self-auto font-bold">
                   {selectedAttack.tag}
                 </div>
               </div>
 
               <div className="text-[11px]">
                 <span className="text-[#8995A5]">Subject: </span>
-                <span className="text-[#F1F5F9] font-bold">{selectedAttack.subject}</span>
+                <span className="text-[#f1f9f4] font-bold">{selectedAttack.subject}</span>
               </div>
 
-              <div className="bg-[#10151D] p-3 rounded-lg text-slate-300 text-xs leading-relaxed border border-white/[0.04]">
+              <div className="bg-[#121b15] p-3 rounded-lg text-slate-300 text-xs leading-relaxed border border-white/[0.04]">
                 {selectedAttack.snippet}
               </div>
 
@@ -309,7 +309,7 @@ export function LandingPage({
             </div>
 
             {/* Security Verdict Footer */}
-            <div className="mt-4 p-4 rounded-xl bg-[#161D27] border border-[#F43F5E]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono">
+            <div className="mt-4 p-4 rounded-xl bg-[#18251d] border border-[#F43F5E]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#F43F5E]/15 border border-[#F43F5E]/40 flex items-center justify-center text-[#F43F5E] font-bold shrink-0">
                   <ShieldAlert className="w-5 h-5" />
@@ -327,7 +327,7 @@ export function LandingPage({
 
               <button
                 onClick={onNavigateToInboxShield}
-                className="px-4 py-2 bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black font-bold text-xs rounded-lg transition-all cursor-pointer flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-lg"
+                className="px-4 py-2 bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-bold text-xs rounded-lg transition-all cursor-pointer flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-lg"
               >
                 <span>Run Full Forensic Analysis</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -340,11 +340,11 @@ export function LandingPage({
       {/* =========================================================================
           LIVE TELEMETRY STATS TICKER STRIP
          ========================================================================= */}
-      <section className="border-y border-white/[0.08] bg-[#0A0E17]/90 backdrop-blur-md py-8">
+      <section className="border-y border-white/[0.08] bg-[#0d1410]/90 backdrop-blur-md py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#00F0FF] font-mono drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]">
+              <div className="text-3xl sm:text-4xl font-extrabold text-[#36c96c] font-mono drop-shadow-[0_0_12px_rgba(105,230,165,0.4)]">
                 99.8%
               </div>
               <div className="text-xs font-mono text-[#8995A5] uppercase tracking-wider font-semibold">
@@ -368,7 +368,7 @@ export function LandingPage({
               </div>
             </div>
             <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#8B5CF6] font-mono">
+              <div className="text-3xl sm:text-4xl font-extrabold text-[#77db9c] font-mono">
                 24/7
               </div>
               <div className="text-xs font-mono text-[#8995A5] uppercase tracking-wider font-semibold">
@@ -382,10 +382,10 @@ export function LandingPage({
       {/* =========================================================================
           3. CORE FEATURES SECTION (6-Card High-Tech Grid)
          ========================================================================= */}
-      <section id="features" className="py-20 border-t border-white/[0.08] bg-[#0A0E17]">
+      <section id="features" className="py-20 border-t border-white/[0.08] bg-[#0d1410]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="text-xs font-mono font-bold text-[#00F0FF] uppercase tracking-wider px-3 py-1 rounded-full bg-[#00F0FF]/10 border border-[#00F0FF]/25 inline-block">
+            <span className="text-xs font-mono font-bold text-[#36c96c] uppercase tracking-wider px-3 py-1 rounded-full bg-[#36c96c]/10 border border-[#36c96c]/25 inline-block">
               Multi-Vector Interception Grid
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
@@ -399,8 +399,8 @@ export function LandingPage({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* Feature 1 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-[#00F0FF]/40 transition-all space-y-3 group shadow-xl">
-              <div className="w-10 h-10 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/30 flex items-center justify-center text-[#00F0FF] group-hover:scale-110 transition-transform">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-[#36c96c]/40 transition-all space-y-3 group shadow-xl">
+              <div className="w-10 h-10 rounded-xl bg-[#36c96c]/10 border border-[#36c96c]/30 flex items-center justify-center text-[#36c96c] group-hover:scale-110 transition-transform">
                 <Cpu className="w-5 h-5" />
               </div>
               <h3 className="text-base font-bold text-white font-sans">Explainable AI Phishing Classifier</h3>
@@ -410,7 +410,7 @@ export function LandingPage({
             </div>
 
             {/* Feature 2 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-[#00F0FF]/40 transition-all space-y-3 group shadow-xl">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-[#36c96c]/40 transition-all space-y-3 group shadow-xl">
               <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] group-hover:scale-110 transition-transform">
                 <Layers className="w-5 h-5" />
               </div>
@@ -421,8 +421,8 @@ export function LandingPage({
             </div>
 
             {/* Feature 3 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-[#00F0FF]/40 transition-all space-y-3 group shadow-xl">
-              <div className="w-10 h-10 rounded-xl bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center text-[#8B5CF6] group-hover:scale-110 transition-transform">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-[#36c96c]/40 transition-all space-y-3 group shadow-xl">
+              <div className="w-10 h-10 rounded-xl bg-[#77db9c]/10 border border-[#77db9c]/30 flex items-center justify-center text-[#77db9c] group-hover:scale-110 transition-transform">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <h3 className="text-base font-bold text-white font-sans">SPF / DKIM / DMARC Matrix</h3>
@@ -432,7 +432,7 @@ export function LandingPage({
             </div>
 
             {/* Feature 4 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-[#00F0FF]/40 transition-all space-y-3 group shadow-xl">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-[#36c96c]/40 transition-all space-y-3 group shadow-xl">
               <div className="w-10 h-10 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 transition-transform">
                 <Globe className="w-5 h-5" />
               </div>
@@ -443,7 +443,7 @@ export function LandingPage({
             </div>
 
             {/* Feature 5 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-[#00F0FF]/40 transition-all space-y-3 group shadow-xl">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-[#36c96c]/40 transition-all space-y-3 group shadow-xl">
               <div className="w-10 h-10 rounded-xl bg-[#F43F5E]/10 border border-[#F43F5E]/30 flex items-center justify-center text-[#F43F5E] group-hover:scale-110 transition-transform">
                 <Mic className="w-5 h-5" />
               </div>
@@ -454,8 +454,8 @@ export function LandingPage({
             </div>
 
             {/* Feature 6 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] hover:border-[#00F0FF]/40 transition-all space-y-3 group shadow-xl">
-              <div className="w-10 h-10 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/30 flex items-center justify-center text-[#00F0FF] group-hover:scale-110 transition-transform">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] hover:border-[#36c96c]/40 transition-all space-y-3 group shadow-xl">
+              <div className="w-10 h-10 rounded-xl bg-[#36c96c]/10 border border-[#36c96c]/30 flex items-center justify-center text-[#36c96c] group-hover:scale-110 transition-transform">
                 <Lock className="w-5 h-5" />
               </div>
               <h3 className="text-base font-bold text-white font-sans">Immutable SOC Cryptographic Audit</h3>
@@ -471,10 +471,10 @@ export function LandingPage({
       {/* =========================================================================
           4. 4-STEP PIPELINE
          ========================================================================= */}
-      <section id="pipeline" className="py-20 border-t border-white/[0.08] bg-[#080B10]">
+      <section id="pipeline" className="py-20 border-t border-white/[0.08] bg-[#0a0e0b]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="text-xs font-mono font-bold text-[#00F0FF] uppercase tracking-wider px-3 py-1 rounded-full bg-[#00F0FF]/10 border border-[#00F0FF]/25 inline-block">
+            <span className="text-xs font-mono font-bold text-[#36c96c] uppercase tracking-wider px-3 py-1 rounded-full bg-[#36c96c]/10 border border-[#36c96c]/25 inline-block">
               Workflow Pipeline
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
@@ -487,8 +487,8 @@ export function LandingPage({
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
             {/* Step 1 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] relative space-y-3">
-              <div className="text-xs font-mono font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-2.5 py-1 rounded w-fit border border-[#00F0FF]/30">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] relative space-y-3">
+              <div className="text-xs font-mono font-bold text-[#36c96c] bg-[#36c96c]/10 px-2.5 py-1 rounded w-fit border border-[#36c96c]/30">
                 STEP 01
               </div>
               <h3 className="text-base font-bold text-white">Ingest Live Payload</h3>
@@ -498,8 +498,8 @@ export function LandingPage({
             </div>
 
             {/* Step 2 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] relative space-y-3">
-              <div className="text-xs font-mono font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-2.5 py-1 rounded w-fit border border-[#00F0FF]/30">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] relative space-y-3">
+              <div className="text-xs font-mono font-bold text-[#36c96c] bg-[#36c96c]/10 px-2.5 py-1 rounded w-fit border border-[#36c96c]/30">
                 STEP 02
               </div>
               <h3 className="text-base font-bold text-white">Deconstruct Relays & DNS</h3>
@@ -509,8 +509,8 @@ export function LandingPage({
             </div>
 
             {/* Step 3 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] relative space-y-3">
-              <div className="text-xs font-mono font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-2.5 py-1 rounded w-fit border border-[#00F0FF]/30">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] relative space-y-3">
+              <div className="text-xs font-mono font-bold text-[#36c96c] bg-[#36c96c]/10 px-2.5 py-1 rounded w-fit border border-[#36c96c]/30">
                 STEP 03
               </div>
               <h3 className="text-base font-bold text-white">Neural Pattern Scoring</h3>
@@ -520,8 +520,8 @@ export function LandingPage({
             </div>
 
             {/* Step 4 */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] relative space-y-3">
-              <div className="text-xs font-mono font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-2.5 py-1 rounded w-fit border border-[#00F0FF]/30">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] relative space-y-3">
+              <div className="text-xs font-mono font-bold text-[#36c96c] bg-[#36c96c]/10 px-2.5 py-1 rounded w-fit border border-[#36c96c]/30">
                 STEP 04
               </div>
               <h3 className="text-base font-bold text-white">Verdict & Containment</h3>
@@ -536,11 +536,11 @@ export function LandingPage({
       {/* =========================================================================
           5. TRUST & SECURITY ARCHITECTURE
          ========================================================================= */}
-      <section id="architecture" className="py-20 border-t border-white/[0.08] bg-[#0A0E17]">
+      <section id="architecture" className="py-20 border-t border-white/[0.08] bg-[#0d1410]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <span className="text-xs font-mono font-bold text-[#00F0FF] uppercase tracking-wider px-3 py-1 rounded-full bg-[#00F0FF]/10 border border-[#00F0FF]/25 inline-block">
+              <span className="text-xs font-mono font-bold text-[#36c96c] uppercase tracking-wider px-3 py-1 rounded-full bg-[#36c96c]/10 border border-[#36c96c]/25 inline-block">
                 Trust & Security Architecture
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
@@ -551,15 +551,15 @@ export function LandingPage({
               </p>
 
               <div className="space-y-3 font-mono text-xs">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#10151D] border border-white/[0.06]">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#121b15] border border-white/[0.06]">
                   <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
                   <span>Explainable Decision Trees — Zero black-box hallucinations</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#10151D] border border-white/[0.06]">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#121b15] border border-white/[0.06]">
                   <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
                   <span>Sub-20ms Engine Latency for Real-time Ingress Protection</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#10151D] border border-white/[0.06]">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#121b15] border border-white/[0.06]">
                   <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
                   <span>Actionable Remediation Scripts (PowerShell, iptables & RPZ)</span>
                 </div>
@@ -567,16 +567,16 @@ export function LandingPage({
             </div>
 
             {/* Interactive Terminal / Code Snippet */}
-            <div className="p-6 rounded-2xl bg-[#10151D] border border-white/[0.08] font-mono text-xs space-y-4 shadow-2xl">
+            <div className="p-6 rounded-2xl bg-[#121b15] border border-white/[0.08] font-mono text-xs space-y-4 shadow-2xl">
               <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
                 <span className="text-[#8995A5] text-[11px] font-bold flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-[#00F0FF]" />
+                  <Terminal className="w-4 h-4 text-[#36c96c]" />
                   NEUROSHIELD SOC CONTAINMENT DOSSIER
                 </span>
                 <span className="text-[10px] text-[#10B981] font-bold">STIX 2.1 READY</span>
               </div>
 
-              <pre className="text-slate-300 text-[11px] bg-[#080B10] p-4 rounded-xl border border-white/[0.06] overflow-x-auto leading-relaxed">
+              <pre className="text-slate-300 text-[11px] bg-[#0a0e0b] p-4 rounded-xl border border-white/[0.06] overflow-x-auto leading-relaxed">
 {`{
   "entity": "NeuroShield_Forensic_Dossier",
   "verdict": "CRITICAL_PHISHING",
@@ -600,10 +600,10 @@ export function LandingPage({
       {/* =========================================================================
           6. COMPARISON MATRIX (Legacy SEG vs. NeuroShield)
          ========================================================================= */}
-      <section id="compare" className="py-20 border-t border-white/[0.08] bg-[#080B10]">
+      <section id="compare" className="py-20 border-t border-white/[0.08] bg-[#0a0e0b]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="text-xs font-mono font-bold text-[#00F0FF] uppercase tracking-wider px-3 py-1 rounded-full bg-[#00F0FF]/10 border border-[#00F0FF]/25 inline-block">
+            <span className="text-xs font-mono font-bold text-[#36c96c] uppercase tracking-wider px-3 py-1 rounded-full bg-[#36c96c]/10 border border-[#36c96c]/25 inline-block">
               Architecture Comparison
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
@@ -614,11 +614,11 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto rounded-2xl bg-[#10151D] border border-white/[0.08] overflow-hidden shadow-2xl font-mono text-xs">
-            <div className="grid grid-cols-3 p-4 bg-[#161D27] border-b border-white/[0.08] font-bold text-slate-300">
+          <div className="max-w-4xl mx-auto rounded-2xl bg-[#121b15] border border-white/[0.08] overflow-hidden shadow-2xl font-mono text-xs">
+            <div className="grid grid-cols-3 p-4 bg-[#18251d] border-b border-white/[0.08] font-bold text-slate-300">
               <div className="text-[#8995A5]">Capability</div>
               <div className="text-rose-400">Legacy Email Gateways</div>
-              <div className="text-[#00F0FF] flex items-center gap-1.5">
+              <div className="text-[#36c96c] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
                 NeuroShield Autonomous AI
               </div>
@@ -628,7 +628,7 @@ export function LandingPage({
               <div className="grid grid-cols-3 p-4 items-center">
                 <div className="text-white font-bold">Detection Vector</div>
                 <div className="text-slate-400">Static Regex & Domain Blocklists</div>
-                <div className="text-[#00F0FF] font-bold">Cognitive NLP & Cryptographic RFC 5322 Graph</div>
+                <div className="text-[#36c96c] font-bold">Cognitive NLP & Cryptographic RFC 5322 Graph</div>
               </div>
               <div className="grid grid-cols-3 p-4 items-center">
                 <div className="text-white font-bold">Reverse Tunnels (*.trycloudflare.com)</div>
@@ -643,7 +643,7 @@ export function LandingPage({
               <div className="grid grid-cols-3 p-4 items-center">
                 <div className="text-white font-bold">Decision Transparency</div>
                 <div className="text-slate-400">Black-box spam score (1-10)</div>
-                <div className="text-[#00F0FF] font-bold">Explainable AI Justifications & MITRE Mapping</div>
+                <div className="text-[#36c96c] font-bold">Explainable AI Justifications & MITRE Mapping</div>
               </div>
               <div className="grid grid-cols-3 p-4 items-center">
                 <div className="text-white font-bold">Data Privacy</div>
@@ -658,9 +658,9 @@ export function LandingPage({
       {/* =========================================================================
           7. INTERACTIVE DEMO CTA
          ========================================================================= */}
-      <section id="demo" className="py-20 border-t border-white/[0.08] bg-gradient-to-b from-[#080B10] via-[#0A101D] to-[#080B10] relative">
+      <section id="demo" className="py-20 border-t border-white/[0.08] bg-gradient-to-b from-[#0a0e0b] via-[#101712] to-[#0a0e0b] relative">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-          <div className="w-16 h-16 rounded-2xl bg-[#00F0FF]/15 border border-[#00F0FF]/40 flex items-center justify-center text-[#00F0FF] mx-auto shadow-[0_0_30px_rgba(0,240,255,0.3)]">
+          <div className="w-16 h-16 rounded-2xl bg-[#36c96c]/15 border border-[#36c96c]/40 flex items-center justify-center text-[#36c96c] mx-auto shadow-[0_0_30px_rgba(105,230,165,0.3)]">
             <Zap className="w-8 h-8 fill-current" />
           </div>
 
@@ -675,7 +675,7 @@ export function LandingPage({
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2 font-mono text-xs sm:text-sm">
             <button
               onClick={onNavigateToDashboard}
-              className="px-8 py-4 rounded-xl bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black font-extrabold transition-all shadow-[0_0_30px_rgba(0,240,255,0.4)] hover:shadow-[0_0_40px_rgba(0,240,255,0.6)] cursor-pointer flex items-center gap-2.5 active:scale-95"
+              className="px-8 py-4 rounded-xl bg-[#36c96c] hover:bg-[#36c96c]/90 text-black font-extrabold transition-all shadow-[0_0_30px_rgba(105,230,165,0.4)] hover:shadow-[0_0_40px_rgba(105,230,165,0.6)] cursor-pointer flex items-center gap-2.5 active:scale-95"
             >
               <span>Launch Defense Console</span>
               <ArrowRight className="w-4 h-4" />
@@ -683,9 +683,9 @@ export function LandingPage({
 
             <button
               onClick={onNavigateToInboxShield}
-              className="px-8 py-4 rounded-xl bg-[#10151D] hover:bg-[#161D27] text-white font-bold border border-white/[0.12] transition-all cursor-pointer flex items-center gap-2"
+              className="px-8 py-4 rounded-xl bg-[#121b15] hover:bg-[#18251d] text-white font-bold border border-white/[0.12] transition-all cursor-pointer flex items-center gap-2"
             >
-              <Mail className="w-4 h-4 text-[#00F0FF]" />
+              <Mail className="w-4 h-4 text-[#36c96c]" />
               <span>Explore Inbox Shield</span>
             </button>
           </div>
@@ -695,10 +695,10 @@ export function LandingPage({
       {/* =========================================================================
           7. FOOTER
          ========================================================================= */}
-      <footer className="py-12 border-t border-white/[0.08] bg-[#05080C] text-xs font-mono text-[#8995A5]">
+      <footer className="py-12 border-t border-white/[0.08] bg-[#070a08] text-xs font-mono text-[#8995A5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#10151D] border border-[#00F0FF]/30 flex items-center justify-center text-[#00F0FF]">
+            <div className="w-7 h-7 rounded-lg bg-[#121b15] border border-[#36c96c]/30 flex items-center justify-center text-[#36c96c]">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <span className="text-white font-bold tracking-wider">NEUROSHIELD</span>

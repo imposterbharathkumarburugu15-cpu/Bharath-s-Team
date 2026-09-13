@@ -27,7 +27,7 @@ export function AuthMatrixAndFlow({ dossier, onDrillDown }: AuthMatrixAndFlowPro
       {/* SECTION 7: SPF / DKIM / DMARC VISUAL MATRIX */}
       <section 
         id="authentication-visual-matrix"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
           <div>
@@ -50,7 +50,7 @@ export function AuthMatrixAndFlow({ dossier, onDrillDown }: AuthMatrixAndFlowPro
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-xs text-left">
             <thead>
-              <tr className="bg-[#0b1326] border-b border-white/10 text-[11px] uppercase tracking-wider text-gray-400">
+              <tr className="bg-[#141d17] border-b border-white/10 text-[11px] uppercase tracking-wider text-gray-400">
                 <th className="p-3">Attribute</th>
                 <th className="p-3 text-center border-l border-white/10">SPF</th>
                 <th className="p-3 text-center border-l border-white/10">DKIM</th>
@@ -259,7 +259,7 @@ export function AuthMatrixAndFlow({ dossier, onDrillDown }: AuthMatrixAndFlowPro
       {/* SECTION 8: AUTHENTICATION FLOW DIAGRAM */}
       <section 
         id="authentication-flow-diagram"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 shadow-2xl space-y-4"
       >
         <div className="flex items-center gap-2 border-b border-white/10 pb-3">
           <div className="w-2.5 h-2.5 rounded-full bg-purple-400" />
@@ -271,7 +271,7 @@ export function AuthMatrixAndFlow({ dossier, onDrillDown }: AuthMatrixAndFlowPro
         {/* 3-Column Parallel Pipeline Diagram */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Pipeline 1: SPF */}
-          <div className="p-4 rounded-xl bg-[#0a0f1c] border border-white/10 flex flex-col items-center text-center space-y-2">
+          <div className="p-4 rounded-xl bg-[#0f1712] border border-white/10 flex flex-col items-center text-center space-y-2">
             <span className="text-[10px] uppercase text-cyan-400 font-bold tracking-wider">
               1. RELAY ORIGIN
             </span>
@@ -293,7 +293,7 @@ export function AuthMatrixAndFlow({ dossier, onDrillDown }: AuthMatrixAndFlowPro
           </div>
 
           {/* Pipeline 2: DKIM */}
-          <div className="p-4 rounded-xl bg-[#0a0f1c] border border-white/10 flex flex-col items-center text-center space-y-2">
+          <div className="p-4 rounded-xl bg-[#0f1712] border border-white/10 flex flex-col items-center text-center space-y-2">
             <span className="text-[10px] uppercase text-cyan-400 font-bold tracking-wider">
               2. MESSAGE HASH
             </span>
@@ -315,7 +315,7 @@ export function AuthMatrixAndFlow({ dossier, onDrillDown }: AuthMatrixAndFlowPro
           </div>
 
           {/* Pipeline 3: DMARC */}
-          <div className="p-4 rounded-xl bg-[#0a0f1c] border border-white/10 flex flex-col items-center text-center space-y-2">
+          <div className="p-4 rounded-xl bg-[#0f1712] border border-white/10 flex flex-col items-center text-center space-y-2">
             <span className="text-[10px] uppercase text-cyan-400 font-bold tracking-wider">
               3. VISIBLE SENDER
             </span>

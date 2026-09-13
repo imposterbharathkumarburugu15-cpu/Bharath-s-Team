@@ -64,7 +64,7 @@ export const ScrambleText: React.FC<ScrambleTextProps> = ({
       <div className="flex items-center justify-between w-full mb-2 px-1">
         <span
           className={`text-[9px] uppercase tracking-widest transition-colors duration-500 font-bold bg-white/5 px-2 py-0.5 rounded ${
-            phase === 'masked' ? 'text-[#00ff66]' : 'text-[#8a99af]'
+            phase === 'masked' ? 'text-[#00ff66]' : 'text-[#8aaf98]'
           }`}
         >
           {phase === 'masked' ? t('secured_format') : type || 'Target string'}
@@ -90,7 +90,7 @@ export const ScrambleText: React.FC<ScrambleTextProps> = ({
           phase === 'masked'
             ? 'text-[#00ff66] bg-[#00ff66]/10 border-[#00ff66]/40 shadow-[0_0_15px_rgba(0,255,102,0.15)]'
             : phase === 'scrambling'
-            ? 'text-[#00f5ff] bg-[#00f5ff]/10 border-[#00f5ff]/40 shadow-[0_0_15px_rgba(0,245,255,0.15)]'
+            ? 'text-[#36c96c] bg-[#36c96c]/10 border-[#36c96c]/40 shadow-[0_0_15px_rgba(105,230,165,0.15)]'
             : 'text-[#ff2a55] bg-[#ff2a55]/5 border-[#ff2a55]/20 shadow-[0_0_10px_rgba(255,42,85,0.05)]'
         }`}
       >

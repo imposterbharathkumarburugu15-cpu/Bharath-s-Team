@@ -81,12 +81,12 @@ export function CorrelationAndChain({ dossier, onDrillDown }: CorrelationAndChai
       {/* SECTION 14: THREAT CORRELATION GRAPH */}
       <section 
         id="threat-correlation-graph"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="w-3 h-3 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_rgba(0,245,255,0.6)]" />
+              <div className="w-3 h-3 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_rgba(105,230,165,0.6)]" />
               <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-white">
                 14. Threat Correlation & Entity Graph
               </h2>
@@ -184,7 +184,7 @@ export function CorrelationAndChain({ dossier, onDrillDown }: CorrelationAndChai
 
             {/* Bottom Row: Campaign & Threat Cluster */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-              <div className="p-5 rounded-xl bg-[#0b1326] border border-cyan-500/30 text-center">
+              <div className="p-5 rounded-xl bg-[#141d17] border border-cyan-500/30 text-center">
                 <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 block mb-1.5">
                   ACTIVE PHISHING CAMPAIGN
                 </span>
@@ -215,10 +215,10 @@ export function CorrelationAndChain({ dossier, onDrillDown }: CorrelationAndChai
       {/* SECTION 15: FORENSIC EVIDENCE CHAIN */}
       <section 
         id="forensic-evidence-chain"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
       >
         <div className="flex items-center gap-2.5 border-b border-white/10 pb-4">
-          <div className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(0,245,255,0.6)]" />
+          <div className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(105,230,165,0.6)]" />
           <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-white">
             15. Forensic Evidence Chain & Proof of Verdict
           </h2>
@@ -261,7 +261,7 @@ export function CorrelationAndChain({ dossier, onDrillDown }: CorrelationAndChai
       {/* SECTION 16: EVIDENCE VS CONCLUSION */}
       <section 
         id="evidence-vs-conclusion"
-        className="bg-[#080d1a] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
+        className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5"
       >
         <div className="flex items-center gap-2.5 border-b border-white/10 pb-4">
           <div className="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.6)]" />
@@ -274,7 +274,7 @@ export function CorrelationAndChain({ dossier, onDrillDown }: CorrelationAndChai
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-xs sm:text-sm text-left">
             <thead>
-              <tr className="bg-[#0b1326] border-b border-white/10 text-xs uppercase tracking-wider text-gray-300 font-bold">
+              <tr className="bg-[#141d17] border-b border-white/10 text-xs uppercase tracking-wider text-gray-300 font-bold">
                 <th className="p-3.5 sm:p-4 w-1/2">FORENSIC EVIDENCE (OBSERVED FACT)</th>
                 <th className="p-3.5 sm:p-4 w-1/2 border-l border-white/10">FORENSIC CONCLUSION (ANALYST INFERENCE)</th>
               </tr>

@@ -48,14 +48,15 @@ export class NeuroShieldCore {
    * Models attack transitions (e.g. Conversation A gradual escalation).
    */
   static async analyzeSequence(
-    sequence: UnifiedInteractionEvent[]
+    sequence: UnifiedInteractionEvent[],
+    analyzer: typeof NeuroShieldCore.analyze = NeuroShieldCore.analyze
   ): Promise<UnifiedThreatAnalysis> {
     if (!sequence || sequence.length === 0) {
       throw new Error('Cannot analyze empty interaction sequence');
     }
 
     if (sequence.length === 1) {
-      return NeuroShieldCore.analyze(sequence[0]);
+      return analyzer(sequence[0]);
     }
 
     const latestEvent = sequence[sequence.length - 1];
@@ -104,7 +105,7 @@ export class NeuroShieldCore {
       }
     };
 
-    return NeuroShieldCore.analyze(enrichedLatestEvent);
+    return analyzer(enrichedLatestEvent);
   }
 
   /**
@@ -115,12 +116,13 @@ export class NeuroShieldCore {
    * EVIDENCE FUSION -> ATTACK TRANSITION -> RISK ENGINE -> PROTECTION POLICY
    */
   static async analyzeEmail(
-    email: NormalizedEmail | any
+    email: NormalizedEmail | any,
+    analyzer: typeof NeuroShieldCore.analyze = NeuroShieldCore.analyze
   ): Promise<UnifiedEmailAnalysisResult> {
     const normalizedEmail = EmailAdapter.toNormalizedEmail(email);
     const unifiedInput = EmailAdapter.toUnifiedInput(normalizedEmail);
 
-    const analysis = await NeuroShieldCore.analyze(unifiedInput);
+    const analysis = await analyzer(unifiedInput);
 
     const client = email?.metadata?.client || normalizedEmail?.metadata?.client || 'gmail_api';
     const clientCapabilities = email?.metadata?.clientCapabilities || normalizedEmail?.metadata?.clientCapabilities || {};
@@ -749,7 +751,7 @@ export class NeuroShieldCore {
       return PrivacyFilter.apply({
         source: input.source,
         content: input.content,
-        rawPayload: input.rawPayload,
+        rawPayload: input.rawPayload || input.rawHeaders || input.metadata?.rawHeaders,
         sender,
         recipient,
         urls: extractedUrls,
