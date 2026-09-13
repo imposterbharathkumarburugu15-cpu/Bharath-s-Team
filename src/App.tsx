@@ -23,6 +23,7 @@ function App() {
       if (hash === 'dashboard' || hash === 'overview') return 'dashboard';
       if (hash === 'phishing' || hash === 'email' || hash === 'inbox') return 'phishing';
       if (['intelligence', 'osint', 'deception'].includes(hash)) return hash;
+      if (hash === 'soc' || hash === 'soc-sector') return 'intelligence';
       if (hash === 'guard') return 'guard';
       if (hash === 'scanner' || hash === 'network') return 'scanner';
       if (hash === 'alerts') return 'alerts';
@@ -47,13 +48,15 @@ function App() {
         setActiveTab('phishing');
       } else if (['intelligence', 'osint', 'deception'].includes(hash)) {
         setActiveTab(hash);
+      } else if (hash === 'soc' || hash === 'soc-sector') {
+        setActiveTab('intelligence');
       } else if (hash === 'guard') {
         setActiveTab('guard');
       } else if (hash === 'scanner' || hash === 'network' || hash === 'tunnel') {
         setActiveTab('scanner');
       } else if (hash === 'alerts' || hash === 'incidents') {
         setActiveTab('alerts');
-      } else if (hash === 'copilot' || hash === 'soc') {
+      } else if (hash === 'copilot' || hash === 'ai-soc') {
         setActiveTab('copilot');
       } else if (hash === 'voice' || hash === 'deepfake') {
         setActiveTab('voice');

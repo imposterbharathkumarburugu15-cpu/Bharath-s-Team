@@ -369,7 +369,7 @@ export function Intelligence({ initialView = 'campaigns' }: { initialView?: 'cam
     await api(`intelligence/campaigns/${campaign.id}/review`, { status, indicators: selected, note });
     setNotice(status === 'confirmed' ? 'Campaign reviewed. Selected validated indicators are now in threat intelligence.' : 'Campaign rejected. Its propagated indicators have been retracted.'); await load();
   });
-  return <main className="ns-workspace"><div className="ns-eyebrow">SECURITY OPERATIONS</div><div className="ns-section-heading"><h1>Intelligence<span className="ns-accent">.</span></h1>{role && <button className="ns-secondary" onClick={() => { persistKey(''); setRole(''); setIssued(null); setClusters([]); setIncidents([]); setSessions([]); setIOCs([]); }}>Lock SOC</button>}</div><p className="ns-lead">One detected incident should help identify related incidents.</p>
+  return <main className="ns-workspace"><div className="ns-eyebrow">SECURITY OPERATIONS</div><div className="ns-section-heading"><h1>SOC Sector<span className="ns-accent">.</span></h1>{role && <button className="ns-secondary" onClick={() => { persistKey(''); setRole(''); setIssued(null); setClusters([]); setIncidents([]); setSessions([]); setIOCs([]); }}>Lock SOC</button>}</div><p className="ns-lead">Unified campaign intelligence, controlled deception research & active IOC database.</p>
     {!role ? (
       <form
         className="ns-panel ns-soc-login"

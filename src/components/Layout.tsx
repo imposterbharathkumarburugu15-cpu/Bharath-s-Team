@@ -60,8 +60,7 @@ export const navItems: NavItem[] = [
   { name: 'alerts', id: 'alerts', icon: Bell, category: 'CORE', shortcut: '5', description: 'Real-time incident response & threat triage' },
   
   { name: 'Domain OSINT', id: 'osint', icon: Globe, category: 'AI_INTEL', description: 'DNS email authentication, WHOIS & infrastructure OSINT' },
-  { name: 'Campaign intelligence', id: 'intelligence', icon: FileSearch, category: 'AI_INTEL', description: 'Campaign evidence, SOC review and IOC database' },
-  { name: 'Controlled deception', id: 'deception', icon: ShieldCheck, category: 'AI_INTEL', description: 'Optional isolated synthetic research workspace' },
+  { name: 'SOC Sector', id: 'intelligence', icon: FileSearch, category: 'AI_INTEL', badge: 'SOC', description: 'Campaign intelligence, controlled deception & IOC database' },
 
   // AI INTELLIGENCE
   { name: 'voice', id: 'voice', icon: Mic, category: 'AI_INTEL', badge: 'VOICE AI', shortcut: '6', description: 'AI voice clone detection & synthetic speech analysis' },
