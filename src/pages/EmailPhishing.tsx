@@ -16,7 +16,7 @@ import { addScanToHistory } from '@/lib/history';
 import { executeEmailForensics, ForensicDossier } from '@/services/forensicsEngine';
 import { IncidentWorkflow } from '@/components/IncidentWorkflow';
 import { UnifiedThreatAnalysis, UnifiedInteractionEvent } from '@/services/core/types';
-import { googleSignIn, googleLogout, initAuth, getAccessToken } from '@/services/googleAuth';
+import { googleSignIn, googleLogout, initAuth, getAccessToken, invalidateToken } from '@/services/googleAuth';
 import { InboxShieldView } from '@/components/InboxShieldView';
 import { EmailProtectionStatus } from '@/components/EmailProtectionStatus';
 import { EmailForensicsPanel } from '@/components/EmailForensicsPanel';
@@ -26,7 +26,7 @@ import { DomainAuthLookup } from '@/components/DomainAuthLookup';
 import { AdaptiveFeedbackSection } from '@/components/AdaptiveFeedbackSection';
 import { SentinelWave } from '@/components/SentinelWave';
 import { ScrambleText } from '@/components/ScrambleText';
-import { InboxEmailItem } from '@/data/inboxEmails';
+import { InboxEmailItem, SHOWCASE_INBOX_EMAILS } from '@/data/inboxEmails';
 import { 
   ingestGmailEmails, 
   fetchGmailMessageDetail,
@@ -74,8 +74,19 @@ export default function EmailPhishing() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoadingEmails, setIsLoadingEmails] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [emails, setEmails] = useState<GmailEmailItem[]>([]);
-  const [inboxEmails, setInboxEmails] = useState<InboxEmailItem[]>([]);
+  const [emails, setEmails] = useState<GmailEmailItem[]>(() =>
+    SHOWCASE_INBOX_EMAILS.map(e => ({
+      id: e.id,
+      sender: `${e.senderName} <${e.senderEmail}>`,
+      subject: e.subject,
+      time: e.timeString,
+      body: e.body,
+      rawHeaders: e.rawHeaders,
+      dossier: e.dossier,
+      isAnalyzing: false
+    }))
+  );
+  const [inboxEmails, setInboxEmails] = useState<InboxEmailItem[]>(() => SHOWCASE_INBOX_EMAILS);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -132,25 +143,43 @@ export default function EmailPhishing() {
     setAuthError(null);
     try {
       const result = await ingestGmailEmails(token);
-      setInboxEmails(result.emails);
+      if (result.emails && result.emails.length > 0) {
+        setInboxEmails(result.emails);
+        setEmails(result.emails.map(e => ({
+          id: e.id,
+          sender: `${e.senderName} <${e.senderEmail}>`,
+          subject: e.subject,
+          time: e.timeString,
+          body: e.body,
+          rawHeaders: e.rawHeaders,
+          dossier: e.dossier,
+          isAnalyzing: false
+        })));
+      } else {
+        setInboxEmails(SHOWCASE_INBOX_EMAILS);
+      }
       setNextPageToken(result.nextPageToken);
       setLastScanTimestamp(new Date().toISOString());
-
-      setEmails(result.emails.map(e => ({
-        id: e.id,
-        sender: `${e.senderName} <${e.senderEmail}>`,
-        subject: e.subject,
-        time: e.timeString,
-        body: e.body,
-        rawHeaders: e.rawHeaders,
-        dossier: e.dossier,
-        isAnalyzing: false
-      })));
-
       startPolling(token, result.emails.map(e => e.id));
     } catch (err: any) {
       console.warn('Auto-ingestion notice:', err);
-      setAuthError(err?.message || 'Error during automatic email ingestion.');
+      const isAuthIssue =
+        err?.isAuthExpired ||
+        err?.message?.includes('invalid authentication credentials') ||
+        err?.message?.includes('OAuth 2') ||
+        err?.message?.includes('UNAUTHENTICATED') ||
+        err?.message?.includes('expired') ||
+        err?.message?.includes('401');
+
+      if (isAuthIssue) {
+        invalidateToken();
+        setIsAuthenticated(false);
+        setAuthError('Your Google OAuth session has expired. Reconnect your Google account or explore using the built-in demo inbox.');
+      } else {
+        setAuthError(err?.message || 'Error during automatic email ingestion.');
+      }
+      // Ensure inbox retains demo data so the user is never stranded
+      setInboxEmails(prev => (prev && prev.length > 0 ? prev : SHOWCASE_INBOX_EMAILS));
     } finally {
       setIsLoadingEmails(false);
     }
@@ -785,19 +814,50 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
             }}
           />
 
-          {/* Auth Error Toast if any */}
+          {/* Auth Error Banner with 1-Click Reconnect */}
           {authError && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center justify-between gap-3 text-red-300 text-xs font-mono">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                <span>{authError}</span>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs font-mono shadow-lg">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0 mt-0.5 sm:mt-0">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-red-300 font-bold text-xs sm:text-sm">
+                    {authError.includes('expired') || authError.includes('OAuth') 
+                      ? 'Google Session Expired' 
+                      : 'Authentication Alert'}
+                  </div>
+                  <div className="text-gray-400 font-sans text-xs mt-0.5">
+                    {authError}
+                  </div>
+                </div>
               </div>
-              <button 
-                onClick={() => setAuthError(null)} 
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleGoogleLogin}
+                  className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(86,170,118,0.3)] transition-all active:scale-95"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Reconnect Gmail</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setInboxEmails(SHOWCASE_INBOX_EMAILS);
+                    setAuthError(null);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 font-mono text-xs font-semibold cursor-pointer transition-all"
+                >
+                  <span>Use Demo Inbox</span>
+                </button>
+                <button 
+                  onClick={() => setAuthError(null)} 
+                  className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5"
+                  title="Dismiss alert"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 

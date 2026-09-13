@@ -57,10 +57,32 @@ provider.setCustomParameters({
   prompt: 'select_account'
 });
 
+const TOKEN_KEY = 'ns_gmail_token';
+const EXPIRY_KEY = 'ns_gmail_token_exp';
+
 let isSigningIn = false;
+
+export const invalidateToken = () => {
+  cachedAccessToken = null;
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(EXPIRY_KEY);
+  }
+};
+
 const getStoredToken = (): string | null => {
   if (typeof window !== 'undefined' && window.sessionStorage) {
-    return sessionStorage.getItem('ns_gmail_token');
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    const exp = sessionStorage.getItem(EXPIRY_KEY);
+    if (token && exp) {
+      const expTime = parseInt(exp, 10);
+      if (!isNaN(expTime) && Date.now() > expTime) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(EXPIRY_KEY);
+        return null;
+      }
+    }
+    return token;
   }
   return null;
 };
@@ -81,10 +103,7 @@ export const initAuth = (
         if (onAuthFailure) onAuthFailure();
       }
     } else {
-      cachedAccessToken = null;
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        sessionStorage.removeItem('ns_gmail_token');
-      }
+      invalidateToken();
       if (onAuthFailure) onAuthFailure();
     }
   });
@@ -106,7 +125,9 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
 
     cachedAccessToken = credential.accessToken;
     if (typeof window !== 'undefined' && window.sessionStorage) {
-      sessionStorage.setItem('ns_gmail_token', cachedAccessToken);
+      sessionStorage.setItem(TOKEN_KEY, cachedAccessToken);
+      // Google access tokens expire after 1 hour (3600s); renew after 55m
+      sessionStorage.setItem(EXPIRY_KEY, String(Date.now() + 55 * 60 * 1000));
     }
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
@@ -139,8 +160,5 @@ export const getAccessToken = (): string | null => {
 
 export const googleLogout = async () => {
   await signOut(auth);
-  cachedAccessToken = null;
-  if (typeof window !== 'undefined' && window.sessionStorage) {
-    sessionStorage.removeItem('ns_gmail_token');
-  }
+  invalidateToken();
 };

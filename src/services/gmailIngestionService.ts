@@ -7,6 +7,7 @@ import { apiFetch as fetch } from '../lib/apiClient';
 
 import { executeEmailForensics, ForensicDossier } from './forensicsEngine';
 import { InboxEmailItem } from '@/data/inboxEmails';
+import { invalidateToken } from './googleAuth';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -126,7 +127,19 @@ export async function fetchGmailMessageList(
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data?.error?.message || JSON.stringify(data));
+    const errorMsg = data?.error?.message || JSON.stringify(data);
+    if (
+      response.status === 401 ||
+      data?.error?.status === 'UNAUTHENTICATED' ||
+      errorMsg.includes('invalid authentication credentials') ||
+      errorMsg.includes('OAuth 2')
+    ) {
+      invalidateToken();
+      const authErr = new Error('Your Google session has expired. Please click "Reconnect Gmail" to refresh authentication.');
+      (authErr as any).isAuthExpired = true;
+      throw authErr;
+    }
+    throw new Error(errorMsg);
   }
 
   return {
@@ -183,7 +196,19 @@ export async function fetchGmailMessageDetail(
 
   const detail = await response.json();
   if (!response.ok) {
-    throw new Error(detail?.error?.message || `Gmail fetch error (${response.status})`);
+    const errorMsg = detail?.error?.message || `Gmail fetch error (${response.status})`;
+    if (
+      response.status === 401 ||
+      detail?.error?.status === 'UNAUTHENTICATED' ||
+      errorMsg.includes('invalid authentication credentials') ||
+      errorMsg.includes('OAuth 2')
+    ) {
+      invalidateToken();
+      const authErr = new Error('Your Google session has expired. Please click "Reconnect Gmail" to refresh authentication.');
+      (authErr as any).isAuthExpired = true;
+      throw authErr;
+    }
+    throw new Error(errorMsg);
   }
 
   return detail;
