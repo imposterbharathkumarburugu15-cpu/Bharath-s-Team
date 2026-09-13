@@ -109,19 +109,23 @@ export class TechnicalDetector {
     let dmarcStatus: TechnicalEvidenceAnalysis['dmarcStatus'] = input.metadata?.dmarcStatus || 'UNAVAILABLE';
 
     if (input.source === 'email' || input.metadata?.headers || input.metadata?.authResults) {
-      const headers = input.metadata?.headers || {};
+      const headers = input.headers || input.metadata?.headers || {};
       const authResults = headers['authentication-results'] || headers['received-spf'] || input.metadata?.authResults || '';
       const authStr = (Array.isArray(authResults) ? authResults.join(' ') : String(authResults)).toLowerCase();
 
-      if (authStr.includes('spf=pass') || authStr.includes('spf pass')) spfStatus = 'PASS';
-      else if (authStr.includes('spf=fail') || authStr.includes('spf fail')) { spfStatus = 'FAIL'; riskScore = Math.max(riskScore, 70); evidenceList.push('SPF validation failed.'); }
-      else if (authStr.includes('spf=softfail') || authStr.includes('spf softfail')) { spfStatus = 'SOFTFAIL'; riskScore = Math.max(riskScore, 45); }
-
-      if (authStr.includes('dkim=pass') || authStr.includes('dkim pass')) dkimStatus = 'PASS';
-      else if (authStr.includes('dkim=fail') || authStr.includes('dkim fail')) { dkimStatus = 'FAIL'; riskScore = Math.max(riskScore, 75); evidenceList.push('DKIM cryptographic signature verification failed.'); }
-
-      if (authStr.includes('dmarc=pass') || authStr.includes('dmarc pass')) dmarcStatus = 'PASS';
-      else if (authStr.includes('dmarc=fail') || authStr.includes('dmarc fail')) { dmarcStatus = 'FAIL'; riskScore = Math.max(riskScore, 85); evidenceList.push('DMARC domain alignment policy failed.'); }
+      // Headers report a receiving system's results; this detector does not verify signatures.
+      // Preserve failures when multiple headers disagree rather than allowing a later PASS to hide them.
+      if (/spf[= ]fail/.test(authStr)) spfStatus = 'FAIL';
+      else if (spfStatus !== 'FAIL' && /spf[= ]softfail/.test(authStr)) spfStatus = 'SOFTFAIL';
+      else if (spfStatus !== 'FAIL' && spfStatus !== 'SOFTFAIL' && /spf[= ]pass/.test(authStr)) spfStatus = 'PASS';
+      if (/dkim[= ]fail/.test(authStr)) dkimStatus = 'FAIL';
+      else if (dkimStatus !== 'FAIL' && /dkim[= ]pass/.test(authStr)) dkimStatus = 'PASS';
+      if (/dmarc[= ]fail/.test(authStr)) dmarcStatus = 'FAIL';
+      else if (dmarcStatus !== 'FAIL' && /dmarc[= ]pass/.test(authStr)) dmarcStatus = 'PASS';
+      if (spfStatus === 'FAIL') { riskScore = Math.max(riskScore, 70); evidenceList.push('Supplied authentication results report SPF failure.'); }
+      if (spfStatus === 'SOFTFAIL') riskScore = Math.max(riskScore, 45);
+      if (dkimStatus === 'FAIL') { riskScore = Math.max(riskScore, 75); evidenceList.push('Supplied authentication results report DKIM failure.'); }
+      if (dmarcStatus === 'FAIL') { riskScore = Math.max(riskScore, 85); evidenceList.push('Supplied authentication results report DMARC failure.'); }
 
       // Detect SPF/DKIM/DMARC Conflict (e.g. SPF pass on third-party relay but DMARC fail or DKIM fail)
       if (spfStatus === 'PASS' && (dmarcStatus === 'FAIL' || dkimStatus === 'FAIL')) {
@@ -130,7 +134,7 @@ export class TechnicalDetector {
       }
 
       if (spfStatus === 'PASS' && dkimStatus === 'PASS' && dmarcStatus === 'PASS') {
-        evidenceList.push('Technical note: SPF, DKIM, and DMARC passed cryptographic validation.');
+        evidenceList.push('Supplied authentication results report SPF, DKIM, and DMARC PASS; independent cryptographic verification was not performed.');
       }
     }
 
@@ -140,7 +144,7 @@ export class TechnicalDetector {
       evidenceList.push('Forensic baseline: IP geolocation describes observed infrastructure, not the physical location of the attacker.');
     }
 
-    if (urls.length === 0 && evidenceList.length <= 2) {
+    if (urls.length === 0 && riskScore === 0 && evidenceList.length <= 2) {
       evidenceList.unshift('No external hyperlinks, tunnels, or infrastructure anomalies detected.');
       riskScore = 0;
     }

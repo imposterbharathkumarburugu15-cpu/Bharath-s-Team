@@ -1,4 +1,6 @@
 import express from "express";
+import { createServer } from 'node:http';
+import { labRoutes } from './src/routes/lab';
 import { analyzeWithIntelligence } from './src/services/intelligence/runtime';
 import { intelligenceRoutes, deceptionIngress, deception } from './src/routes/intelligence';
 import path from "path";
@@ -526,6 +528,7 @@ function generateLocalScanReport(text: string, language: string) {
 
 async function startServer() {
   const app = express();
+  const httpServer = createServer(app);
   const PORT = config.port;
 
   // CORS headers
@@ -575,6 +578,7 @@ async function startServer() {
   });
 
   app.use('/api/deception', express.json({ limit: "2kb" }));
+  app.use('/api/lab', express.json({ limit: '128kb' }));
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
@@ -584,6 +588,7 @@ async function startServer() {
   // Apply Auth Middleware (enforces auth if REQUIRE_AUTH=true, public otherwise)
   app.use(deceptionIngress);
   app.use(authMiddleware);
+  app.use('/api/lab', labRoutes);
   app.use('/api', intelligenceRoutes);
   for (const signal of ['SIGTERM', 'SIGINT'] as const) process.once(signal, () => {
     void deception.stopAll().finally(() => process.exit(0));
@@ -2322,7 +2327,7 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
   // Vite middleware / static files
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: { server: httpServer } },
       appType: "spa",
     });
     app.use(vite.middlewares);
@@ -2334,7 +2339,14 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  httpServer.on('error', (error: NodeJS.ErrnoException) => {
+    console.error(error.code === 'EADDRINUSE'
+      ? `Port ${PORT} is already in use. Stop the existing NeuroShield server or set PORT to another free port.`
+      : `Server failed to start: ${error.message}`);
+    process.exitCode = 1;
+    void deception.stopAll().finally(() => process.exit(1));
+  });
+  httpServer.listen(PORT, config.host, () => {
     console.log(`Server running on port ${PORT}`);
   });
 }

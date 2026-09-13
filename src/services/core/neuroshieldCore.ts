@@ -28,6 +28,7 @@ import { PromptInjectionDetector } from './detectors/PromptInjectionDetector';
 import { SensitiveDataDetector } from './detectors/SensitiveDataDetector';
 import { TechnicalDetector } from './detectors/TechnicalDetector';
 import { AdversarialEvasionDetector } from './detectors/AdversarialEvasionDetector';
+import { DestinationDetector } from './detectors/DestinationDetector';
 import { executeEmailForensics } from './forensicsEngineProxy';
 
 import { AttackSequenceEngine } from './attackSequenceEngine';
@@ -193,7 +194,8 @@ export class NeuroShieldCore {
    */
   static async analyze(
     rawInput: UnifiedThreatInput | any,
-    explicitSource?: ThreatSource
+    explicitSource?: ThreatSource,
+    options: { deepForensics?: boolean } = {}
   ): Promise<UnifiedThreatAnalysis> {
     const startTime = Date.now();
 
@@ -265,9 +267,15 @@ export class NeuroShieldCore {
       detectorsRun.push('adversarial_evasion');
       evidenceCollection.push(evasionResult.evidence);
 
+      const destinationResult = DestinationDetector.evaluate(normalizedInput);
+      evidenceCollection.push({ detector: 'destination_integrity', score: destinationResult.riskFloor,
+        status: destinationResult.status, evidence: destinationResult.findings.map(f => f.explanation) });
+      if (destinationResult.status === 'available') detectorsRun.push('destination_integrity');
+      else detectorsUnavailable.push({ detector: 'destination_integrity', reason: 'No HTML supplied' });
+
       // 3. OPTIONAL DEEP FORENSIC LAB ENRICHMENT (For Email RFC 5322 inputs)
       let emailDossier: any = undefined;
-      if (normalizedInput.source === 'email' && normalizedInput.rawPayload && /^(From|Received|Return-Path):/im.test(normalizedInput.rawPayload)) {
+      if (options.deepForensics !== false && normalizedInput.source === 'email' && normalizedInput.rawPayload && /^(From|Received|Return-Path):/im.test(normalizedInput.rawPayload)) {
         try {
           emailDossier = await executeEmailForensics(normalizedInput.rawPayload, normalizedInput.content);
         } catch (err) {
@@ -289,6 +297,18 @@ export class NeuroShieldCore {
         emailDossier,
         evasion: evasionResult.analysis,
       });
+
+      // Static destination observations set a documented policy floor, not a learned probability.
+      if (destinationResult.riskFloor > fusionResult.fusedRiskScore) {
+        fusionResult.fusedRiskScore = destinationResult.riskFloor;
+        fusionResult.combinedRisk = { score: destinationResult.riskFloor, level: destinationResult.riskFloor >= 85 ? 'CRITICAL' : destinationResult.riskFloor >= 65 ? 'HIGH' : 'MEDIUM' };
+      }
+      for (const finding of destinationResult.findings) {
+        fusionResult.evidenceWithProvenance.push({ signal: finding.signal, source: 'URL analysis', severity: finding.severity,
+          evidence: finding.explanation, status: 'OBSERVED', detector: 'destination_integrity' });
+        fusionResult.whyRiskIncreased.push(finding.explanation);
+      }
+      if (destinationResult.findings.length) fusionResult.correlatedThreats.push('Destination integrity requires verification');
 
       // Also run EvidenceCorrelator for backward compatibility
       const correlationResult = EvidenceCorrelator.correlate({
@@ -361,7 +381,7 @@ export class NeuroShieldCore {
 
       // Fail-Safe for Empty Telemetry: If input has no content, no URLs, and no attachments, do not falsely classify as SAFE
       const isEmptyContent = !normalizedInput.content || normalizedInput.content.trim() === '';
-      const hasNoAssets = (!normalizedInput.urls || normalizedInput.urls.length === 0) && (!normalizedInput.attachments || normalizedInput.attachments.length === 0);
+      const hasNoAssets = !normalizedInput.metadata?.html && (!normalizedInput.urls || normalizedInput.urls.length === 0) && (!normalizedInput.attachments || normalizedInput.attachments.length === 0);
       if (isEmptyContent && hasNoAssets) {
         verdict = 'UNKNOWN';
         riskLevel = 'MEDIUM';
@@ -488,6 +508,7 @@ export class NeuroShieldCore {
         action: actionResult.analysis,
 
         technical_evidence: technicalResult.analysis,
+        destination_analysis: destinationResult,
         prompt_injection: promptInjectionResult.analysis,
         sensitive_data: sensitiveDataResult.analysis,
 
@@ -749,14 +770,22 @@ export class NeuroShieldCore {
       }
 
       return PrivacyFilter.apply({
+        id: input.id,
+        timestamp: input.timestamp,
         source: input.source,
+        subject: input.subject,
         content: input.content,
         rawPayload: input.rawPayload || input.rawHeaders || input.metadata?.rawHeaders,
         sender,
         recipient,
+        recipients: input.recipients,
+        headers: input.headers,
+        identity: input.identity,
+        requested_action: input.requested_action,
+        sensitive_data: input.sensitive_data,
         urls: extractedUrls,
         attachments: input.attachments || [],
-        metadata,
+        metadata: { ...metadata, subject: input.subject ?? metadata.subject },
         history: input.history || null,
         user_action: input.user_action || null,
       });

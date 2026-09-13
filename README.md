@@ -2,6 +2,8 @@
 
 ## Start here
 
+**New: Evidence Lab and security fixes.** Open `/#lab` to inspect deceptive destinations, challenge verdicts through evidence removal, run synthetic regression cases, and export checksum-verifiable decision receipts. Read [the change explanation and judge demo guide](docs/EVIDENCE_LAB_AND_DEMO.md). Run `npm run test:security` for the combined 33-test suite. SOC now requires explicitly configured privileged keys and never substitutes mock telemetry for an unavailable backend.
+
 This branch adds an emerald/charcoal UI with a guided **Connect Gmail → Open Inbox → Review Evidence → Protection Decision** workflow, a durable campaign/IOC engine, passive domain OSINT and an optional synthetic HoneyTrap.
 
 **Requires Node 22.13+ (Node 24 recommended).** Install with `npm ci`, copy `.env.example` to `.env`, then run `npm run dev`. Open `http://localhost:3000`. For a production build: `npm run build`, then `NODE_ENV=production npm start`.

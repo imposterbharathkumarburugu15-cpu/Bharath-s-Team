@@ -734,6 +734,7 @@ export interface CampaignFingerprint {
 }
 
 export interface UnifiedIncidentObject {
+  destination_analysis?: import('./detectors/DestinationDetector').DestinationAnalysis;
   intelligence?: {
     incidentId: string;
     fingerprint: string;

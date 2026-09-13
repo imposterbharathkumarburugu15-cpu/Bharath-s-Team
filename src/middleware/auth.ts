@@ -50,8 +50,8 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   }
 
   const supplied = (req.headers.authorization || '').replace(/^Bearer /, '') || String(req.headers['x-api-key'] || '');
-  const adminSecret = process.env.NEUROSHIELD_ADMIN_KEY || 'neuroshield-soc-admin-secret-key-2026-production-token';
-  const analystSecret = process.env.NEUROSHIELD_ANALYST_KEY || 'neuroshield-soc-analyst-secret-key-2026-production-token';
+  const adminSecret = process.env.NEUROSHIELD_ADMIN_KEY;
+  const analystSecret = process.env.NEUROSHIELD_ANALYST_KEY;
 
   for (const [role, secret] of [['admin', adminSecret], ['analyst', analystSecret]] as const) {
     if (matchesKey(supplied, secret)) {
@@ -70,13 +70,13 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   const authHeader = req.headers['authorization'] as string;
 
   if (apiKey) {
-    if (config.apiKeySecret && apiKey === config.apiKeySecret) {
+    if (matchesKey(apiKey, config.apiKeySecret || undefined)) {
       req.user = { id: 'api-key-client', role: 'client', apiKeyId: 'primary' };
       return next();
     }
   } else if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7).trim();
-    if (config.apiKeySecret && token === config.apiKeySecret) {
+    if (matchesKey(token, config.apiKeySecret || undefined)) {
       req.user = { id: 'bearer-client', role: 'client' };
       return next();
     }

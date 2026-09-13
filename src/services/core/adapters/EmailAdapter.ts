@@ -117,18 +117,19 @@ export class EmailAdapter {
 
     // Case 2: Structured object input
     const bodyContent =
-      input.body?.text ||
-      input.body ||
-      input.content ||
-      input.snippet ||
+      input.body?.text ??
+      (typeof input.body === 'string' ? input.body : undefined) ??
+      input.content ??
+      input.snippet ??
       '';
     const subject = input.subject || 'No Subject';
     const fullText = (typeof bodyContent === 'string' ? bodyContent : '') + ' ' + subject;
     const combinedUrls = Array.from(new Set([...(input.urls || []), ...EmailAdapter.extractUrls(fullText)]));
 
-    const fromVal = input.sender?.address || input.from || (typeof input.sender === 'string' ? input.sender : '') || '';
+    const fromVal = input.sender?.address || input.sender?.identifier || input.from || (typeof input.sender === 'string' ? input.sender : '') || '';
     const replyToVal = input.sender?.replyTo || input.replyTo || '';
     const sender = EmailAdapter.parseSenderDetails(fromVal, replyToVal);
+    if (input.sender?.displayName) sender.displayName = input.sender.displayName;
 
     let recipients: NormalizedEmailRecipient[] = [];
     if (Array.isArray(input.recipients) && input.recipients.length > 0) {
@@ -210,7 +211,7 @@ export class EmailAdapter {
         identifier: email.sender.address,
         displayName: email.sender.displayName || email.sender.address,
         domain: email.sender.domain || extractDomainFromEmail(email.sender.address),
-        authenticated: email.authentication.spf === 'PASS' && email.authentication.dkim === 'PASS',
+        authenticated: email.authentication.spf === 'PASS' && email.authentication.dkim === 'PASS' && email.authentication.dmarc === 'PASS',
       } : null,
       recipients: email.recipients.map(r => ({
         identifier: r.address,
@@ -234,10 +235,10 @@ export class EmailAdapter {
         claimedIdentity: email.sender.displayName || email.sender.address,
         verifiedDomain: email.sender.domain,
         authStatus:
-          email.authentication.spf === 'PASS' && email.authentication.dkim === 'PASS'
-            ? 'PASS'
-            : email.authentication.spf === 'FAIL' || email.authentication.dkim === 'FAIL' || email.authentication.dmarc === 'FAIL'
+          email.authentication.spf === 'FAIL' || email.authentication.dkim === 'FAIL' || email.authentication.dmarc === 'FAIL'
             ? 'FAIL'
+            : email.authentication.spf === 'PASS' && email.authentication.dkim === 'PASS' && email.authentication.dmarc === 'PASS'
+            ? 'PASS'
             : 'UNKNOWN',
       },
       history: email.context.relationshipStatus !== 'UNKNOWN' ? {
@@ -247,6 +248,7 @@ export class EmailAdapter {
       } : null,
       metadata: {
         ...email.metadata,
+        html: email.body.html,
         subject: email.subject,
         replyTo: email.sender.replyTo,
         headers: email.headers,
@@ -350,8 +352,8 @@ export class EmailAdapter {
     const combined = `${authResults} ${receivedSpf}`.toLowerCase();
 
     if (!combined.trim()) return 'UNAVAILABLE';
-    if (combined.includes('spf=pass') || combined.includes('pass (')) return 'PASS';
     if (combined.includes('spf=fail')) return 'FAIL';
+    if (combined.includes('spf=pass') || combined.includes('pass (')) return 'PASS';
     if (combined.includes('spf=softfail')) return 'SOFTFAIL';
     if (combined.includes('spf=neutral')) return 'NEUTRAL';
     if (combined.includes('spf=none')) return 'NONE';
@@ -362,12 +364,12 @@ export class EmailAdapter {
   private static extractDkimStatus(
     headers: Record<string, any>
   ): 'PASS' | 'FAIL' | 'NONE' | 'UNAVAILABLE' {
-    const authResults = (headers['authentication-results'] || '').toLowerCase();
+    const authResults = String(headers['authentication-results'] || '').toLowerCase();
     const dkimSig = headers['dkim-signature'] || '';
 
     if (!authResults.trim() && !dkimSig) return 'UNAVAILABLE';
-    if (authResults.includes('dkim=pass')) return 'PASS';
     if (authResults.includes('dkim=fail')) return 'FAIL';
+    if (authResults.includes('dkim=pass')) return 'PASS';
     if (authResults.includes('dkim=none')) return 'NONE';
 
     return dkimSig ? 'NONE' : 'UNAVAILABLE';
@@ -376,11 +378,11 @@ export class EmailAdapter {
   private static extractDmarcStatus(
     headers: Record<string, any>
   ): 'PASS' | 'FAIL' | 'NONE' | 'UNAVAILABLE' {
-    const authResults = (headers['authentication-results'] || '').toLowerCase();
+    const authResults = String(headers['authentication-results'] || '').toLowerCase();
 
     if (!authResults.trim()) return 'UNAVAILABLE';
-    if (authResults.includes('dmarc=pass')) return 'PASS';
     if (authResults.includes('dmarc=fail')) return 'FAIL';
+    if (authResults.includes('dmarc=pass')) return 'PASS';
     if (authResults.includes('dmarc=none')) return 'NONE';
 
     return 'UNAVAILABLE';

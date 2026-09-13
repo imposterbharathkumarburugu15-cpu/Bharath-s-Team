@@ -12,7 +12,9 @@
     "preview": "node ./node_modules/vite/bin/vite.js preview",
     "clean": "rm -rf dist",
     "lint": "node ./node_modules/typescript/bin/tsc --noEmit",
-    "test:intelligence": "node --import tsx --test test/intelligence.test.ts test/intelligence_api.test.ts test/extension_security.test.ts"
+    "test:intelligence": "node --import tsx --test test/intelligence.test.ts test/intelligence_api.test.ts test/extension_security.test.ts",
+    "test:evidence": "node --import tsx --test test/evidence_lab.test.ts",
+    "test:security": "node --import tsx --test test/evidence_lab.test.ts test/intelligence.test.ts test/intelligence_api.test.ts test/extension_security.test.ts"
   },
   "dependencies": {
     "@google/genai": "^1.51.0",
@@ -29,6 +31,7 @@
     "jszip": "^3.10.2",
     "lucide-react": "^0.546.0",
     "motion": "^12.38.0",
+    "parse5": "^8.0.1",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-markdown": "^10.1.0",

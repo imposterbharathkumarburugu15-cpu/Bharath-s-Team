@@ -60,6 +60,7 @@ export const navItems: NavItem[] = [
   { name: 'alerts', id: 'alerts', icon: Bell, category: 'CORE', shortcut: '5', description: 'Real-time incident response & threat triage' },
   
   { name: 'Domain OSINT', id: 'osint', icon: Globe, category: 'AI_INTEL', description: 'DNS email authentication, WHOIS & infrastructure OSINT' },
+  { name: 'Evidence Lab', id: 'lab', icon: Activity, category: 'AI_INTEL', badge: 'LAB', description: 'Inspect destination deception, remove evidence, evaluate synthetic cases and verify decision receipts' },
   { name: 'SOC Sector', id: 'intelligence', icon: FileSearch, category: 'AI_INTEL', badge: 'SOC', description: 'Campaign intelligence, controlled deception & IOC database' },
 
   // AI INTELLIGENCE
