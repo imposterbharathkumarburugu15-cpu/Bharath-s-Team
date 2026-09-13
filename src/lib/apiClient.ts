@@ -1,15 +1,8 @@
-/** Same-origin by default; static or dev deployments on port 5173/etc point to port 3000. */
+/** Same-origin by default. Separate frontend hosting must configure VITE_API_BASE_URL. */
 const envBase = ((import.meta as any).env?.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 export function getApiBaseUrl(): string {
   if (envBase) return envBase;
-  if (typeof window !== 'undefined' && window.location) {
-    const port = window.location.port;
-    // If the frontend is running on a port other than 3000 (e.g. 5173, 5174, 4173):
-    if (port && port !== '3000') {
-      return `${window.location.protocol}//${window.location.hostname}:3000`;
-    }
-  }
   return '';
 }
 
@@ -36,4 +29,3 @@ if (typeof window !== 'undefined' && window.fetch && !(window as any).__neuroshi
     return originalFetch.call(this, input, init);
   };
 }
-

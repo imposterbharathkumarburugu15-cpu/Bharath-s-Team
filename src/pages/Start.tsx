@@ -50,4 +50,3 @@ export function Start({ navigate }: { navigate: (tab: string) => void }) {
     <div className="ns-analyst-entry"><span>{t('working_secops') || 'Working in security operations?'}</span><button className="ns-text-button" onClick={() => navigate('intelligence')}>{t('open_soc_intel') || 'Open SOC intelligence'} <ArrowRight size={14} /></button></div>
   </main>;
 }
-
