@@ -281,21 +281,24 @@ export default function EmailPhishing() {
 
     try {
       // 1. Run NeuroShield Core (Context + Intent + Sensitive Data + Action Risk + Correlation)
+      const effectiveContent = item.body?.trim() || item.snippet?.trim() || item.subject?.trim() || '(No content)';
+      const effectivePayload = item.rawHeaders?.trim() || `From: ${item.senderName} <${item.senderEmail}>\nSubject: ${item.subject}`;
+
       const event: UnifiedInteractionEvent = {
         id: item.id,
         source: 'email',
-        content: item.body,
+        content: effectiveContent,
         sender: {
-          identifier: item.senderEmail,
-          displayName: item.senderName,
+          identifier: item.senderEmail || 'unknown@domain.local',
+          displayName: item.senderName || 'Unknown Sender',
         },
-        subject: item.subject,
-        rawPayload: item.rawHeaders,
+        subject: item.subject || 'No Subject',
+        rawPayload: effectivePayload,
       };
 
       const response = await fetch('/api/neuroshield/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...event, rawHeaders: item.rawHeaders, metadata: { client: 'web_app', clientCapabilities: { canDisarmLinks: true } } }),
+        body: JSON.stringify({ ...event, rawHeaders: effectivePayload, metadata: { client: 'web_app', clientCapabilities: { canDisarmLinks: true } } }),
         signal: AbortSignal.timeout(30000),
       });
       if (!response.ok) throw new Error('Email analysis is unavailable. Please retry; this email has not been verified.');
@@ -683,7 +686,11 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
             isScanning={isLoadingEmails}
             userEmail={currentUser?.email}
             nextPollIn={nextPollCountdown}
-            onRefresh={() => handleAutoIngest(getAccessToken() || '')}
+            onRefresh={() => {
+              const token = getAccessToken();
+              if (token) handleAutoIngest(token);
+              else handleGoogleLogin();
+            }}
           />
 
           {/* Auth Error Toast if any */}
@@ -744,7 +751,11 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
           <InboxShieldView
             emails={inboxEmails}
             isLoading={isLoadingEmails}
-            onRefresh={() => handleAutoIngest(getAccessToken() || '')}
+            onRefresh={() => {
+              const token = getAccessToken();
+              if (token) handleAutoIngest(token);
+              else handleGoogleLogin();
+            }}
             onSelectEmailForAnalysis={handleSelectEmailIncident}
             onConnectGmail={handleGoogleLogin}
             isAuthenticated={isAuthenticated}

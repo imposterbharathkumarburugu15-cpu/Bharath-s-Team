@@ -58,7 +58,14 @@ provider.setCustomParameters({
 });
 
 let isSigningIn = false;
-let cachedAccessToken: string | null = null;
+const getStoredToken = (): string | null => {
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    return sessionStorage.getItem('ns_gmail_token');
+  }
+  return null;
+};
+
+let cachedAccessToken: string | null = getStoredToken();
 
 export const initAuth = (
   onAuthSuccess?: (user: User, token: string) => void,
@@ -66,14 +73,18 @@ export const initAuth = (
 ) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (user) {
-      if (cachedAccessToken) {
-        if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken);
+      const activeToken = cachedAccessToken || getStoredToken();
+      if (activeToken) {
+        cachedAccessToken = activeToken;
+        if (onAuthSuccess) onAuthSuccess(user, activeToken);
       } else if (!isSigningIn) {
-        cachedAccessToken = null;
         if (onAuthFailure) onAuthFailure();
       }
     } else {
       cachedAccessToken = null;
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        sessionStorage.removeItem('ns_gmail_token');
+      }
       if (onAuthFailure) onAuthFailure();
     }
   });
@@ -94,6 +105,9 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     }
 
     cachedAccessToken = credential.accessToken;
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      sessionStorage.setItem('ns_gmail_token', cachedAccessToken);
+    }
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
     const errorMsg = error?.message || String(error || '');
@@ -120,10 +134,13 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
 };
 
 export const getAccessToken = (): string | null => {
-  return cachedAccessToken;
+  return cachedAccessToken || getStoredToken();
 };
 
 export const googleLogout = async () => {
   await signOut(auth);
   cachedAccessToken = null;
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    sessionStorage.removeItem('ns_gmail_token');
+  }
 };

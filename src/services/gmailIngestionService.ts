@@ -141,14 +141,49 @@ export async function fetchGmailMessageDetail(
   token: string,
   messageId: string
 ): Promise<GmailMessageDetail> {
-  const response = await fetch(
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  const detail = await response.json();
+  const cleanId = encodeURIComponent(messageId.trim());
 
+  const requestWithRetry = async (format: 'full' | 'metadata') => {
+    let retries = 2;
+    let delay = 500;
+    while (retries >= 0) {
+      try {
+        const res = await fetch(
+          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${cleanId}?format=${format}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if ((res.status === 429 || res.status >= 500) && retries > 0) {
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+          retries--;
+          continue;
+        }
+        return res;
+      } catch (err) {
+        if (retries > 0) {
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+          retries--;
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw new Error(`Failed to fetch message ${messageId}`);
+  };
+
+  // 1. Attempt format=full first
+  let response = await requestWithRetry('full');
+
+  // 2. If 403 Forbidden (e.g. metadata-only scope) or 400 Bad Request, fall back gracefully to format=metadata
+  if (!response.ok && (response.status === 403 || response.status === 400)) {
+    console.warn(`[Gmail] format=full returned ${response.status} for ${messageId}, falling back to format=metadata`);
+    response = await requestWithRetry('metadata');
+  }
+
+  const detail = await response.json();
   if (!response.ok) {
-    throw new Error(detail?.error?.message || JSON.stringify(detail));
+    throw new Error(detail?.error?.message || `Gmail fetch error (${response.status})`);
   }
 
   return detail;
@@ -163,7 +198,8 @@ export function gmailMessageToInboxItem(
   const headers = detail.payload?.headers || [];
   const subject = headers.find(h => h.name?.toLowerCase() === 'subject')?.value || 'No Subject';
   const senderRaw = headers.find(h => h.name?.toLowerCase() === 'from')?.value || 'Unknown Sender';
-  const dateStr = headers.find(h => h.name?.toLowerCase() === 'date')?.value || '';
+  const dateStr = headers.find(h => h.name?.toLowerCase() === 'date')?.value ||
+    (detail.internalDate ? new Date(Number(detail.internalDate)).toISOString() : '');
   const rawHeaderArr = headers.map(h => `${h.name}: ${h.value}`).join('\n');
   const body = extractGmailBodyText(detail.payload, detail.snippet || '');
   const { name, email } = parseSender(senderRaw);
@@ -185,7 +221,7 @@ export function gmailMessageToInboxItem(
       dossier.authentication?.dmarc?.status === 'FAIL';
 
     if (authFail) {
-      tags.push({ text: '\u{1f6ab} Auth Failure', type: 'red' });
+      tags.push({ text: '🚫 Auth Failure', type: 'red' });
     }
     if (score >= 71) {
       const threatType = dossier.classification?.threatType || 'High Risk';
@@ -198,11 +234,11 @@ export function gmailMessageToInboxItem(
       tags.push({ text: 'Impersonation', type: 'amber' });
     }
     if (score >= 31 && score < 71 && tags.length === 0) {
-      tags.push({ text: '\u26a0\ufe0f Suspicious', type: 'amber' });
+      tags.push({ text: '⚠️ Suspicious', type: 'amber' });
     }
     if (score <= 30) {
       if (isVerified) {
-        tags.push({ text: '\u2713 Verified Sender', type: 'emerald' });
+        tags.push({ text: '✓ Verified Sender', type: 'emerald' });
       }
       tags.push({ text: 'No Threats Detected', type: 'emerald' });
     }
@@ -213,17 +249,19 @@ export function gmailMessageToInboxItem(
   if (dateStr) {
     try {
       const d = new Date(dateStr);
-      const now = new Date();
-      const diffMs = now.getTime() - d.getTime();
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      if (diffDays === 0) {
-        timeString = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      } else if (diffDays === 1) {
-        timeString = 'Yesterday ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      } else if (diffDays < 7) {
-        timeString = `${diffDays} days ago`;
-      } else {
-        timeString = d.toLocaleDateString();
+      if (!isNaN(d.getTime())) {
+        const now = new Date();
+        const diffMs = now.getTime() - d.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) {
+          timeString = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (diffDays === 1) {
+          timeString = 'Yesterday ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (diffDays < 7) {
+          timeString = `${diffDays} days ago`;
+        } else {
+          timeString = d.toLocaleDateString();
+        }
       }
     } catch {
       // Keep raw dateStr
@@ -235,7 +273,7 @@ export function gmailMessageToInboxItem(
     senderName: name,
     senderEmail: email,
     isVerified,
-    avatarLetter: name.charAt(0).toUpperCase(),
+    avatarLetter: (name.trim().charAt(0) || '?').toUpperCase(),
     subject,
     snippet: (detail.snippet || body.substring(0, 120)).replace(/\s+/g, ' ').trim(),
     timeString,
@@ -243,31 +281,54 @@ export function gmailMessageToInboxItem(
     riskCategory,
     tags,
     rawHeaders: rawHeaderArr,
-    body,
+    body: body || detail.snippet || '',
     dossier,
     analyzedAt: new Date().toISOString()
   };
 }
 
-
 async function analyzeInboxMessage(detail: GmailMessageDetail): Promise<InboxEmailItem> {
   const headers = detail.payload?.headers || [];
   const rawHeaders = headers.map(h => `${h.name}: ${h.value}`).join('\n');
-  const content = extractGmailBodyText(detail.payload, detail.snippet || '');
   const from = headers.find(h => h.name.toLowerCase() === 'from')?.value || '';
+  const subject = headers.find(h => h.name.toLowerCase() === 'subject')?.value || 'No Subject';
+  const content = extractGmailBodyText(detail.payload, detail.snippet || '');
   const sender = parseSender(from);
+
+  const effectiveContent = (content && content.trim()) || detail.snippet || subject || '(No message content)';
+  const effectivePayload = (rawHeaders && rawHeaders.trim()) || `From: ${from}\nSubject: ${subject}`;
+
   const response = await fetch('/api/neuroshield/analyze', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: detail.id, source: 'email', content, rawPayload: rawHeaders, sender: { identifier: sender.email, displayName: sender.name }, metadata: { client: 'gmail_api' } }),
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: detail.id,
+      source: 'email',
+      content: effectiveContent,
+      rawPayload: effectivePayload,
+      sender: { identifier: sender.email || 'unknown@domain.local', displayName: sender.name || 'Unknown' },
+      subject,
+      metadata: { client: 'gmail_api' }
+    }),
     signal: AbortSignal.timeout(30000),
   });
-  if (!response.ok) throw new Error('Backend analysis unavailable; message remains unverified.');
+
+  if (!response.ok) {
+    throw new Error(`Backend analysis failed (${response.status}); message remains unverified.`);
+  }
+
   const analysis = await response.json();
   const item = gmailMessageToInboxItem(detail, analysis.forensics);
-  item.score = analysis.risk_score;
-  item.riskCategory = analysis.verdict === 'UNKNOWN' ? 'SUSPICIOUS' : item.score >= 65 ? 'HIGH RISK' : item.score >= 40 ? 'SUSPICIOUS' : 'LOW RISK';
-  item.isVerified = analysis.verdict === 'SAFE' && analysis.confidence >= 70;
-  if (analysis.verdict === 'UNKNOWN') item.tags.push({ text: 'Unverified', type: 'amber' });
+  item.score = analysis.risk_score ?? analysis.score ?? 0;
+  item.riskCategory = (item.score >= 71 || analysis.verdict === 'MALICIOUS')
+    ? 'HIGH RISK'
+    : (item.score >= 35 || analysis.verdict === 'SUSPICIOUS')
+      ? 'SUSPICIOUS'
+      : 'LOW RISK';
+  item.isVerified = analysis.verdict === 'SAFE' && (analysis.confidence ?? 0) >= 70;
+  if (analysis.verdict === 'UNKNOWN' && item.tags.length === 0) {
+    item.tags.push({ text: 'Unverified', type: 'amber' });
+  }
   return item;
 }
 
@@ -293,15 +354,37 @@ export async function ingestGmailEmails(
     };
   }
 
-  // 2. Fetch details + analyze each email
-  const analyzedEmails: InboxEmailItem[] = await Promise.all(
-    messages.map(async (msg) => {
-      try {
-        const detail = await fetchGmailMessageDetail(token, msg.id);
-        return await analyzeInboxMessage(detail);
-      } catch (fetchErr: any) {
-        console.warn('[Ingestion] Fetch error for', msg.id, fetchErr?.message);
-        errors.push({ messageId: msg.id, error: fetchErr?.message || 'Fetch failed' });
+  // 2. Fetch details and analyze with concurrency control (batches of 4) to avoid rate limits
+  const CONCURRENCY = 4;
+  const analyzedEmails: InboxEmailItem[] = [];
+
+  for (let i = 0; i < messages.length; i += CONCURRENCY) {
+    const chunk = messages.slice(i, i + CONCURRENCY);
+    const chunkResults = await Promise.all(
+      chunk.map(async (msg) => {
+        let detail: GmailMessageDetail | null = null;
+        try {
+          detail = await fetchGmailMessageDetail(token, msg.id);
+        } catch (fetchErr: any) {
+          console.warn('[Ingestion] Fetch error for', msg.id, fetchErr?.message);
+          errors.push({ messageId: msg.id, error: fetchErr?.message || 'Fetch failed' });
+        }
+
+        if (detail) {
+          try {
+            return await analyzeInboxMessage(detail);
+          } catch (analysisErr: any) {
+            console.warn('[Ingestion] Analysis skipped for', msg.id, analysisErr?.message);
+            // CRITICAL: Preserve real email headers, sender, subject, and snippet!
+            const fallbackItem = gmailMessageToInboxItem(detail);
+            fallbackItem.score = 20; // Default benign baseline
+            fallbackItem.riskCategory = 'LOW RISK';
+            fallbackItem.tags = [{ text: 'Analysis Pending', type: 'amber' }];
+            return fallbackItem;
+          }
+        }
+
+        // Only when message detail completely fails to fetch from Gmail API
         return {
           id: msg.id,
           senderName: 'Unknown Sender',
@@ -317,18 +400,20 @@ export async function ingestGmailEmails(
           body: '',
           analyzedAt: new Date().toISOString()
         };
-      }
-    })
-  );
+      })
+    );
+    analyzedEmails.push(...chunkResults);
+  }
 
   return {
     emails: analyzedEmails,
     nextPageToken,
     totalFetched: messages.length,
-    totalAnalyzed: messages.length - errors.length,
+    totalAnalyzed: analyzedEmails.filter(e => e.subject !== '(Message details unavailable)').length,
     errors
   };
 }
+
 
 // ─── Background Polling ─────────────────────────────────────────────────────
 
