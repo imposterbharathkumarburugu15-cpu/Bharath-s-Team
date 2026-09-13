@@ -530,8 +530,14 @@ async function startServer() {
 
   // CORS headers
   app.use((req, res, next) => {
-    const origin = req.headers.origin as string;
-    if (config.corsOrigins.includes('*') || (origin && config.corsOrigins.includes(origin))) {
+    const origin = (req.headers.origin as string) || '';
+    if (
+      config.corsOrigins.includes('*') ||
+      config.corsOrigins.includes(origin) ||
+      !origin ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1')
+    ) {
       res.setHeader('Access-Control-Allow-Origin', origin || '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key, X-Request-ID');
@@ -2303,6 +2309,11 @@ IMPORTANT: Respond entirely in ${targetLang}.`;
       database: 'CONNECTED',
       timestamp: new Date().toISOString()
     });
+  });
+
+  // Catch-all for unmatched /api/* and /scan/* routes to ensure they always return JSON 404, never Vite HTML
+  app.all(['/api/*', '/scan/*'], (req, res) => {
+    res.status(404).json({ error: `API endpoint not found: ${req.method} ${req.originalUrl || req.url}` });
   });
 
   // Register Global Error Handler before static/Vite middlewares

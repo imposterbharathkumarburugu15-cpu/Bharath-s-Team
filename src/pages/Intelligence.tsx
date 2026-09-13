@@ -4,12 +4,52 @@ import { Network, Shield, LockKeyhole, RefreshCw, Power, OctagonX, ArrowRight } 
 import type { Campaign, Indicator, ConfirmedIOC, IntelligenceIncident } from '../services/intelligence/types';
 import type { DeceptionSession } from '../services/deception/service';
 
-let socKey = ''; // Session memory only. Never put security administrator credentials in browser storage.
+const SESSION_KEY = 'neuroshield_soc_key';
+let socKey = '';
+try {
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    socKey = window.sessionStorage.getItem(SESSION_KEY) || '';
+  }
+} catch {}
+
+function persistKey(k: string) {
+  socKey = k;
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      if (k) window.sessionStorage.setItem(SESSION_KEY, k);
+      else window.sessionStorage.removeItem(SESSION_KEY);
+    }
+  } catch {}
+}
+
 type Graph = { nodes: { id: string; type: string; label: string }[]; edges: { from: string; to: string; label: string; provenance: string }[] };
 type CampaignView = Campaign & { indicators: Indicator[]; graph: Graph };
+
 async function api(path: string, body?: unknown) {
-  const r = await fetch(`/api/${path}`, { method: body === undefined ? 'GET' : 'POST', headers: { Authorization: `Bearer ${socKey}`, 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(15000) });
-  const data = await r.json(); if (!r.ok) throw new Error(data.error || data.message || 'Request failed'); return data;
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const r = await fetch(`/api/${cleanPath}`, {
+    method: body === undefined ? 'GET' : 'POST',
+    headers: {
+      Authorization: `Bearer ${socKey}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+    signal: AbortSignal.timeout(15000)
+  });
+
+  const contentType = r.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const raw = await r.text().catch(() => '');
+    if (!r.ok) {
+      throw new Error(`API error (${r.status} ${r.statusText}): Backend at /api/${cleanPath} is unavailable.`);
+    }
+    throw new Error(`Server returned HTML instead of JSON for /api/${cleanPath}. Please verify backend is running on port 3000.`);
+  }
+
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || data.message || `Request failed (${r.status})`);
+  return data;
 }
 
 function EvidenceGraph({ graph }: { graph: Graph }) {
@@ -62,21 +102,22 @@ export function Intelligence({ initialView = 'campaigns' }: { initialView?: 'cam
     await api(`intelligence/campaigns/${campaign!.id}/review`, { status, indicators: selected, note });
     setNotice(status === 'confirmed' ? 'Campaign reviewed. Selected validated indicators are now in threat intelligence.' : 'Campaign rejected. Its propagated indicators have been retracted.'); await load();
   });
-  return <main className="ns-workspace"><div className="ns-eyebrow">SECURITY OPERATIONS</div><div className="ns-section-heading"><h1>Intelligence<span className="ns-accent">.</span></h1>{role && <button className="ns-secondary" onClick={() => { socKey = ''; setRole(''); setIssued(null); setClusters([]); setIncidents([]); setSessions([]); setIOCs([]); }}>Lock SOC</button>}</div><p className="ns-lead">One detected incident should help identify related incidents.</p>
+  return <main className="ns-workspace"><div className="ns-eyebrow">SECURITY OPERATIONS</div><div className="ns-section-heading"><h1>Intelligence<span className="ns-accent">.</span></h1>{role && <button className="ns-secondary" onClick={() => { persistKey(''); setRole(''); setIssued(null); setClusters([]); setIncidents([]); setSessions([]); setIOCs([]); }}>Lock SOC</button>}</div><p className="ns-lead">One detected incident should help identify related incidents.</p>
     {!role ? (
       <form
         className="ns-panel ns-soc-login"
         onSubmit={e => {
           e.preventDefault();
           void run(async () => {
-            socKey = keyInput.trim();
+            const supplied = keyInput.trim();
+            persistKey(supplied);
             try {
               const who = await api('soc/session');
               setRole(who.role);
               setKeyInput('');
               await load();
             } catch (e) {
-              socKey = '';
+              persistKey('');
               throw e;
             }
           });
@@ -105,14 +146,14 @@ export function Intelligence({ initialView = 'campaigns' }: { initialView?: 'cam
                 const devKey = 'neuroshield-soc-admin-secret-key-2026-production-token';
                 setKeyInput(devKey);
                 void run(async () => {
-                  socKey = devKey;
+                  persistKey(devKey);
                   try {
                     const who = await api('soc/session');
                     setRole(who.role);
                     setKeyInput('');
                     await load();
                   } catch (e) {
-                    socKey = '';
+                    persistKey('');
                     throw e;
                   }
                 });
