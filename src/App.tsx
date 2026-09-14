@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Layout } from './components/Layout';
 import { Start } from './pages/Start';
+import { LandingPage } from './pages/LandingPage';
 import { DomainOSINT } from './pages/DomainOSINT';
 import { Intelligence } from './pages/Intelligence';
 import { Dashboard } from './pages/Dashboard';
@@ -96,7 +97,7 @@ function App() {
       case 'lab':
         return <EvidenceLab />;
       case 'landing':
-        return <Start navigate={handleTabChange} />;
+        return <LandingPage navigate={handleTabChange} />;
       case 'osint':
         return <DomainOSINT />;
       case 'intelligence':
