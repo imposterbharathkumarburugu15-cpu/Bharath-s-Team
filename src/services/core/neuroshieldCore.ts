@@ -761,12 +761,31 @@ export class NeuroShieldCore {
       let sender = input.sender || null;
       let recipient = input.recipient || null;
       let metadata = input.metadata || {};
+      let headers = input.headers || metadata.headers || null;
 
-      if (input.source === 'email' && !sender && /^(From|To|Subject):/im.test(input.content)) {
-        const emailParsed = EmailAdapter.normalize(input.content);
-        sender = sender || emailParsed.sender;
-        recipient = recipient || emailParsed.recipient;
-        metadata = { ...emailParsed.metadata, ...metadata };
+      if (input.source === 'email') {
+        const payloadToParse = input.rawPayload || input.rawHeaders || input.metadata?.rawHeaders || (typeof input.content === 'string' && /^(From|To|Subject|Received|Return-Path):/im.test(input.content) ? input.content : '');
+        if (payloadToParse) {
+          const emailParsed = EmailAdapter.normalize({
+            ...input,
+            rawHeaders: payloadToParse,
+          });
+          sender = sender || emailParsed.sender;
+          if (emailParsed.sender?.replyTo && sender && !sender.replyTo) {
+            sender.replyTo = emailParsed.sender.replyTo;
+          }
+          recipient = recipient || emailParsed.recipient;
+          headers = headers || emailParsed.headers || emailParsed.metadata?.headers;
+          metadata = {
+            ...emailParsed.metadata,
+            ...metadata,
+            replyTo: emailParsed.metadata?.replyTo || metadata?.replyTo || sender?.replyTo,
+            spfStatus: emailParsed.metadata?.spfStatus || metadata?.spfStatus,
+            dkimStatus: emailParsed.metadata?.dkimStatus || metadata?.dkimStatus,
+            dmarcStatus: emailParsed.metadata?.dmarcStatus || metadata?.dmarcStatus,
+            headers: { ...(emailParsed.metadata?.headers || {}), ...(metadata?.headers || {}) },
+          };
+        }
       }
 
       return PrivacyFilter.apply({
@@ -779,7 +798,7 @@ export class NeuroShieldCore {
         sender,
         recipient,
         recipients: input.recipients,
-        headers: input.headers,
+        headers,
         identity: input.identity,
         requested_action: input.requested_action,
         sensitive_data: input.sensitive_data,

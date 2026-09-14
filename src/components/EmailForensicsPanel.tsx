@@ -29,6 +29,7 @@ import { UrlAndAttachmentForensics } from './forensics/UrlAndAttachmentForensics
 import { CorrelationAndChain } from './forensics/CorrelationAndChain';
 import { FinalVerdictAndRawEvidence } from './forensics/FinalVerdictAndRawEvidence';
 import { SihForensicSuite } from './forensics/SihForensicSuite';
+import { InfrastructureIntelligenceSuite } from './forensics/infrastructure/InfrastructureIntelligenceSuite';
 
 export type ForensicPillarId = 'geo-intel' | 'protocol' | 'summary' | 'iocs' | 'playbooks' | 'neural';
 
@@ -173,7 +174,7 @@ export function EmailForensicsPanel({
   };
 
   const pillarTabs: { id: ForensicPillarId; label: string; icon: any; badge?: string }[] = [
-    { id: 'geo-intel', label: 'IP Geolocation & Radar', icon: Globe, badge: originIP?.country || 'Origin' },
+    { id: 'geo-intel', label: 'Infrastructure Intelligence', icon: Globe, badge: originIP?.country || 'Observed' },
     { id: 'protocol', label: 'Protocol DNA & Relays', icon: Network },
     { id: 'summary', label: 'Summary & Anatomy', icon: Sparkles },
     { id: 'iocs', label: 'Threat IOCs & URLs', icon: ShieldAlert },
@@ -211,7 +212,7 @@ export function EmailForensicsPanel({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[11px] text-gray-400 uppercase tracking-widest font-bold">
-                  Origin Infrastructure Telemetry
+                  Observed Infrastructure Telemetry
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold">
                   {originIP.countryFlag || '🌍'} {originIP.country || 'Unknown'} {originIP.city ? `• ${originIP.city}` : ''}
@@ -258,7 +259,7 @@ export function EmailForensicsPanel({
               )}
             >
               <Radio className="w-3.5 h-3.5" />
-              <span>Interactive 3D Radar</span>
+              <span>Infrastructure Intelligence Suite</span>
             </button>
 
             <button
@@ -339,159 +340,10 @@ export function EmailForensicsPanel({
       )}
 
       {/* ────────────────────────────────────────────────────────────────────────── */}
-      {/* PILLAR 1: IP GEOLOCATION & ORIGIN INFRASTRUCTURE RADAR                     */}
+      {/* PILLAR 1: INFRASTRUCTURE INTELLIGENCE (SIH26106 MASTER SUITE)              */}
       {/* ────────────────────────────────────────────────────────────────────────── */}
       {activePillar === 'geo-intel' && (
-        <div className="space-y-6">
-          {/* Interactive 3D Tactical Radar Map */}
-          <div className="bg-[#0e1410] border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
-              <div className="flex items-center gap-2.5">
-                <Globe className="w-5 h-5 text-cyan-400" />
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-white">
-                    3D Origin Geolocation & Relay Radar
-                  </h3>
-                  <p className="text-[11px] text-gray-400 font-sans">
-                    Real-time spherical projection of mail relay origin and physical hosting infrastructure
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono px-2 py-1 rounded bg-black/50 text-cyan-300 border border-cyan-500/20">
-                  Lat: {originIP.latitude?.toFixed(4) || 'N/A'} • Lng: {originIP.longitude?.toFixed(4) || 'N/A'}
-                </span>
-              </div>
-            </div>
-
-            {/* 3D Globe Component */}
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
-              <Forensic3DGeoMap originIP={dossier.originIP} hops={dossier.relayReconstruction?.chronologicalHops} />
-            </div>
-          </div>
-
-          {/* Deep Origin IP Telemetry Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
-            {/* IP Address & PTR */}
-            <div className="bg-[#0c120e] border border-white/10 rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-cyan-400 text-[11px] font-bold uppercase">
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Origin IP & PTR</span>
-              </div>
-              <div className="text-sm font-bold text-white break-all">{originIP.ip}</div>
-              <div className="text-[11px] text-gray-400 break-all">
-                PTR: {originIP.resolvedDomain || 'None configured'}
-              </div>
-              <div className="text-[10px] text-gray-500">
-                Type: {originIP.ipType || (originIP.isPrivate ? 'Private / RFC 1918' : 'Public IPv4')}
-              </div>
-            </div>
-
-            {/* Geolocation */}
-            <div className="bg-[#0c120e] border border-white/10 rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 text-[11px] font-bold uppercase">
-                <Globe className="w-3.5 h-3.5" />
-                <span>Geographic Location</span>
-              </div>
-              <div className="text-sm font-bold text-white">
-                {originIP.countryFlag || '📍'} {originIP.city ? `${originIP.city}, ` : ''}{originIP.country}
-              </div>
-              <div className="text-[11px] text-gray-400">
-                Region: {originIP.region || 'Standard Territory'}
-              </div>
-              <div className="text-[10px] text-gray-500">
-                Timezone: {originIP.timezone || 'UTC'}
-              </div>
-            </div>
-
-            {/* ASN & Network */}
-            <div className="bg-[#0c120e] border border-white/10 rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-purple-400 text-[11px] font-bold uppercase">
-                <Server className="w-3.5 h-3.5" />
-                <span>Autonomous System</span>
-              </div>
-              <div className="text-sm font-bold text-white truncate" title={originIP.asn}>
-                {originIP.asn || 'AS-UNKNOWN'}
-              </div>
-              <div className="text-[11px] text-gray-400 truncate" title={originIP.isp}>
-                ISP: {originIP.isp || 'Commercial Backbone'}
-              </div>
-              <div className="text-[10px] text-gray-500 truncate" title={originIP.organization}>
-                Org: {originIP.organization || 'Unspecified Org'}
-              </div>
-            </div>
-
-            {/* Threat & Infrastructure */}
-            <div className="bg-[#0c120e] border border-white/10 rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-amber-400 text-[11px] font-bold uppercase">
-                <ShieldAlert className="w-3.5 h-3.5" />
-                <span>Infrastructure Risk</span>
-              </div>
-              <div className="text-sm font-bold text-white">
-                {originIP.vpnTorIndicator || 'Datacenter / VPS'}
-              </div>
-              <div className="text-[11px] text-gray-400">
-                Reputation: <span className={originIP.threatReputation === 'CLEAN' ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>{originIP.threatReputation}</span>
-              </div>
-              <div className="text-[10px] text-gray-500">
-                Source: {originIP.providerSource || 'Forensic Telemetry'}
-              </div>
-            </div>
-          </div>
-
-          {/* Forensic Attribution Disclaimer */}
-          <div className="p-3.5 rounded-xl bg-black/40 border border-white/10 flex items-start gap-3 font-mono text-xs">
-            <Shield className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-            <p className="text-gray-300 text-[11px] leading-relaxed">
-              <strong className="text-white font-bold">Court-Defensible Attribution Note: </strong>
-              {originIP.attributionDisclaimer || 'IP geolocation reflects the physical location of the transmitting mail relay or anonymizing gateway, not necessarily the physical location of the human adversary.'}
-            </p>
-          </div>
-
-          {/* Relay Hop Progression Timeline */}
-          {dossier.relayReconstruction?.chronologicalHops && dossier.relayReconstruction.chronologicalHops.length > 0 && (
-            <div className="bg-[#0e1410] border border-white/10 rounded-2xl p-5 space-y-3">
-              <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-white">
-                  Mail Server Relay Chain ({dossier.relayReconstruction.chronologicalHops.length} Network Hops)
-                </span>
-                <span className="text-[10px] text-gray-400">
-                  Total Latency: {dossier.relayReconstruction.totalTransitTimeSeconds || 0}s
-                </span>
-              </div>
-              <div className="space-y-2">
-                {dossier.relayReconstruction.chronologicalHops.map((hop, idx) => (
-                  <div 
-                    key={idx}
-                    className="p-3 rounded-xl bg-black/30 border border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold flex items-center justify-center shrink-0">
-                        #{hop.hopNumber}
-                      </span>
-                      <div>
-                        <span className="font-bold text-white">{hop.sourceHostname || hop.destinationHostname || 'Mail Relay'}</span>
-                        <span className="text-[11px] text-gray-400 block font-mono">
-                          IP: {hop.sourceIP || 'Masked / Internal'} {hop.city ? `• ${hop.city}, ${hop.country}` : ''}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-[11px] text-gray-400 font-mono">
-                      {hop.delayToNextHopSeconds !== undefined && (
-                        <span className={hop.delayToNextHopSeconds > 10 ? 'text-amber-400 font-bold' : 'text-gray-400'}>
-                          +{hop.delayToNextHopSeconds}s transit
-                        </span>
-                      )}
-                      <span className={hop.isAnomalous ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
-                        {hop.isAnomalous ? (hop.anomalyReason || 'Route Delay') : (hop.protocol || 'Standard SMTP')}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <InfrastructureIntelligenceSuite dossier={dossier} />
       )}
 
       {/* ────────────────────────────────────────────────────────────────────────── */}

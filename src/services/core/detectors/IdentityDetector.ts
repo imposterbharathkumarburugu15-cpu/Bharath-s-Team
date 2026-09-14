@@ -161,7 +161,7 @@ export class IdentityDetector {
     }
 
     // 3. FROM / REPLY-TO MISMATCH (ROUTING DIVERSION)
-    const replyTo = input.metadata?.replyTo || input.metadata?.headers?.['reply-to'];
+    const replyTo = input.sender?.replyTo || input.metadata?.replyTo || input.metadata?.headers?.['reply-to'] || input.headers?.['reply-to'];
     if (replyTo && typeof replyTo === 'string' && actualIdentity) {
       const replyDomain = extractDomainFromEmail(replyTo);
       if (replyDomain && domain && replyDomain.toLowerCase() !== domain.toLowerCase()) {

@@ -6,6 +6,7 @@
 
 import { UnifiedIncidentObject, EnforcementAuditRecord } from '../services/core/types';
 import { sanitizeObject } from '../utils/sanitizer';
+import { InfrastructureObservation } from '../types/infrastructure';
 
 export interface ServerFeedbackRecord {
   id: string;
@@ -62,6 +63,10 @@ export interface INeuroShieldRepository {
   getCalibrationMetrics(): Promise<CalibrationMetrics>;
   saveEnforcementAudit(record: EnforcementAuditRecord): Promise<EnforcementAuditRecord>;
   listEnforcementAudits(limit?: number): Promise<EnforcementAuditRecord[]>;
+  saveInfrastructureObservation(obs: InfrastructureObservation): Promise<void>;
+  getInfrastructureObservations(incidentId: string): Promise<InfrastructureObservation[]>;
+  getAllInfrastructureObservations(): Promise<InfrastructureObservation[]>;
+  getRelatedIncidentsByInfrastructure(asn?: string, domain?: string, ip?: string): Promise<any[]>;
   clearTestData?(): Promise<void>;
 }
 
@@ -69,10 +74,12 @@ export class InMemoryAndSqliteRepository implements INeuroShieldRepository {
   private incidents: Map<string, UnifiedIncidentObject> = new Map();
   private feedbackRecords: ServerFeedbackRecord[] = [];
   private enforcementAudits: EnforcementAuditRecord[] = [];
+  private infrastructureObservations: Map<string, InfrastructureObservation[]> = new Map();
   private calibrationRunsCount = 4;
 
   constructor() {
     this.seedInitialFeedback();
+    this.seedInitialInfrastructure();
   }
 
   private seedInitialFeedback() {
@@ -376,9 +383,176 @@ export class InMemoryAndSqliteRepository implements INeuroShieldRepository {
     return this.enforcementAudits.slice(0, limit);
   }
 
+  async saveInfrastructureObservation(obs: InfrastructureObservation): Promise<void> {
+    const list = this.infrastructureObservations.get(obs.incidentId) || [];
+    // Mark previous observations as historical (not current active), but NEVER delete or overwrite them
+    const updated = list.map(existing => ({
+      ...existing,
+      isCurrentActive: false
+    }));
+    updated.push({
+      ...obs,
+      isCurrentActive: true,
+      timestamp: obs.timestamp || new Date().toISOString()
+    });
+    this.infrastructureObservations.set(obs.incidentId, updated);
+  }
+
+  async getInfrastructureObservations(incidentId: string): Promise<InfrastructureObservation[]> {
+    return this.infrastructureObservations.get(incidentId) || [];
+  }
+
+  async getAllInfrastructureObservations(): Promise<InfrastructureObservation[]> {
+    const all: InfrastructureObservation[] = [];
+    for (const list of this.infrastructureObservations.values()) {
+      all.push(...list);
+    }
+    return all.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  }
+
+  async getRelatedIncidentsByInfrastructure(asn?: string, domain?: string, ip?: string): Promise<any[]> {
+    const related: any[] = [];
+    for (const [incId, list] of this.infrastructureObservations.entries()) {
+      for (const obs of list) {
+        const matchesAsn = asn && obs.asn && obs.asn.toLowerCase().includes(asn.toLowerCase());
+        const matchesDomain = domain && obs.domain && obs.domain.toLowerCase() === domain.toLowerCase();
+        const matchesIp = ip && obs.ip === ip;
+        if (matchesAsn || matchesDomain || matchesIp) {
+          related.push({
+            incidentId: incId,
+            timestamp: obs.timestamp,
+            observedIp: obs.ip,
+            geo: `${obs.city ? obs.city + ', ' : ''}${obs.country}`,
+            asn: obs.asn || 'AS-UNKNOWN',
+            provider: obs.provider || 'Commercial Hosting',
+            relationship: matchesDomain ? 'SHARED_DOMAIN' : matchesAsn ? 'SHARED_ASN' : 'IDENTICAL_IP',
+            confidenceScore: matchesDomain ? 88 : matchesAsn ? 76 : 94
+          });
+          break;
+        }
+      }
+    }
+    return related;
+  }
+
+  private seedInitialInfrastructure() {
+    const defaultIncidentId = 'msg-m365-suspension-981';
+    // Realistic 4-node historical observation stream representing observed relay infrastructure over time
+    this.infrastructureObservations.set(defaultIncidentId, [
+      {
+        id: 'obs-seed-001',
+        incidentId: defaultIncidentId,
+        ip: '185.220.101.44',
+        timestamp: '2026-09-14T10:42:01.000Z',
+        country: 'Singapore',
+        countryCode: 'SG',
+        countryFlag: '🇸🇬',
+        region: 'Central Singapore',
+        city: 'Singapore',
+        latitude: 1.3521,
+        longitude: 103.8198,
+        asn: 'AS12345 (Equinix Asia Backbone)',
+        provider: 'Equinix Singapore Datacenter',
+        organization: 'Commercial Colocation Subnet',
+        domain: 'm1crosoft-support.com',
+        hostname: 'relay-sg-edge01.untrusted-transit.net',
+        source: 'received-chain',
+        confidence: 84,
+        confidenceLevel: 'HIGH',
+        trustBoundary: 'origin',
+        reputation: 'SUSPICIOUS',
+        isCurrentActive: false,
+        relayHopIndex: 1,
+        statusNote: 'Initial RFC 5322 transmission relay detected in inbound Received header.',
+        evidenceSnippet: 'Received: from relay-sg-edge01 (185.220.101.44) by mx.google.com'
+      },
+      {
+        id: 'obs-seed-002',
+        incidentId: defaultIncidentId,
+        ip: '103.253.42.87',
+        timestamp: '2026-09-14T10:43:17.000Z',
+        country: 'Netherlands',
+        countryCode: 'NL',
+        countryFlag: '🇳🇱',
+        region: 'North Holland',
+        city: 'Amsterdam',
+        latitude: 52.3676,
+        longitude: 4.9041,
+        asn: 'AS12345 (Equinix Asia Backbone)',
+        provider: 'Equinix International Peering Exchange',
+        organization: 'Amsterdam Internet Exchange Relay',
+        domain: 'm1crosoft-support.com',
+        hostname: 'ams-gw04.peering-transit.org',
+        source: 'received-chain',
+        confidence: 91,
+        confidenceLevel: 'HIGH',
+        trustBoundary: 'transit',
+        reputation: 'SUSPICIOUS',
+        isCurrentActive: false,
+        relayHopIndex: 2,
+        statusNote: 'Intermediate routing hop through European transit node with 76s transit delay.',
+        evidenceSnippet: 'Received: from ams-gw04 (103.253.42.87) by relay-sg-edge01'
+      },
+      {
+        id: 'obs-seed-003',
+        incidentId: defaultIncidentId,
+        ip: '45.154.255.192',
+        timestamp: '2026-09-14T10:45:03.000Z',
+        country: 'United States',
+        countryCode: 'US',
+        countryFlag: '🇺🇸',
+        region: 'Virginia',
+        city: 'Ashburn',
+        latitude: 39.0438,
+        longitude: -77.4874,
+        asn: 'AS67890 (Cloud Provider VPS)',
+        provider: 'Offshore Bulletproof Cloud Host',
+        organization: 'Autonomous VPS Pool',
+        domain: 'auth-security-verification.example.com',
+        hostname: 'vps-us-ingress.offshore-route.xyz',
+        source: 'url-resolution',
+        confidence: 96,
+        confidenceLevel: 'HIGH',
+        trustBoundary: 'external',
+        reputation: 'MALICIOUS',
+        isCurrentActive: false,
+        statusNote: 'URL payload endpoint DNS A-record resolution target.',
+        evidenceSnippet: 'DNS A record for auth-security-verification.example.com -> 45.154.255.192'
+      },
+      {
+        id: 'obs-seed-004',
+        incidentId: defaultIncidentId,
+        ip: '91.240.118.44',
+        timestamp: '2026-09-14T10:47:26.000Z',
+        country: 'Singapore',
+        countryCode: 'SG',
+        countryFlag: '🇸🇬',
+        region: 'Central Singapore',
+        city: 'Singapore',
+        latitude: 1.3521,
+        longitude: 103.8198,
+        asn: 'AS54321 (SingNet Telecom)',
+        provider: 'SingNet Datacenter Proxy Pool',
+        organization: 'Reverse Tunnel Proxy Relay',
+        domain: 'm1crosoft-support.com',
+        hostname: 'tunnel-ingress-singapore.internal-net.cc',
+        source: 'related-incident',
+        confidence: 78,
+        confidenceLevel: 'MEDIUM',
+        trustBoundary: 'external',
+        reputation: 'SUSPICIOUS',
+        isCurrentActive: true,
+        statusNote: 'Subsequent campaign communication observed via rotated egress IP. Domain and ASN linkage preserved.',
+        evidenceSnippet: 'Cross-incident campaign telemetry for cluster CID-9042'
+      }
+    ]);
+  }
+
   async clearTestData(): Promise<void> {
     this.incidents.clear();
     this.enforcementAudits = [];
+    this.infrastructureObservations.clear();
+    this.seedInitialInfrastructure();
   }
 }
 

@@ -81,9 +81,10 @@ export class SensitiveDataDetector {
     // 4. Demands Payment / Banking Credentials
     const paymentKeywords = [
       'credit card', 'cvv', 'card number', 'bank account', 'routing number',
-      'wire transfer', 'ach details', 'banking pin', 'card expiry', 'payment details'
+      'wire transfer', 'wire instruction', 'settlement wire', 'disbursement', 'vendor wire',
+      'ach details', 'banking pin', 'card expiry', 'payment details'
     ];
-    const demandsPayment = paymentKeywords.some((k) => lower.includes(k));
+    const demandsPayment = paymentKeywords.some((k) => lower.includes(k)) || /\b(?:wire|disbursement|settlement\s*wire)\b/i.test(lower);
     if (demandsPayment) {
       categories.push('financial_information');
       categories.push('PAYMENT_DATA');

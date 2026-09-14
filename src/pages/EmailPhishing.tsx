@@ -628,7 +628,18 @@ export default function EmailPhishing() {
   }, [coreAnalysis, selectedEmail]);
 
   const effectiveRiskScore = useMemo(() => {
-    return coreAnalysis?.risk_score ?? (dossier?.classification?.riskScore ?? (selectedEmail ? 85 : 0));
+    const coreScore = coreAnalysis?.risk_score;
+    const dossierScore = dossier?.classification?.riskScore ?? (dossier as any)?.scoreBreakdown?.totalRiskScore;
+    const emailScore = (selectedEmail as any)?.score;
+
+    const validScores = [coreScore, dossierScore, emailScore].filter(
+      (s): s is number => typeof s === 'number' && !isNaN(s)
+    );
+
+    if (validScores.length > 0) {
+      return Math.max(...validScores);
+    }
+    return selectedEmail ? 85 : 0;
   }, [coreAnalysis, dossier, selectedEmail]);
 
   const isHighRisk = effectiveRiskScore > 50;
@@ -1029,7 +1040,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                 )}
               >
                 <Terminal className="w-3.5 h-3.5 text-cyber-blue" />
-                <span>{t('layer1_protocol_forensics_tab') || 'LAYER 1: PROTOCOL FORENSICS'}</span>
+                <span>{t('layer1_protocol_forensics_tab') || 'LAYER 1: PROTOCOL & INFRASTRUCTURE FORENSICS'}</span>
                 <span className="w-2 h-2 rounded-full bg-cyber-blue animate-pulse" />
               </button>
 
@@ -1130,6 +1141,26 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                 <span className="text-gray-300">{coreAnalysis.protection.circuit_breakers.join(', ')}</span>
               </div>
             )}
+
+            {/* Evidence Fusion Telemetry Banner */}
+            <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+              <div className="flex flex-wrap items-center gap-2 text-cyber-blue">
+                <Globe className="w-4 h-4 text-cyber-blue shrink-0" />
+                <span className="font-bold uppercase tracking-wider text-white">Evidence Fusion Active:</span>
+                <span className="text-gray-300">
+                  Observed Transmission Infrastructure & Relay Path Correlated
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-blue/15 text-cyber-blue border border-cyber-blue/30 font-bold">
+                  NON-ATTRIBUTION
+                </span>
+              </div>
+              <button
+                onClick={() => setActiveIncidentTab('forensics')}
+                className="text-[11px] text-cyber-blue hover:text-white flex items-center gap-1 font-bold underline underline-offset-4 cursor-pointer"
+              >
+                Inspect Infrastructure Intelligence →
+              </button>
+            </div>
           </div>
 
           {/* 2. EMAIL HEADER & MESSAGE CARD */}
@@ -1266,7 +1297,7 @@ NeuroShield Cognitive & Protocol Forensics engines intercepted an inbound high-t
                       </h3>
                       <div className="flex items-center gap-2 mt-2 text-amber-400 font-semibold text-xs font-mono">
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                        <span>{coreAnalysis?.threats?.[0] || (effectiveRiskScore > 75 ? 'MALICIOUS_PHISHING' : 'EMAIL_COMMUNICATION')}</span>
+                        <span>{coreAnalysis?.threats?.[0] || dossier?.classification?.primaryThreat || (effectiveRiskScore > 75 ? 'MALICIOUS_PHISHING' : effectiveRiskScore > 40 ? 'SUSPICIOUS_COMMUNICATION' : 'EMAIL_COMMUNICATION')}</span>
                       </div>
                     </div>
                   </div>

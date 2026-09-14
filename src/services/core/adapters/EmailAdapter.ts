@@ -126,18 +126,29 @@ export class EmailAdapter {
     const fullText = (typeof bodyContent === 'string' ? bodyContent : '') + ' ' + subject;
     const combinedUrls = Array.from(new Set([...(input.urls || []), ...EmailAdapter.extractUrls(fullText)]));
 
-    const fromVal = input.sender?.address || input.sender?.identifier || input.from || (typeof input.sender === 'string' ? input.sender : '') || '';
-    const replyToVal = input.sender?.replyTo || input.replyTo || '';
+    const rawHeadersStr = input.rawHeaders || input.rawEmail || (typeof input.rawPayload === 'string' && /^(From|Received|Return-Path|Subject|Authentication-Results):/im.test(input.rawPayload) ? input.rawPayload : '') || '';
+    let parsedHeaders: Record<string, any> = input.headers || {};
+    if (rawHeadersStr && Object.keys(parsedHeaders).length === 0) {
+      parsedHeaders = parseRawHeaders(rawHeadersStr).headers || {};
+    }
+
+    const fromVal = input.sender?.address || input.sender?.identifier || input.from || (Array.isArray(parsedHeaders['from']) ? parsedHeaders['from'][0] : parsedHeaders['from']) || (typeof input.sender === 'string' ? input.sender : '') || '';
+    const replyToVal = input.sender?.replyTo || input.replyTo || (Array.isArray(parsedHeaders['reply-to']) ? parsedHeaders['reply-to'][0] : parsedHeaders['reply-to']) || '';
     const sender = EmailAdapter.parseSenderDetails(fromVal, replyToVal);
-    if (input.sender?.displayName) sender.displayName = input.sender.displayName;
+    if (input.sender?.displayName) {
+      sender.displayName = input.sender.displayName;
+    } else if ((!sender.displayName || sender.displayName === 'Unknown Sender') && parsedHeaders['from']) {
+      const parsedFrom = EmailAdapter.parseSenderDetails(Array.isArray(parsedHeaders['from']) ? parsedHeaders['from'][0] : parsedHeaders['from']);
+      if (parsedFrom.displayName) sender.displayName = parsedFrom.displayName;
+    }
 
     let recipients: NormalizedEmailRecipient[] = [];
     if (Array.isArray(input.recipients) && input.recipients.length > 0) {
       recipients = input.recipients.map((r: any) =>
         typeof r === 'string' ? { address: r.toLowerCase() } : { address: r.address || '', displayName: r.displayName }
       );
-    } else if (input.to) {
-      recipients = EmailAdapter.parseRecipients(input.to);
+    } else if (input.to || parsedHeaders['to']) {
+      recipients = EmailAdapter.parseRecipients(input.to || (Array.isArray(parsedHeaders['to']) ? parsedHeaders['to'][0] : parsedHeaders['to']));
     }
 
     const attachments: NormalizedEmailAttachment[] = (input.attachments || []).map((att: any) => ({
@@ -147,12 +158,6 @@ export class EmailAdapter {
       hash: att.hash,
       isExecutable: att.isExecutable ?? /\.(exe|scr|bat|cmd|vbs|js|ps1|iso|img|hta|jar|msi)$/i.test(att.filename || ''),
     }));
-
-    const rawHeadersStr = input.rawHeaders || input.rawEmail || '';
-    let parsedHeaders: Record<string, any> = input.headers || {};
-    if (rawHeadersStr && Object.keys(parsedHeaders).length === 0) {
-      parsedHeaders = parseRawHeaders(rawHeadersStr).headers || {};
-    }
 
     const auth: NormalizedEmailAuth = {
       spf: input.authentication?.spf || EmailAdapter.extractSpfStatus(parsedHeaders),
@@ -212,6 +217,7 @@ export class EmailAdapter {
         displayName: email.sender.displayName || email.sender.address,
         domain: email.sender.domain || extractDomainFromEmail(email.sender.address),
         authenticated: email.authentication.spf === 'PASS' && email.authentication.dkim === 'PASS' && email.authentication.dmarc === 'PASS',
+        replyTo: email.sender.replyTo,
       } : null,
       recipients: email.recipients.map(r => ({
         identifier: r.address,
