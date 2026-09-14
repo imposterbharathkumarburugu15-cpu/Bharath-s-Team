@@ -66,6 +66,8 @@ interface LandingPageProps {
 // ---------------------------------------------------------------------------
 // 3D Wireframe Mesh Canvas (Topological digital terrain seen in Abnormal AI)
 // ---------------------------------------------------------------------------
+// 3D Isometric Perspective Floor Wireframe Grid (Abnormal AI Matrix Grid)
+// ---------------------------------------------------------------------------
 function WireframeMeshCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -77,7 +79,7 @@ function WireframeMeshCanvas() {
 
     let animationFrameId: number;
     let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || 650);
+    let height = (canvas.height = canvas.parentElement?.clientHeight || 850);
 
     const handleResize = () => {
       if (!canvas || !canvas.parentElement) return;
@@ -86,118 +88,97 @@ function WireframeMeshCanvas() {
     };
     window.addEventListener('resize', handleResize);
 
-    const cols = 48;
-    const rows = 34;
     let time = 0;
 
-    let mouseX = width / 2;
-    let mouseY = height / 2;
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseX = e.clientX - rect.left;
-      mouseY = e.clientY - rect.top;
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-
     const render = () => {
-      time += 0.012;
+      time += 0.005;
       ctx.clearRect(0, 0, width, height);
 
-      const fov = 380;
-      const cameraY = -120 + ((mouseY - height / 2) * 0.08);
-      const cameraAngle = 0.55 + ((mouseX - width / 2) * 0.0002);
+      // Pitch black background base
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
 
-      // Precompute projected points
-      const points: { x: number; y: number; z: number; px: number; py: number; rawY: number }[][] = [];
+      // Isometric perspective grid parameters
+      const fov = 480;
+      const cameraY = 220;
+      const cameraZ = -120;
+      const horizonY = height * 0.36;
 
-      for (let r = 0; r < rows; r++) {
-        const rowPoints = [];
-        for (let c = 0; c < cols; c++) {
-          const normC = (c / (cols - 1)) * 2 - 1; // -1 to 1
-          const normR = r / (rows - 1); // 0 to 1
+      const gridSize = 46;
+      const minX = -1350;
+      const maxX = 1350;
+      const minZ = 100;
+      const maxZ = 1500;
 
-          const worldX = normC * (width * 0.75);
-          const worldZ = normR * 900 + 150;
-
-          // Multi-frequency topological elevation (mountain ridges)
-          const distFromCenter = Math.hypot(normC, normR - 0.5);
-          const wave1 = Math.sin(normC * 4.2 + time * 0.7) * 45;
-          const wave2 = Math.cos(normR * 5.5 - time * 0.5) * 38;
-          const mountain = Math.sin(normC * 2.8) * Math.cos(normR * 3.4) * 80;
-          const detail = Math.sin(normC * 12 + normR * 8 + time) * 12;
-
-          // Taper edges to 0 so terrain naturally settles into darkness
-          const envelope = Math.max(0, 1 - Math.pow(distFromCenter * 1.1, 2));
-          const worldY = (wave1 + wave2 + mountain + detail) * envelope * 1.3 - 40;
-
-          // 3D Perspective Projection with pitch
-          const cosA = Math.cos(cameraAngle);
-          const sinA = Math.sin(cameraAngle);
-
-          const relY = worldY - cameraY;
-          const rotY = relY * cosA - worldZ * sinA;
-          const rotZ = relY * sinA + worldZ * cosA;
-
-          if (rotZ > 10) {
-            const scale = fov / rotZ;
-            const px = width / 2 + worldX * scale;
-            const py = height * 0.45 + rotY * scale;
-            rowPoints.push({ x: worldX, y: worldY, z: worldZ, px, py, rawY: worldY });
-          } else {
-            rowPoints.push({ x: worldX, y: worldY, z: worldZ, px: -999, py: -999, rawY: 0 });
-          }
-        }
-        points.push(rowPoints);
-      }
-
-      // Draw horizontal wireframe contour lines (Electric Lime/Green)
-      for (let r = 0; r < rows; r++) {
+      // Lines receding toward the horizon (Z-axis / isometric depth)
+      for (let x = minX; x <= maxX; x += gridSize) {
         ctx.beginPath();
         let started = false;
-        const progress = r / rows;
-        const alpha = Math.sin(progress * Math.PI) * 0.45 + 0.08;
+        for (let z = minZ; z <= maxZ; z += 50) {
+          const depth = z - cameraZ;
+          const scale = fov / depth;
+          const px = width / 2 + x * scale;
+          const py = horizonY + cameraY * scale;
 
-        for (let c = 0; c < cols; c++) {
-          const pt = points[r][c];
-          if (pt.px === -999) continue;
           if (!started) {
-            ctx.moveTo(pt.px, pt.py);
+            ctx.moveTo(px, py);
             started = true;
           } else {
-            ctx.lineTo(pt.px, pt.py);
+            ctx.lineTo(px, py);
           }
         }
-        ctx.strokeStyle = `rgba(204, 255, 0, ${alpha.toFixed(3)})`;
-        ctx.lineWidth = r % 4 === 0 ? 1.3 : 0.75;
+        const distFromCenter = Math.abs(x) / maxX;
+        const alpha = Math.max(0, (1 - distFromCenter * 0.8) * 0.12);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
+        ctx.lineWidth = 0.7;
         ctx.stroke();
       }
 
-      // Draw vertical wireframe cross lines
-      for (let c = 0; c < cols; c += 2) {
+      // Horizontal lines across the ground plane (X-axis)
+      for (let z = minZ; z <= maxZ; z += gridSize) {
+        const depth = z - cameraZ;
+        const scale = fov / depth;
+        const py = horizonY + cameraY * scale;
+
+        const pxStart = width / 2 + minX * scale;
+        const pxEnd = width / 2 + maxX * scale;
+
+        const zRatio = (z - minZ) / (maxZ - minZ);
+        // Fade in from horizon, stay visible, fade softly at near front
+        const alpha = Math.sin(zRatio * Math.PI) * 0.14;
+
         ctx.beginPath();
-        let started = false;
-        for (let r = 0; r < rows; r++) {
-          const pt = points[r][c];
-          if (pt.px === -999) continue;
-          if (!started) {
-            ctx.moveTo(pt.px, pt.py);
-            started = true;
-          } else {
-            ctx.lineTo(pt.px, pt.py);
+        ctx.moveTo(pxStart, py);
+        ctx.lineTo(pxEnd, py);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+
+        // Subtle glowing coordinate intersection dots
+        if (z % (gridSize * 2) === 0) {
+          for (let x = minX; x <= maxX; x += gridSize * 2) {
+            const px = width / 2 + x * scale;
+            if (px >= 0 && px <= width && py >= horizonY && py <= height) {
+              const dotAlpha = alpha * 1.5;
+              ctx.fillStyle = `rgba(206, 253, 0, ${dotAlpha.toFixed(3)})`;
+              ctx.beginPath();
+              ctx.arc(px, py, 1.2, 0, Math.PI * 2);
+              ctx.fill();
+            }
           }
         }
-        ctx.strokeStyle = 'rgba(204, 255, 0, 0.12)';
-        ctx.lineWidth = 0.65;
-        ctx.stroke();
       }
 
-      // Bottom gradient fade out
-      const grad = ctx.createLinearGradient(0, height * 0.45, 0, height);
-      grad.addColorStop(0, 'rgba(5, 7, 6, 0)');
-      grad.addColorStop(0.7, 'rgba(5, 7, 6, 0.75)');
-      grad.addColorStop(1, 'rgba(5, 7, 6, 1)');
+      // Radial top & edge vignette to fade smoothly into pure pitch black
+      const grad = ctx.createRadialGradient(
+        width / 2, height * 0.52, 100,
+        width / 2, height * 0.52, Math.max(width, height) * 0.72
+      );
+      grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      grad.addColorStop(0.55, 'rgba(0, 0, 0, 0.35)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 1)');
       ctx.fillStyle = grad;
-      ctx.fillRect(0, height * 0.45, width, height * 0.55);
+      ctx.fillRect(0, 0, width, height);
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -207,7 +188,6 @@ function WireframeMeshCanvas() {
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 
@@ -383,6 +363,30 @@ export function LandingPage({
   const [activeParadigmTab, setActiveParadigmTab] = useState<number>(0);
   const [honeytrapProbe, setHoneytrapProbe] = useState<'portal' | 'canary' | 'script'>('portal');
   const [ablationState, setAblationState] = useState<'all' | 'no-text' | 'no-link'>('all');
+
+  // Abnormal UI Header & Search Navigation States
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<'EN' | 'ES' | 'DE' | 'FR' | 'JA'>('EN');
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+
+  // Keyboard shortcut listener (⌘ K / Ctrl K and Escape)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+      }
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setActiveDropdown(null);
+        setShowLanguageMenu(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // -------------------------------------------------------------------------
   // Execute Real Forensics Engine on Selected Case
@@ -656,83 +660,255 @@ VP Engineering, PartnerCorp`
   }, [activeDossier]);
 
   return (
-    <div className="min-h-screen bg-[#050706] text-[#f1f9f4] font-sans selection:bg-[#ccff00] selection:text-black relative overflow-x-hidden">
+    <div className="min-h-screen bg-black text-[#f1f9f4] font-sans selection:bg-[#CEFD00] selection:text-black relative overflow-x-hidden">
       
       {/* Subtle Scanline / Ambient glow */}
-      <div className="fixed top-0 right-1/4 w-[550px] h-[550px] bg-[#ccff00]/[0.03] rounded-full blur-[180px] pointer-events-none" />
+      <div className="fixed top-0 right-1/4 w-[550px] h-[550px] bg-[#CEFD00]/[0.03] rounded-full blur-[180px] pointer-events-none" />
       <div className="fixed bottom-1/4 left-10 w-[450px] h-[450px] bg-[#36c96c]/[0.025] rounded-full blur-[200px] pointer-events-none" />
 
       {/* =========================================================================
-          1. TOP NAVIGATION
+          1. TOP NAVIGATION (Exact Abnormal Aesthetic)
          ========================================================================= */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#050706]/92 border-b border-white/[0.08]">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/90 border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
-          {/* Authentic NeuroShield Symbol & Brand */}
+          {/* Left Brand: Abnormal */}
           <div 
             onClick={scrollToTop} 
-            className="flex items-center gap-3 cursor-pointer group select-none"
+            className="flex items-center gap-2 cursor-pointer group select-none"
           >
-            {/* Hexagon Cyber Shield Logo */}
-            <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
-              <svg viewBox="0 0 100 100" className="w-full h-full text-[#ccff00] drop-shadow-[0_0_10px_rgba(204,255,0,0.8)] fill-current transition-all duration-300 group-hover:scale-105">
-                <polygon points="50 3 93 25 93 75 50 97 7 75 7 25" fill="none" stroke="currentColor" strokeWidth="4" />
-                <polygon points="50 15 80 32 80 68 50 85 20 68 20 32" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="5 5" className="animate-[spin_12s_linear_infinite_reverse]" />
-                <circle cx="50" cy="50" r="12" className="animate-pulse fill-[#ccff00]/80" />
-              </svg>
-              <div className="absolute inset-0 rounded-full shadow-[0_0_20px_rgba(204,255,0,0.4)] opacity-70 mix-blend-screen pointer-events-none" />
-            </div>
-
-            <div className="flex flex-col">
-              <span className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center">
-                Neuro<span className="text-[#ccff00]">Shield</span>
-              </span>
-              <span className="text-[9px] font-mono tracking-widest text-[#ccff00]/80 uppercase leading-none">
-                Behavioral AI Defense
-              </span>
-            </div>
+            <span className="text-2xl sm:text-[27px] font-black tracking-[-0.03em] text-white flex items-center">
+              <span className="text-white">Λ</span>bnormal
+            </span>
           </div>
 
-          {/* Clean Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-gray-300">
-            <a href="#paradigms" className="hover:text-[#ccff00] transition-colors flex items-center gap-1.5 font-semibold text-white">
-              <span className="w-2 h-2 rounded-full bg-[#ccff00] animate-pulse" />
-              <span>3 Paradigms</span>
+          {/* Center Navigation Links with Interactive Dropdowns */}
+          <nav className="hidden lg:flex items-center gap-7 text-[14px] font-medium text-[#d1d5db]">
+            <a href="#why" className="hover:text-white transition-colors">
+              Why Abnormal
             </a>
-            <a href="#platform" className="hover:text-[#ccff00] transition-colors">
-              Platform
-            </a>
-            <a href="#challenge" className="hover:text-[#ccff00] transition-colors">
-              Attack Vectors
-            </a>
-            <a href="#ai-approach" className="hover:text-[#ccff00] transition-colors">
-              AI Forensics
-            </a>
-            <a href="#bec" className="hover:text-[#ccff00] transition-colors">
-              BEC Triage
-            </a>
+
+            {/* Platform Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setActiveDropdown('platform')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
+                <span>Platform</span>
+                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'platform' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {activeDropdown === 'platform' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="absolute top-full left-0 w-64 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
+                  >
+                    <a href="#paradigms" className="block px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors">
+                      <div className="font-semibold text-white">Three Paradigms</div>
+                      <div className="text-[11px] text-gray-400">Zero-trust behavioral matrix</div>
+                    </a>
+                    <a href="#ai-approach" className="block px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors">
+                      <div className="font-semibold text-white">AI Forensics Core</div>
+                      <div className="text-[11px] text-gray-400">Deep RFC 5322 header reconstruction</div>
+                    </a>
+                    <button 
+                      onClick={() => navigate('dashboard')}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors"
+                    >
+                      <div className="font-semibold text-white">SOC Control Center</div>
+                      <div className="text-[11px] text-gray-400">Telemetry & active honeypots</div>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Solutions Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setActiveDropdown('solutions')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
+                <span>Solutions</span>
+                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'solutions' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {activeDropdown === 'solutions' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="absolute top-full left-0 w-64 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
+                  >
+                    <a href="#challenge" className="block px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors">
+                      <div className="font-semibold text-white">Business Email Compromise</div>
+                      <div className="text-[11px] text-gray-400">Stop executive spoofing & wire fraud</div>
+                    </a>
+                    <a href="#bec" className="block px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors">
+                      <div className="font-semibold text-white">Vendor Fraud & Supply Chain</div>
+                      <div className="text-[11px] text-gray-400">Invoice redirection interception</div>
+                    </a>
+                    <button 
+                      onClick={() => navigate('phishing')}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors"
+                    >
+                      <div className="font-semibold text-white">Inbox Shield</div>
+                      <div className="text-[11px] text-gray-400">Autonomous mailbox quarantine</div>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Customers Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setActiveDropdown('customers')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
+                <span>Customers</span>
+                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'customers' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {activeDropdown === 'customers' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="absolute top-full left-0 w-64 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
+                  >
+                    <div className="px-3 py-2">
+                      <div className="font-semibold text-white text-xs">Fortune 500 Case Studies</div>
+                      <div className="text-[11px] text-gray-400">Over 25% of Global 2000 enterprises</div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Resources Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setActiveDropdown('resources')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
+                <span>Resources</span>
+                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'resources' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {activeDropdown === 'resources' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="absolute top-full left-0 w-64 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
+                  >
+                    <button 
+                      onClick={() => setShowCustomInput(true)}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors"
+                    >
+                      <div className="font-semibold text-white">Live Detonation Lab</div>
+                      <div className="text-[11px] text-gray-400">Analyze raw .EML or RFC 5322 payloads</div>
+                    </button>
+                    <div className="px-3 py-2">
+                      <div className="font-semibold text-white text-xs">SOC2 Compliance Reports</div>
+                      <div className="text-[11px] text-gray-400">Enterprise security certification</div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Company Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setActiveDropdown('company')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
+                <span>Company</span>
+                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'company' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {activeDropdown === 'company' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="absolute top-full left-0 w-60 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
+                  >
+                    <div className="px-3 py-2 text-xs">
+                      <div className="font-semibold text-white">About Behavioral AI</div>
+                      <div className="text-[11px] text-gray-400">Built for the modern AI threat landscape</div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </nav>
 
-          {/* Right Action Utilities */}
-          <div className="flex items-center gap-3">
-            {/* Quick Test Raw EML / Custom Text */}
+          {/* Right Action Utilities matching screenshot */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Search + ⌘ K shortcut badge */}
             <button
-              onClick={() => setShowCustomInput(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.08] hover:bg-[#ccff00]/15 hover:border-[#ccff00]/40 text-xs text-gray-200 hover:text-[#ccff00] border border-white/15 transition-all cursor-pointer font-mono shadow-sm"
-              title="Upload .eml file or paste raw RFC 5322 headers for live inspection"
-              id="btn-test-email-eml"
+              onClick={() => setIsSearchOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
+              title="Search (⌘ K)"
             >
-              <UploadCloud size={14} className="text-[#ccff00]" />
-              <span className="font-semibold">Test Email / EML</span>
+              <Search size={16} strokeWidth={2} />
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/10 text-[10px] font-mono text-gray-400">
+                ⌘ K
+              </span>
             </button>
 
-            {/* Launch SOC Console CTA */}
+            {/* Language Selector */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLanguageMenu(prev => !prev)}
+                className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-300 hover:text-white transition-colors cursor-pointer select-none px-2 py-1.5 rounded-lg hover:bg-white/[0.06]"
+              >
+                <Globe size={15} />
+                <span>{selectedLanguage}</span>
+                <ChevronDown size={13} className="opacity-70" />
+              </button>
+
+              {showLanguageMenu && (
+                <div className="absolute right-0 top-full mt-1 w-24 bg-[#0c1014] border border-white/15 rounded-lg shadow-xl p-1 z-50">
+                  {(['EN', 'ES', 'DE', 'FR', 'JA'] as const).map(lang => (
+                    <button
+                      key={lang}
+                      onClick={() => {
+                        setSelectedLanguage(lang);
+                        setShowLanguageMenu(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 text-xs rounded font-medium transition-colors ${
+                        selectedLanguage === lang ? 'bg-[#CEFD00]/20 text-[#CEFD00]' : 'text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Request a Demo CTA Button (Signature Lime Button) */}
             <button
-              onClick={() => navigate('dashboard')}
-              className="px-5 py-2.5 rounded-xl bg-[#ccff00] hover:bg-[#d8ff1a] active:scale-95 text-black font-bold text-xs sm:text-sm tracking-tight transition-all shadow-[0_0_25px_rgba(204,255,0,0.35)] hover:shadow-[0_0_35px_rgba(204,255,0,0.6)] cursor-pointer flex items-center gap-1.5"
+              onClick={() => setShowCustomInput(true)}
+              className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#CEFD00] hover:bg-[#d8ff1a] active:scale-95 text-black font-bold text-xs sm:text-sm tracking-tight transition-all shadow-[0_0_20px_rgba(206,253,0,0.35)] hover:shadow-[0_0_30px_rgba(206,253,0,0.6)] cursor-pointer inline-flex items-center gap-1.5"
             >
-              <Activity size={15} className="text-black" />
-              <span>Launch SOC Console</span>
+              <span>Request a Demo</span>
               <ChevronRight size={16} strokeWidth={2.5} />
             </button>
           </div>
@@ -740,56 +916,46 @@ VP Engineering, PartnerCorp`
       </header>
 
       {/* =========================================================================
-          2. HERO SECTION (Abnormal: "Your Inbox Looks Safe. It Isn't.")
+          2. HERO SECTION (Exact Match to Reference Screenshot)
          ========================================================================= */}
-      <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-28 overflow-hidden">
-        {/* 3D Wireframe Mesh Canvas in background */}
-        <div className="absolute inset-0 h-[720px] overflow-hidden pointer-events-none">
+      <section className="relative min-h-[calc(100vh-80px)] flex flex-col justify-between pt-12 pb-12 lg:pt-20 lg:pb-16 overflow-hidden bg-black">
+        {/* 3D Wireframe Perspective Grid Canvas */}
+        <div className="absolute inset-0 h-full overflow-hidden pointer-events-none">
           <WireframeMeshCanvas />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full my-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
             {/* Left Hero Content */}
             <div className="lg:col-span-6 space-y-6">
-              {/* Lime Kicker Pill */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/25 text-[#ccff00] text-xs font-mono font-bold tracking-[0.16em] uppercase"
-              >
-                <Sparkles size={13} />
-                <span>BEHAVIORAL AI EMAIL SECURITY</span>
-              </motion.div>
-
-              {/* Bold Main Headline matching Abnormal Security */}
+              {/* Massive Main Headline */}
               <motion.h1
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-white leading-[1.02]"
+                transition={{ duration: 0.5 }}
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[84px] font-black tracking-tight text-white leading-[1.03]"
               >
                 We Stop Attacks<br />
                 Others Can’t
               </motion.h1>
 
-              {/* Subheadline matching Abnormal Security */}
+              {/* Subheadline */}
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-lg sm:text-xl text-gray-300 font-normal leading-relaxed max-w-xl"
+                transition={{ delay: 0.15, duration: 0.5 }}
+                className="text-lg sm:text-xl md:text-2xl text-[#9ea3ae] font-normal leading-relaxed max-w-xl"
               >
                 The Behavioral Security Platform for the AI era.
               </motion.p>
 
-              {/* CTAs */}
+              {/* CTA Button */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex flex-wrap items-center gap-4 pt-2"
+                transition={{ delay: 0.25, duration: 0.5 }}
+                className="pt-2"
               >
                 <button
                   onClick={() => {
@@ -797,131 +963,107 @@ VP Engineering, PartnerCorp`
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                     else navigate('dashboard');
                   }}
-                  className="px-8 py-4 rounded-xl bg-[#ccff00] hover:bg-[#d8ff1a] active:scale-95 text-black font-extrabold text-base tracking-tight transition-all shadow-[0_0_35px_rgba(204,255,0,0.5)] hover:shadow-[0_0_50px_rgba(204,255,0,0.8)] cursor-pointer inline-flex items-center gap-2"
+                  className="px-7 py-3.5 sm:px-8 sm:py-4 rounded-xl bg-[#CEFD00] hover:bg-[#d8ff1a] active:scale-95 text-black font-extrabold text-base tracking-tight transition-all shadow-[0_0_35px_rgba(206,253,0,0.45)] hover:shadow-[0_0_55px_rgba(206,253,0,0.7)] cursor-pointer inline-flex items-center gap-2"
                 >
                   <span>See It In Action</span>
-                  <ChevronRight size={18} strokeWidth={3} />
-                </button>
-
-                <button
-                  onClick={() => navigate('phishing')}
-                  className="px-6 py-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white font-semibold text-sm border border-white/10 hover:border-[#ccff00]/40 transition-all inline-flex items-center gap-2 cursor-pointer"
-                >
-                  <Mail size={16} className="text-[#ccff00]" />
-                  <span>Inbox Shield</span>
-                </button>
-
-                <button
-                  onClick={() => navigate('dashboard')}
-                  className="px-5 py-4 rounded-xl text-xs font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Terminal size={14} />
-                  <span>SOC Matrix</span>
+                  <ChevronRight size={18} strokeWidth={2.5} />
                 </button>
               </motion.div>
-
-              {/* Live Threat Case Selector in Hero */}
-              <div className="pt-2">
-                <span className="text-[11px] font-mono text-gray-400 block mb-2">
-                  SELECT REAL ATTACK CASE TO EXECUTE LIVE:
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {ALL_PRESETS.map((p) => {
-                    const isSelected = p.id === selectedCaseId;
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() => {
-                          setSelectedCaseId(p.id);
-                          const el = document.getElementById('live-attack-analysis');
-                          if (el) el.scrollIntoView({ behavior: 'smooth' });
-                        }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer border ${
-                          isSelected 
-                            ? 'bg-[#ccff00]/20 border-[#ccff00] text-[#ccff00] font-bold shadow-[0_0_12px_rgba(204,255,0,0.3)]' 
-                            : 'bg-white/[0.04] border-white/10 text-gray-400 hover:text-white hover:border-white/20'
-                        }`}
-                      >
-                        {p.senderName}: {p.subject.slice(0, 24)}...
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Security Badges */}
-              <div className="pt-3 flex flex-wrap items-center gap-6 text-xs text-gray-400">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 size={15} className="text-[#ccff00]" />
-                  <span>SOC2 Type II Certified</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 size={15} className="text-[#ccff00]" />
-                  <span>Zero MX Record Alteration</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 size={15} className="text-[#ccff00]" />
-                  <span>API Deployed in 60s</span>
-                </div>
-              </div>
             </div>
 
-            {/* Right Hero Visual: Abnormal 3D Isometric Cyber Cube Media Graphic */}
+            {/* Right Hero Visual: Floating 3D Isometric Cyber Cube directly on the floor grid */}
             <motion.div
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.25, duration: 0.6 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
               className="lg:col-span-6 relative flex items-center justify-center pt-6 lg:pt-0"
             >
-              {/* Ambient Glows around the cube */}
-              <div className="absolute top-1/4 left-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-[#ccff00]/15 rounded-full blur-[110px] pointer-events-none" />
-              <div className="absolute top-1/4 right-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-[#ff007f]/15 rounded-full blur-[110px] pointer-events-none" />
-              <div className="absolute bottom-1/4 right-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-[#00e5ff]/15 rounded-full blur-[110px] pointer-events-none" />
+              {/* Radiant Colored Ambient Glows matching the 3 lit cube quadrants */}
+              <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[#CEFD00]/15 rounded-full blur-[110px] pointer-events-none" />
+              <div className="absolute top-10 right-1/4 w-72 h-72 bg-[#FF007F]/15 rounded-full blur-[110px] pointer-events-none" />
+              <div className="absolute bottom-10 right-10 w-72 h-72 bg-[#00E5FF]/15 rounded-full blur-[110px] pointer-events-none" />
 
-              {/* Floating 3D Isometric Cyber Cube Image */}
+              {/* Floating 3D Isometric Cube Graphic seamlessly blending with floor grid */}
               <motion.div
-                animate={{ 
-                  y: [-8, 8, -8],
-                }}
-                transition={{ 
-                  duration: 7, 
-                  repeat: Infinity, 
-                  ease: 'easeInOut' 
-                }}
-                className="relative w-full max-w-[340px] sm:max-w-[460px] lg:max-w-[540px] aspect-square rounded-3xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.95)] border border-white/10 group"
+                animate={{ y: [-8, 8, -8] }}
+                transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="relative w-full max-w-[360px] sm:max-w-[480px] lg:max-w-[560px] aspect-square flex items-center justify-center select-none"
               >
                 <img 
                   src="/abnormal_hero_cube.jpg" 
                   alt="Abnormal AI Behavioral Security Engine" 
-                  className="w-full h-full object-cover select-none pointer-events-none transition-transform duration-700 group-hover:scale-105" 
+                  className="w-full h-full object-contain pointer-events-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)]" 
+                  style={{
+                    maskImage: 'radial-gradient(ellipse 92% 92% at 50% 50%, black 65%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 92% 92% at 50% 50%, black 65%, transparent 100%)',
+                  }}
                 />
-
-                {/* Subtle Gradient Shade at bottom */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-
-                {/* Floating Telemetry Badge on the Cube */}
-                <div className="absolute bottom-4 left-4 right-4 bg-black/85 backdrop-blur-xl border border-white/15 rounded-xl p-3 flex items-center justify-between text-xs font-mono shadow-2xl">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ccff00] animate-pulse" />
-                    <span className="text-white font-bold">BEHAVIORAL AI MATRIX</span>
-                  </div>
-                  <span className="text-[#ccff00] font-semibold text-[11px]">5,000+ SIGNALS / SEC</span>
-                </div>
               </motion.div>
             </motion.div>
 
           </div>
+        </div>
 
-          {/* Interactive Live Attack Analysis Section (Directly Accessible via "See It In Action") */}
-          <div className="mt-16 sm:mt-20 pt-8 border-t border-white/[0.08]">
-            <div className="text-center mb-6">
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#ccff00]">
-                LIVE THREAT DETONATION & AUTO-REMEDIATION ENGINE
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-                See Behavioral AI Stop Inbound Attacks Live
-              </h2>
+        {/* Peeking Enterprise Headline from Screenshot: "Over 25% of the Fortune 500 Trust Abnormal AI" */}
+        <div className="relative z-10 w-full text-center pt-12 pb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-black tracking-tight text-[#CEFD00] drop-shadow-[0_0_25px_rgba(206,253,0,0.3)]">
+            Over 25% of the Fortune 500 Trust Abnormal AI
+          </h2>
+          {/* Customer Logos Carousel */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-8 sm:gap-14 opacity-65 grayscale hover:grayscale-0 transition-all text-gray-300">
+            <span className="text-sm sm:text-base font-extrabold tracking-widest text-white uppercase font-sans">XEROX</span>
+            <span className="text-sm sm:text-base font-extrabold tracking-widest text-white uppercase font-sans">AUTODESK</span>
+            <span className="text-sm sm:text-base font-extrabold tracking-widest text-white uppercase font-sans">CHOICE HOTELS</span>
+            <span className="text-sm sm:text-base font-extrabold tracking-widest text-white uppercase font-sans">DOMINO'S</span>
+            <span className="text-sm sm:text-base font-extrabold tracking-widest text-white uppercase font-sans">AVERY DENNISON</span>
+            <span className="text-sm sm:text-base font-extrabold tracking-widest text-white uppercase font-sans">ROYAL CARIBBEAN</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Live Attack Analysis Section (Directly Accessible via "See It In Action") */}
+      <div className="pt-12 pb-16 bg-[#040608] border-t border-white/[0.08]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Live Attack Detonation Header */}
+          <div className="text-center mb-6">
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#CEFD00]">
+              LIVE THREAT DETONATION & AUTO-REMEDIATION ENGINE
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+              See Behavioral AI Stop Inbound Attacks Live
+            </h2>
+          </div>
+
+          {/* Live Threat Case Selector */}
+          <div className="mb-6 max-w-4xl mx-auto text-center">
+            <span className="text-[11px] font-mono text-gray-400 block mb-2">
+              SELECT REAL ATTACK CASE TO EXECUTE LIVE:
+            </span>
+            <div className="flex flex-wrap justify-center gap-2">
+              {ALL_PRESETS.map((p) => {
+                const isSelected = p.id === selectedCaseId;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setSelectedCaseId(p.id);
+                      const el = document.getElementById('live-attack-analysis');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer border ${
+                      isSelected 
+                        ? 'bg-[#CEFD00]/20 border-[#CEFD00] text-[#CEFD00] font-bold shadow-[0_0_12px_rgba(206,253,0,0.3)]' 
+                        : 'bg-white/[0.04] border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+                    }`}
+                  >
+                    {p.senderName}: {p.subject.slice(0, 24)}...
+                  </button>
+                );
+              })}
             </div>
+          </div>
+
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1039,7 +1181,6 @@ VP Engineering, PartnerCorp`
 
           </div>
         </div>
-      </section>
 
       {/* =========================================================================
           3. ENTERPRISE SOCIAL PROOF & METRIC BAR (Abnormal 4,500+ orgs)
@@ -2833,6 +2974,109 @@ VP Engineering, PartnerCorp`
                     )}
                     <span>Execute Live Forensics</span>
                   </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* =========================================================================
+          Search Command Palette Modal (Triggered by ⌘ K / Search Icon)
+         ========================================================================= */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isSearchOpen && (
+            <div 
+              className="fixed inset-0 z-[9999] flex items-start justify-center pt-20 sm:pt-28 px-4 bg-black/85 backdrop-blur-md"
+              onClick={() => setIsSearchOpen(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                className="w-full max-w-xl bg-[#0b0f13] border border-white/15 rounded-2xl shadow-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/10 bg-white/[0.02]">
+                  <Search size={18} className="text-[#CEFD00]" />
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Search platform, attacks, forensics, or enter action..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none font-sans"
+                  />
+                  <kbd className="px-2 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">
+                    ESC
+                  </kbd>
+                </div>
+
+                <div className="max-h-80 overflow-y-auto p-2 space-y-1">
+                  {[
+                    {
+                      label: 'See It In Action: Live Attack Detonation',
+                      desc: 'Execute real-time behavioral email threat detonation',
+                      action: () => {
+                        setIsSearchOpen(false);
+                        const el = document.getElementById('live-attack-analysis');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    },
+                    {
+                      label: 'Launch SOC Control Center',
+                      desc: 'Access autonomous incident triage and forensic logs',
+                      action: () => {
+                        setIsSearchOpen(false);
+                        navigate('dashboard');
+                      }
+                    },
+                    {
+                      label: 'Test Email / EML File Upload',
+                      desc: 'Analyze raw email RFC 5322 headers or upload .eml',
+                      action: () => {
+                        setIsSearchOpen(false);
+                        setShowCustomInput(true);
+                      }
+                    },
+                    {
+                      label: 'Inbox Shield Quarantine Manager',
+                      desc: 'Simulate user-facing quarantine and email safety flags',
+                      action: () => {
+                        setIsSearchOpen(false);
+                        navigate('phishing');
+                      }
+                    },
+                    {
+                      label: 'The Three Paradigms of Defense',
+                      desc: 'Explore behavioral zero-trust and honeytrap canaries',
+                      action: () => {
+                        setIsSearchOpen(false);
+                        const el = document.getElementById('paradigms');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }
+                  ]
+                    .filter(item => !searchQuery || item.label.toLowerCase().includes(searchQuery.toLowerCase()) || item.desc.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={item.action}
+                        className="w-full text-left p-3 rounded-xl hover:bg-[#CEFD00]/10 hover:border-[#CEFD00]/30 border border-transparent transition-all cursor-pointer group flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="text-xs sm:text-sm font-semibold text-white group-hover:text-[#CEFD00] transition-colors">
+                            {item.label}
+                          </div>
+                          <div className="text-[11px] text-gray-400 mt-0.5">
+                            {item.desc}
+                          </div>
+                        </div>
+                        <ChevronRight size={15} className="text-gray-500 group-hover:text-[#CEFD00] transition-colors" />
+                      </button>
+                    ))}
                 </div>
               </motion.div>
             </div>
