@@ -1471,11 +1471,14 @@ export function LandingPage({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Problem 1: Machine Speed */}
-          <div className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 space-y-5 hover:border-white/20 transition-all">
-            <div className="w-12 h-12 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-[#ccff00]">
+          <div 
+            onClick={() => navigate('dashboard')}
+            className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 space-y-5 hover:border-[#ccff00]/40 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-white/[0.05] border border-white/10 group-hover:bg-[#ccff00]/15 group-hover:text-[#ccff00] transition-all flex items-center justify-center text-[#ccff00]">
               <Clock size={24} />
             </div>
-            <h3 className="text-xl font-bold text-white tracking-tight">
+            <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ccff00] transition-colors">
               Machine Speed
             </h3>
             <p className="text-sm text-gray-400 leading-relaxed">
@@ -1483,16 +1486,19 @@ export function LandingPage({
             </p>
             <div className="text-xs font-mono text-[#ccff00] pt-2 flex items-center gap-1">
               <span>Attacks land in 450ms</span>
-              <ArrowUpRight size={14} />
+              <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </div>
           </div>
 
           {/* Problem 2: Unprecedented Scale */}
-          <div className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 space-y-5 hover:border-white/20 transition-all">
-            <div className="w-12 h-12 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-[#ccff00]">
+          <div 
+            onClick={() => navigate('copilot')}
+            className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 space-y-5 hover:border-[#ccff00]/40 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-white/[0.05] border border-white/10 group-hover:bg-[#ccff00]/15 group-hover:text-[#ccff00] transition-all flex items-center justify-center text-[#ccff00]">
               <Flame size={24} />
             </div>
-            <h3 className="text-xl font-bold text-white tracking-tight">
+            <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ccff00] transition-colors">
               Unprecedented Scale
             </h3>
             <p className="text-sm text-gray-400 leading-relaxed">
@@ -1500,16 +1506,19 @@ export function LandingPage({
             </p>
             <div className="text-xs font-mono text-[#ccff00] pt-2 flex items-center gap-1">
               <span>100x volume surge in AI lures</span>
-              <ArrowUpRight size={14} />
+              <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </div>
           </div>
 
           {/* Problem 3: Novel Techniques */}
-          <div className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 space-y-5 hover:border-white/20 transition-all">
-            <div className="w-12 h-12 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-[#ccff00]">
+          <div 
+            onClick={() => navigate('phishing')}
+            className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 space-y-5 hover:border-[#ccff00]/40 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-white/[0.05] border border-white/10 group-hover:bg-[#ccff00]/15 group-hover:text-[#ccff00] transition-all flex items-center justify-center text-[#ccff00]">
               <ShieldOff size={24} />
             </div>
-            <h3 className="text-xl font-bold text-white tracking-tight">
+            <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ccff00] transition-colors">
               Novel Techniques
             </h3>
             <p className="text-sm text-gray-400 leading-relaxed">
@@ -1517,7 +1526,7 @@ export function LandingPage({
             </p>
             <div className="text-xs font-mono text-[#ccff00] pt-2 flex items-center gap-1">
               <span>Zero-payload execution</span>
-              <ArrowUpRight size={14} />
+              <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </div>
           </div>
         </div>
@@ -1543,56 +1552,68 @@ export function LandingPage({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Pillar 1 */}
-            <div className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 flex flex-col justify-between space-y-6 hover:border-[#ccff00]/40 transition-all">
+            <div 
+              onClick={() => navigate('dashboard')}
+              className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 flex flex-col justify-between space-y-6 hover:border-[#ccff00]/40 transition-all cursor-pointer group"
+            >
               <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-[#ccff00]/10 border border-[#ccff00]/20 flex items-center justify-center text-[#ccff00]">
+                <div className="w-12 h-12 rounded-xl bg-[#ccff00]/10 border border-[#ccff00]/20 flex items-center justify-center text-[#ccff00] group-hover:bg-[#ccff00]/20 transition-colors">
                   <Target size={22} />
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-tight">
+                <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ccff00] transition-colors">
                   Know Normal, Catch Everything Else
                 </h3>
                 <p className="text-sm text-gray-400 leading-relaxed">
                   Per-identity behavioral baselines across 5,000+ signals detect zero-payload threats your gateway architecturally cannot see. By understanding baseline vendor relationships, anomalous remittance requests trigger instant alerts.
                 </p>
               </div>
-              <div className="pt-4 border-t border-white/[0.06] text-xs font-mono text-gray-300">
-                5,000+ behavioral signals analyzed per mail
+              <div className="pt-4 border-t border-white/[0.06] text-xs font-mono text-gray-300 flex items-center justify-between">
+                <span>5,000+ signals analyzed</span>
+                <ArrowRight size={14} className="text-[#ccff00] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
 
             {/* Pillar 2 */}
-            <div className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 flex flex-col justify-between space-y-6 hover:border-[#ccff00]/40 transition-all">
+            <div 
+              onClick={() => navigate('phishing')}
+              className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 flex flex-col justify-between space-y-6 hover:border-[#ccff00]/40 transition-all cursor-pointer group"
+            >
               <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-[#ccff00]/10 border border-[#ccff00]/20 flex items-center justify-center text-[#ccff00]">
+                <div className="w-12 h-12 rounded-xl bg-[#ccff00]/10 border border-[#ccff00]/20 flex items-center justify-center text-[#ccff00] group-hover:bg-[#ccff00]/20 transition-colors">
                   <Zap size={22} />
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-tight">
+                <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ccff00] transition-colors">
                   Threats Gone Before You See Them
                 </h3>
                 <p className="text-sm text-gray-400 leading-relaxed">
                   Malicious emails auto-removed and compromised accounts locked in under 6 seconds — no analyst action required. Autonomous playbooks handle session revocation, password resets, and SOC notifications instantly.
                 </p>
               </div>
-              <div className="pt-4 border-t border-white/[0.06] text-xs font-mono text-[#ccff00]">
-                Mean Time to Remediation: &lt; 6.0 seconds
+              <div className="pt-4 border-t border-white/[0.06] text-xs font-mono text-[#ccff00] flex items-center justify-between">
+                <span>MTTR &lt; 6.0 seconds</span>
+                <ArrowRight size={14} className="text-[#ccff00] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
 
             {/* Pillar 3 */}
-            <div className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 flex flex-col justify-between space-y-6 hover:border-[#ccff00]/40 transition-all">
+            <div 
+              onClick={() => navigate('intelligence')}
+              className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-8 flex flex-col justify-between space-y-6 hover:border-[#ccff00]/40 transition-all cursor-pointer group"
+            >
               <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-[#ccff00]/10 border border-[#ccff00]/20 flex items-center justify-center text-[#ccff00]">
+                <div className="w-12 h-12 rounded-xl bg-[#ccff00]/10 border border-[#ccff00]/20 flex items-center justify-center text-[#ccff00] group-hover:bg-[#ccff00]/20 transition-colors">
                   <Globe size={22} />
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-tight">
+                <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ccff00] transition-colors">
                   Compromised Vendors Flagged Across the Network
                 </h3>
                 <p className="text-sm text-gray-400 leading-relaxed">
                   Federated intelligence across 4,500+ organizations flags anomalous vendor behavior before payment redirection succeeds. If an external supplier gets breached elsewhere, your tenant is automatically shielded.
                 </p>
               </div>
-              <div className="pt-4 border-t border-white/[0.06] text-xs font-mono text-gray-300">
-                Global supply-chain collective defense
+              <div className="pt-4 border-t border-white/[0.06] text-xs font-mono text-gray-300 flex items-center justify-between">
+                <span>Collective Defense</span>
+                <ArrowRight size={14} className="text-[#ccff00] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
           </div>
@@ -1721,10 +1742,19 @@ export function LandingPage({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {PLATFORM_MODULES.map((mod) => {
               const IconComp = mod.icon;
+              const handleModuleClick = () => {
+                if (mod.id === 'inbound') navigate('phishing');
+                else if (mod.id === 'identity') navigate('guard');
+                else if (mod.id === 'mailbox') navigate('copilot');
+                else if (mod.id === 'vendor') navigate('intelligence');
+                else navigate('dashboard');
+              };
+
               return (
                 <div 
                   key={mod.id}
-                  className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-7 flex flex-col justify-between hover:border-[#ccff00]/40 hover:bg-[#121813] transition-all space-y-6 group"
+                  onClick={handleModuleClick}
+                  className="rounded-2xl bg-[#0e1310] border border-white/[0.08] p-7 flex flex-col justify-between hover:border-[#ccff00]/40 hover:bg-[#121813] transition-all space-y-6 group cursor-pointer"
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -1740,7 +1770,7 @@ export function LandingPage({
                       {mod.tag}
                     </div>
 
-                    <h3 className="text-lg font-bold text-white tracking-tight">
+                    <h3 className="text-lg font-bold text-white tracking-tight group-hover:text-[#ccff00] transition-colors">
                       {mod.title}
                     </h3>
 
