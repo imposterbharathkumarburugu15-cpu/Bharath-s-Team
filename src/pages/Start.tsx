@@ -28,7 +28,6 @@ export function Start({ navigate }: { navigate: (tab: string) => void }) {
           {busy ? (t('connecting_status') || 'Connecting…') : connected ? (t('open_inbox_cta') || 'Open inbox') : (t('connect_gmail_cta') || 'Connect Gmail')}<ArrowRight size={20} />
         </button>
         <p className="ns-caption">{t('gmail_read_only_caption') || 'Gmail access is read-only. NeuroShield shows evidence and protects links inside its workspace.'}</p>
-        <button className="ns-secondary" onClick={() => navigate('lab')}><FileSearch size={18} /> Explore Evidence Lab <ArrowRight size={16} /></button>
         {error && <p role="alert" className="ns-error">{error}</p>}
         <button className="ns-text-button" onClick={() => { sessionStorage.setItem('ns-open-eml', 'true'); navigate('phishing'); }}>{t('have_eml_file') || 'Have an .eml file? Analyze it here'} <ArrowRight size={14} /></button>
       </section>

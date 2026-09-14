@@ -757,30 +757,31 @@ VP Engineering, PartnerCorp`
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/25 text-[#ccff00] text-xs font-mono font-bold tracking-[0.16em] uppercase"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/25 text-[#ccff00] text-xs font-mono font-bold tracking-[0.16em] uppercase"
               >
                 <Sparkles size={13} />
-                <span>THE BEHAVIORAL SECURITY PLATFORM FOR THE AI ERA</span>
+                <span>BEHAVIORAL AI EMAIL SECURITY</span>
               </motion.div>
 
-              {/* Bold Main Headline */}
+              {/* Bold Main Headline matching Abnormal Security */}
               <motion.h1
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.05]"
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-white leading-[1.02]"
               >
-                Your Inbox Looks Safe. It Isn't.
+                We Stop Attacks<br />
+                Others Can’t
               </motion.h1>
 
-              {/* Subheadline */}
+              {/* Subheadline matching Abnormal Security */}
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-base sm:text-lg text-gray-300 leading-relaxed max-w-xl"
+                className="text-lg sm:text-xl text-gray-300 font-normal leading-relaxed max-w-xl"
               >
-                Attacks move in milliseconds, faster than any human can respond. NeuroShield models normal behavior across 5,000+ identity signals to autonomously stop BEC, executive impersonation, and vendor fraud at machine speed.
+                The Behavioral Security Platform for the AI era.
               </motion.p>
 
               {/* CTAs */}
@@ -791,28 +792,31 @@ VP Engineering, PartnerCorp`
                 className="flex flex-wrap items-center gap-4 pt-2"
               >
                 <button
-                  onClick={() => navigate('dashboard')}
-                  className="px-7 py-3.5 rounded-xl bg-[#ccff00] hover:bg-[#d8ff1a] active:scale-95 text-black font-bold text-sm sm:text-base tracking-tight transition-all shadow-[0_0_30px_rgba(204,255,0,0.45)] hover:shadow-[0_0_40px_rgba(204,255,0,0.7)] cursor-pointer flex items-center gap-2"
+                  onClick={() => {
+                    const el = document.getElementById('live-attack-analysis');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    else navigate('dashboard');
+                  }}
+                  className="px-8 py-4 rounded-xl bg-[#ccff00] hover:bg-[#d8ff1a] active:scale-95 text-black font-extrabold text-base tracking-tight transition-all shadow-[0_0_35px_rgba(204,255,0,0.5)] hover:shadow-[0_0_50px_rgba(204,255,0,0.8)] cursor-pointer inline-flex items-center gap-2"
                 >
-                  <Activity size={18} className="text-black" />
-                  <span>Launch SOC Console</span>
-                  <ChevronRight size={18} strokeWidth={2.5} />
+                  <span>See It In Action</span>
+                  <ChevronRight size={18} strokeWidth={3} />
                 </button>
 
                 <button
                   onClick={() => navigate('phishing')}
-                  className="px-6 py-3.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white font-semibold text-sm border border-white/10 hover:border-[#ccff00]/40 transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white font-semibold text-sm border border-white/10 hover:border-[#ccff00]/40 transition-all inline-flex items-center gap-2 cursor-pointer"
                 >
                   <Mail size={16} className="text-[#ccff00]" />
-                  <span>Open Inbox Shield</span>
+                  <span>Inbox Shield</span>
                 </button>
 
                 <button
                   onClick={() => navigate('dashboard')}
-                  className="px-5 py-3.5 rounded-xl text-xs font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-4 rounded-xl text-xs font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <Terminal size={14} />
-                  <span>Launch SOC Matrix</span>
+                  <span>SOC Matrix</span>
                 </button>
               </motion.div>
 
@@ -827,7 +831,11 @@ VP Engineering, PartnerCorp`
                     return (
                       <button
                         key={p.id}
-                        onClick={() => setSelectedCaseId(p.id)}
+                        onClick={() => {
+                          setSelectedCaseId(p.id);
+                          const el = document.getElementById('live-attack-analysis');
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer border ${
                           isSelected 
                             ? 'bg-[#ccff00]/20 border-[#ccff00] text-[#ccff00] font-bold shadow-[0_0_12px_rgba(204,255,0,0.3)]' 
@@ -858,12 +866,68 @@ VP Engineering, PartnerCorp`
               </div>
             </div>
 
-            {/* Right Hero Visual: Dynamic Attack Analysis & Auto-remediated Card */}
+            {/* Right Hero Visual: Abnormal 3D Isometric Cyber Cube Media Graphic */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.25, duration: 0.5 }}
-              className="lg:col-span-6 relative"
+              transition={{ delay: 0.25, duration: 0.6 }}
+              className="lg:col-span-6 relative flex items-center justify-center pt-6 lg:pt-0"
+            >
+              {/* Ambient Glows around the cube */}
+              <div className="absolute top-1/4 left-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-[#ccff00]/15 rounded-full blur-[110px] pointer-events-none" />
+              <div className="absolute top-1/4 right-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-[#ff007f]/15 rounded-full blur-[110px] pointer-events-none" />
+              <div className="absolute bottom-1/4 right-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-[#00e5ff]/15 rounded-full blur-[110px] pointer-events-none" />
+
+              {/* Floating 3D Isometric Cyber Cube Image */}
+              <motion.div
+                animate={{ 
+                  y: [-8, 8, -8],
+                }}
+                transition={{ 
+                  duration: 7, 
+                  repeat: Infinity, 
+                  ease: 'easeInOut' 
+                }}
+                className="relative w-full max-w-[340px] sm:max-w-[460px] lg:max-w-[540px] aspect-square rounded-3xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.95)] border border-white/10 group"
+              >
+                <img 
+                  src="/abnormal_hero_cube.jpg" 
+                  alt="Abnormal AI Behavioral Security Engine" 
+                  className="w-full h-full object-cover select-none pointer-events-none transition-transform duration-700 group-hover:scale-105" 
+                />
+
+                {/* Subtle Gradient Shade at bottom */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                {/* Floating Telemetry Badge on the Cube */}
+                <div className="absolute bottom-4 left-4 right-4 bg-black/85 backdrop-blur-xl border border-white/15 rounded-xl p-3 flex items-center justify-between text-xs font-mono shadow-2xl">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#ccff00] animate-pulse" />
+                    <span className="text-white font-bold">BEHAVIORAL AI MATRIX</span>
+                  </div>
+                  <span className="text-[#ccff00] font-semibold text-[11px]">5,000+ SIGNALS / SEC</span>
+                </div>
+              </motion.div>
+            </motion.div>
+
+          </div>
+
+          {/* Interactive Live Attack Analysis Section (Directly Accessible via "See It In Action") */}
+          <div className="mt-16 sm:mt-20 pt-8 border-t border-white/[0.08]">
+            <div className="text-center mb-6">
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#ccff00]">
+                LIVE THREAT DETONATION & AUTO-REMEDIATION ENGINE
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+                See Behavioral AI Stop Inbound Attacks Live
+              </h2>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="relative max-w-5xl mx-auto"
             >
               {/* Floating Top Badge: "Auto-remediated" */}
               <div className="absolute -top-6 right-0 sm:right-6 z-20 bg-[#161c18]/95 border border-white/15 rounded-xl px-4 py-3 shadow-[0_15px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl flex items-center gap-3">
@@ -1424,11 +1488,11 @@ VP Engineering, PartnerCorp`
 
                   <div className="pt-2">
                     <button
-                      onClick={() => navigate('lab')}
+                      onClick={() => navigate('phishing')}
                       className="px-6 py-3 rounded-xl bg-[#ccff00] hover:bg-[#d8ff1a] text-black font-bold text-xs tracking-tight transition-all shadow-[0_0_20px_rgba(204,255,0,0.35)] cursor-pointer inline-flex items-center gap-2"
                     >
                       <FileSearch size={16} />
-                      <span>Launch Evidence Lab & Challenge Verdict</span>
+                      <span>Launch Email Threat Detection</span>
                       <ChevronRight size={14} />
                     </button>
                   </div>

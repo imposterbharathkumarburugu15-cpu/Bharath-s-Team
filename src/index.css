@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @import "./styles/intelligence.css";
+@import "./styles/media.css";
 
 @theme {
   --color-blue-50: #effbf3;

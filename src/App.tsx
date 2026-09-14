@@ -15,7 +15,6 @@ import { Copilot } from './pages/Copilot';
 import { Settings } from './pages/Settings';
 import { FeedbackDashboard } from './pages/FeedbackDashboard';
 import { GuardPage } from './pages/Guard';
-import { EvidenceLab } from './pages/EvidenceLab';
 
 function App() {
   const [activeTab, setActiveTab] = useState<string>(() => {
@@ -24,7 +23,7 @@ function App() {
       if (hash === 'landing' || hash === 'home') return 'landing';
       if (hash === 'dashboard' || hash === 'overview') return 'dashboard';
       if (hash === 'phishing' || hash === 'email' || hash === 'inbox') return 'phishing';
-      if (['intelligence', 'osint', 'deception', 'lab'].includes(hash)) return hash;
+      if (['intelligence', 'osint', 'deception'].includes(hash)) return hash;
       if (hash === 'soc' || hash === 'soc-sector') return 'intelligence';
       if (hash === 'guard') return 'guard';
       if (hash === 'scanner' || hash === 'network') return 'scanner';
@@ -48,7 +47,7 @@ function App() {
         setActiveTab('dashboard');
       } else if (hash === 'phishing' || hash === 'email' || hash === 'inbox' || hash === 'analyze') {
         setActiveTab('phishing');
-      } else if (['intelligence', 'osint', 'deception', 'lab'].includes(hash)) {
+      } else if (['intelligence', 'osint', 'deception'].includes(hash)) {
         setActiveTab(hash);
       } else if (hash === 'soc' || hash === 'soc-sector') {
         setActiveTab('intelligence');
@@ -94,8 +93,6 @@ function App() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'lab':
-        return <EvidenceLab />;
       case 'landing':
         return <LandingPage navigate={handleTabChange} />;
       case 'osint':

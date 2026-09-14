@@ -1,0 +1,489 @@
+/**
+ * NEUROSHIELD - RESPONSIVE MEDIA & VIEWPORT STYLES
+ * Comprehensive responsive rules for Mobile (<640px), Tablet/Tab (641px - 1024px),
+ * Laptop (1025px - 1440px), and Ultra-Wide Workstations (>1440px).
+ */
+
+/* ==========================================================================
+   1. UNIVERSAL RESPONSIVE MEDIA RULES (Images, Videos, SVGs, Canvas, Audio)
+   ========================================================================== */
+
+/* Ensure all media files scale proportionally within their parent containers */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Specific styling for vector icons so they don't deform */
+svg:not([width]):not([height]) {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Responsive Image / Media Containers */
+.media-container,
+.responsive-media {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Aspect-ratio preserving video wrappers */
+.video-responsive {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.video-responsive iframe,
+.video-responsive video,
+.video-responsive object,
+.video-responsive embed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Dropzone & scanner file preview media */
+.preview-media-frame {
+  width: 100%;
+  max-width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* QR Code & Camera Feed Container */
+.qr-scanner-box {
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Audio Player Waveform Container */
+.audio-wave-container {
+  width: 100%;
+  min-height: 64px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* BIMI and Brand Vector Images */
+.brand-logo-img {
+  max-width: 48px;
+  max-height: 48px;
+  object-fit: contain;
+}
+
+/* ==========================================================================
+   2. MOBILE VIEWPORT (< 640px)
+   ========================================================================== */
+@media (max-width: 640px) {
+  /* Workspace Container */
+  .ns-workspace {
+    padding: 16px 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Typography */
+  .ns-workspace h1 {
+    font-size: clamp(24px, 6.5vw, 32px) !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.03em !important;
+    margin: 12px 0 14px !important;
+  }
+
+  .ns-workspace h2 {
+    font-size: 16px !important;
+    margin: 0 0 8px !important;
+  }
+
+  .ns-workspace .ns-lead {
+    font-size: 13.5px !important;
+    line-height: 1.6 !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* Start Screen Hero Grid */
+  .ns-start {
+    padding-top: 16px !important;
+  }
+
+  .ns-start-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    padding: 20px 0 !important;
+  }
+
+  .ns-start h1 {
+    font-size: clamp(28px, 7.5vw, 36px) !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Buttons & Action Targets */
+  .ns-start-cta {
+    width: 100% !important;
+    min-width: unset !important;
+    justify-content: center !important;
+    padding: 15px 20px !important;
+    font-size: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .ns-primary, .ns-secondary, .ns-danger {
+    min-height: 44px !important; /* Touch guideline */
+    padding: 10px 14px !important;
+    font-size: 12.5px !important;
+  }
+
+  .ns-text-button {
+    font-size: 12px !important;
+    padding: 10px 0 !important;
+    display: flex !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Journey / Guide Card */
+  .ns-journey {
+    padding: 18px 14px !important;
+    margin-top: 12px !important;
+    border-radius: 8px !important;
+  }
+
+  .ns-journey .ns-eyebrow {
+    margin-bottom: 16px !important;
+  }
+
+  .ns-step {
+    gap: 12px !important;
+    padding: 10px 0 !important;
+  }
+
+  .ns-step-number {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 11px !important;
+  }
+
+  .ns-step h2 {
+    font-size: 14px !important;
+  }
+
+  .ns-step p {
+    font-size: 11.5px !important;
+  }
+
+  /* Start Bottom Cards Grid */
+  .ns-start-bottom {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    padding: 20px 0 !important;
+  }
+
+  .ns-start-bottom>div {
+    grid-template-columns: 20px 1fr !important;
+    gap: 4px 10px !important;
+  }
+
+  /* Search & Form Elements */
+  .ns-search-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px !important;
+    margin: 20px 0 !important;
+  }
+
+  .ns-search-form>svg {
+    display: none !important;
+  }
+
+  .ns-search-form input {
+    width: 100% !important;
+    flex-basis: auto !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+  }
+
+  .ns-search-form button {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+
+  /* Horizontal Scrolling Tabs with Momentum */
+  .ns-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 6px !important;
+    padding-bottom: 6px !important;
+    margin: 16px 0 !important;
+    scrollbar-width: none !important;
+  }
+
+  .ns-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .ns-tabs button {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 10px 12px !important;
+    font-size: 11.5px !important;
+    min-height: 40px !important;
+  }
+
+  /* Panels & Cards */
+  .ns-panel {
+    padding: 14px 12px !important;
+    margin: 12px 0 !important;
+    border-radius: 8px !important;
+  }
+
+  .ns-soc-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .ns-soc-grid>aside {
+    max-height: 240px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Incident Timeline */
+  .ns-timeline {
+    margin-top: 16px !important;
+  }
+
+  .ns-timeline li {
+    grid-template-columns: 55px 1fr !important;
+    gap: 8px !important;
+    padding: 0 0 16px !important;
+  }
+
+  .ns-timeline time {
+    font-size: 9px !important;
+  }
+
+  .ns-timeline li>div {
+    padding-left: 12px !important;
+  }
+
+  .ns-timeline strong {
+    font-size: 12px !important;
+  }
+
+  .ns-timeline p {
+    font-size: 11px !important;
+  }
+
+  /* Form Row Stacking */
+  .ns-form-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+
+  .ns-form-row>label:first-child,
+  .ns-form-row>label:nth-child(2) {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  .ns-form-row button {
+    width: 100% !important;
+  }
+
+  .ns-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .ns-actions button {
+    width: 100% !important;
+  }
+
+  /* Responsive Tables */
+  .ns-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 12px 0 !important;
+    border-radius: 6px !important;
+  }
+
+  .ns-table th, .ns-table td {
+    padding: 10px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* Floating Copilot Modal on Mobile */
+  .floating-copilot-panel {
+    width: calc(100vw - 20px) !important;
+    right: 10px !important;
+    bottom: 74px !important;
+    max-height: 70vh !important;
+  }
+}
+
+/* ==========================================================================
+   3. TABLET ("TAB") VIEWPORT (641px - 1024px)
+   ========================================================================== */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Workspace Container */
+  .ns-workspace {
+    padding: 24px 20px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Typography */
+  .ns-workspace h1 {
+    font-size: clamp(32px, 4.5vw, 42px) !important;
+    line-height: 1.15 !important;
+  }
+
+  /* Start Screen Hero */
+  .ns-start-grid {
+    grid-template-columns: 1fr !important;
+    gap: 36px !important;
+    padding: 36px 0 !important;
+  }
+
+  .ns-start h1 {
+    font-size: 42px !important;
+  }
+
+  /* Clean 2-column layout on tablet instead of squashed 3 columns */
+  .ns-start-bottom {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 24px !important;
+    padding: 24px 0 !important;
+  }
+
+  /* SOC Sector Grid */
+  .ns-soc-grid {
+    grid-template-columns: 240px minmax(0, 1fr) !important;
+    gap: 18px !important;
+  }
+
+  .ns-soc-grid>aside {
+    max-height: 480px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Tabs with Smooth Scrolling */
+  .ns-tabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 6px !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ns-tabs button {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Radar & Area Chart Responsive Containers */
+  .chart-container-responsive {
+    height: 220px !important;
+    min-height: 200px !important;
+  }
+}
+
+/* ==========================================================================
+   4. LAPTOP & DESKTOP VIEWPORT (1025px - 1440px)
+   ========================================================================== */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .ns-workspace {
+    padding: 32px 36px !important;
+    max-width: 1360px !important;
+  }
+
+  .ns-start-grid {
+    grid-template-columns: 1.15fr 1fr !important;
+    gap: clamp(32px, 4.5vw, 60px) !important;
+    padding: 56px 0 !important;
+  }
+
+  .ns-start h1 {
+    font-size: clamp(38px, 3.8vw, 52px) !important;
+  }
+
+  .ns-start-bottom {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 30px !important;
+  }
+
+  .ns-soc-grid {
+    grid-template-columns: 265px minmax(0, 1fr) !important;
+    gap: 22px !important;
+  }
+}
+
+/* ==========================================================================
+   5. ULTRA-WIDE SOC WORKSTATION (> 1440px)
+   ========================================================================== */
+@media (min-width: 1441px) {
+  .ns-workspace {
+    padding: 36px 56px !important;
+    max-width: 1600px !important;
+  }
+
+  .ns-start-grid {
+    grid-template-columns: 1.2fr 1fr !important;
+    gap: 80px !important;
+    padding: 72px 0 !important;
+  }
+
+  .ns-start h1 {
+    font-size: 58px !important;
+  }
+
+  .ns-start-bottom {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 40px !important;
+  }
+
+  .ns-soc-grid {
+    grid-template-columns: 300px minmax(0, 1fr) !important;
+    gap: 28px !important;
+  }
+}
+
+/* ==========================================================================
+   6. TOUCH & ACCESSIBILITY OPTIMIZATIONS
+   ========================================================================== */
+@media (hover: none) and (pointer: coarse) {
+  /* Prevent blue tap highlights on mobile/tablet */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Slightly larger touch areas for inputs and links */
+  input, select, textarea, button, a {
+    touch-action: manipulation;
+  }
+}
