@@ -496,6 +496,40 @@ export default function EmailPhishing() {
     reader.readAsText(file);
   };
 
+  // Automatically process pending EML passed from LandingPage or other triggers
+  useEffect(() => {
+    const pendingEmlText = sessionStorage.getItem('ns-custom-eml-text');
+    if (pendingEmlText) {
+      sessionStorage.removeItem('ns-custom-eml-text');
+      let headers = pendingEmlText;
+      let body = '';
+      const rfcSeparatorIndex = pendingEmlText.search(/\r?\n\r?\n/);
+      if (rfcSeparatorIndex !== -1 && (pendingEmlText.includes('Received:') || pendingEmlText.includes('From:') || pendingEmlText.includes('Subject:'))) {
+        headers = pendingEmlText.substring(0, rfcSeparatorIndex).trim();
+        body = pendingEmlText.substring(rfcSeparatorIndex).trim();
+      }
+
+      const parsed = parseSenderUtil(headers);
+      const fakeInboxItem: InboxEmailItem = {
+        id: `offline_${Date.now()}`,
+        senderName: parsed.name || 'Pasted EML Evidence',
+        senderEmail: parsed.email || 'incident@investigation.local',
+        subject: headers.match(/^Subject:\s*(.*)$/im)?.[1]?.trim() || 'Custom RFC 5322 Ingestion',
+        snippet: body.slice(0, 100) || headers.slice(0, 100),
+        timeString: 'Imported EML',
+        score: 80,
+        riskCategory: 'SUSPICIOUS',
+        tags: [{ text: 'Raw EML Ingestion', type: 'amber' }],
+        rawHeaders: headers,
+        body,
+        avatarLetter: (parsed.name || 'E')[0].toUpperCase(),
+      };
+
+      handleSelectEmailIncident(fakeInboxItem, 'forensics');
+      setShowOfflineUploader(false);
+    }
+  }, []);
+
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);

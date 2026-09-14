@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ShieldCheck, 
@@ -28,6 +29,7 @@ import {
   Loader2,
   UploadCloud,
   FileSearch,
+  FileUp,
   ExternalLink,
   RefreshCw,
   Cpu,
@@ -366,6 +368,8 @@ export function LandingPage({
   // Custom Raw Email Inspector Modal
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customEmailText, setCustomEmailText] = useState('');
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const emlFileInputRef = useRef<HTMLInputElement>(null);
 
   // Interactive Account Remediation State in BEC card
   const [remediated, setRemediated] = useState(false);
@@ -472,7 +476,7 @@ export function LandingPage({
     }
   };
 
-  // Analyze custom input pasted by user
+  // Analyze custom input pasted or uploaded by user
   const handleAnalyzeCustomEmail = async () => {
     if (!customEmailText.trim()) return;
     setIsExecutingForensics(true);
@@ -481,10 +485,124 @@ export function LandingPage({
       const dossier = await executeEmailForensics(customEmailText, '');
       setActiveDossier(dossier);
       setRemediated(false);
+      setTimeout(() => {
+        const el = document.getElementById('live-attack-analysis');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
     } catch (err) {
       console.error('Custom email scan error:', err);
     } finally {
       setIsExecutingForensics(false);
+    }
+  };
+
+  // Direct transfer to dedicated SOC Forensics Workspace
+  const handleOpenInSOCLab = () => {
+    if (customEmailText.trim()) {
+      sessionStorage.setItem('ns-custom-eml-text', customEmailText);
+    } else {
+      sessionStorage.setItem('ns-open-eml', 'true');
+    }
+    setShowCustomInput(false);
+    navigate('phishing');
+  };
+
+  // Handle native .eml, .msg, .txt file selection
+  const handleEmlFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadedFileName(`${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = (event.target?.result as string) || '';
+      setCustomEmailText(content);
+    };
+    reader.readAsText(file);
+  };
+
+  // Pre-load realistic attack samples for quick testing
+  const loadSamplePreset = (presetType: 'bec' | 'phish' | 'clean') => {
+    if (presetType === 'bec') {
+      setUploadedFileName('sample-executive-bec.eml');
+      setCustomEmailText(
+`Received: from mail-relay-92.untrusted-outbound.net (198.51.100.42)
+  by mx.corp.target.com with ESMTP; Mon, 14 Sep 2026 09:14:22 +0000
+Authentication-Results: mx.corp.target.com;
+  spf=fail (sender IP 198.51.100.42 not permitted by domain target.com);
+  dkim=none;
+  dmarc=fail (p=none)
+From: "Alex Mercer (CEO)" <ceo@target.com>
+Reply-To: alex.mercer.executive@consultant-desk.net
+To: finance-ops@target.com
+Subject: URGENT: Q3 Acquisition Escrow Deposit Confirmation
+
+Team,
+
+I am currently in an offsite executive board meeting with limited cell coverage.
+We need to finalize the confidential escrow wire for the Project Titan acquisition before 2:00 PM EST today.
+
+Please release $75,000 to the following verified escrow account immediately:
+Beneficiary: Apex Strategic Holdings LLC
+Routing: 021000021
+Account: 9482019482
+
+Do not call my direct line as I cannot pick up during deliberations. Confirm once the transaction reference ID is generated.
+
+Regards,
+Alex Mercer
+Chief Executive Officer`
+      );
+    } else if (presetType === 'phish') {
+      setUploadedFileName('sample-credential-harvest.eml');
+      setCustomEmailText(
+`Received: from vps-mailer.offshore-route.xyz (203.0.113.88)
+  by mx.corp.target.com with ESMTP; Mon, 14 Sep 2026 11:20:00 +0000
+Authentication-Results: mx.corp.target.com;
+  spf=neutral;
+  dkim=fail body hash did not verify;
+  dmarc=fail
+From: "Microsoft 365 Security Team" <security-alerts@account-verification-auth.org>
+Reply-To: support@account-verification-auth.org
+To: employee@target.com
+Subject: Action Required: Your Office 365 password expires in 2 hours
+
+Dear User,
+
+Your Microsoft 365 business email password will expire today at 1:00 PM UTC.
+Failure to retain your current credentials will result in permanent loss of mailbox synchronization and active sessions.
+
+To keep your current password, please verify your identity immediately:
+https://login.microsoftonline.com-security-portal.xyz/auth/verify?session=token92471
+
+Microsoft Corporation | One Microsoft Way, Redmond, WA`
+      );
+    } else {
+      setUploadedFileName('sample-legitimate-signed.eml');
+      setCustomEmailText(
+`Received: from mail-pj1-f54.google.com (209.85.216.54)
+  by mx.corp.target.com with ESMTPS id 419283; Mon, 14 Sep 2026 08:30:15 +0000
+Authentication-Results: mx.corp.target.com;
+  spf=pass (google.com: domain of engineering@partner-corp.com designates 209.85.216.54 as permitted sender);
+  dkim=pass header.i=@partner-corp.com;
+  dmarc=pass (p=reject)
+From: "Sarah Jenkins" <sarah.jenkins@partner-corp.com>
+Reply-To: sarah.jenkins@partner-corp.com
+To: dev-leads@target.com
+Subject: Architecture Review Notes: NeuroShield SDK Integration
+
+Hi Team,
+
+Attached are the finalized architectural design notes from yesterday's sync on the NeuroShield behavioral API rollout.
+Everything looks aligned with our SOC2 boundaries and zero-trust guidelines.
+
+Let me know if you need any adjustments before tomorrow's staging release.
+
+Best regards,
+Sarah Jenkins
+VP Engineering, PartnerCorp`
+      );
     }
   };
 
@@ -600,10 +718,12 @@ export function LandingPage({
             {/* Quick Test Raw EML / Custom Text */}
             <button
               onClick={() => setShowCustomInput(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-xs text-gray-300 border border-white/10 transition-all cursor-pointer font-mono"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.08] hover:bg-[#ccff00]/15 hover:border-[#ccff00]/40 text-xs text-gray-200 hover:text-[#ccff00] border border-white/15 transition-all cursor-pointer font-mono shadow-sm"
+              title="Upload .eml file or paste raw RFC 5322 headers for live inspection"
+              id="btn-test-email-eml"
             >
-              <UploadCloud size={13} className="text-[#ccff00]" />
-              <span>Test Email / EML</span>
+              <UploadCloud size={14} className="text-[#ccff00]" />
+              <span className="font-semibold">Test Email / EML</span>
             </button>
 
             {/* Launch SOC Console CTA */}
@@ -765,7 +885,7 @@ export function LandingPage({
               </div>
 
               {/* Main Attack Analysis Card */}
-              <div className="mt-4 rounded-2xl bg-[#0d120f]/95 border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden backdrop-blur-2xl">
+              <div id="live-attack-analysis" className="mt-4 rounded-2xl bg-[#0d120f]/95 border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden backdrop-blur-2xl transition-all duration-500">
                 <div className="grid grid-cols-1 sm:grid-cols-12">
                   
                   {/* Left Column: Crimson Red Attack Card */}
@@ -2460,62 +2580,202 @@ export function LandingPage({
       {/* =========================================================================
           14. CUSTOM RAW EMAIL / EML LIVE ANALYZER MODAL
          ========================================================================= */}
-      <AnimatePresence>
-        {showCustomInput && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-2xl rounded-2xl bg-[#0d120f] border border-white/15 p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95)] relative space-y-4"
+      {/* =========================================================================
+          14. CUSTOM RAW EMAIL / EML LIVE ANALYZER MODAL (Rendered into Body Portal)
+         ========================================================================= */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showCustomInput && (
+            <div 
+              className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setShowCustomInput(false);
+              }}
             >
-              <button
-                onClick={() => setShowCustomInput(false)}
-                className="absolute top-5 right-5 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/5 cursor-pointer"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                transition={{ duration: 0.2 }}
+                className="w-full max-w-3xl rounded-2xl bg-[#0d120f] border border-white/20 p-6 sm:p-8 shadow-[0_25px_75px_rgba(0,0,0,0.95)] relative space-y-5 my-auto max-h-[92vh] overflow-y-auto text-left"
               >
-                <X size={20} />
-              </button>
-
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#ccff00]/10 text-[#ccff00] text-[11px] font-mono font-semibold border border-[#ccff00]/20">
-                <FileSearch size={13} />
-                <span>LIVE RFC 5322 FORENSIC ENGINE</span>
-              </div>
-
-              <h3 className="text-2xl font-bold text-white tracking-tight">
-                Inspect Custom Email / EML Headers
-              </h3>
-              <p className="text-xs text-gray-400">
-                Paste raw email content or RFC 5322 headers. The engine will execute live multi-hop relay parsing, cryptographic SPF/DKIM verification, and NLP entity extraction to populate the Abnormal UI.
-              </p>
-
-              <textarea
-                value={customEmailText}
-                onChange={(e) => setCustomEmailText(e.target.value)}
-                placeholder={`Paste headers or email body...\n\nFrom: "CEO Office" <ceo@external-board.org>\nReply-To: wire.desk@gmail.com\nSubject: Urgent Settlement\n\nPlease wire $50,000 immediately to account...`}
-                rows={9}
-                className="w-full rounded-xl bg-black/60 border border-white/15 p-4 text-xs font-mono text-gray-200 focus:outline-none focus:border-[#ccff00] transition-colors resize-none"
-              />
-
-              <div className="flex items-center justify-between pt-2">
+                {/* Close Button */}
                 <button
                   onClick={() => setShowCustomInput(false)}
-                  className="px-4 py-2 text-xs text-gray-400 hover:text-white cursor-pointer"
+                  className="absolute top-5 right-5 text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Close Inspector"
                 >
-                  Cancel
+                  <X size={20} />
                 </button>
-                <button
-                  onClick={handleAnalyzeCustomEmail}
-                  disabled={!customEmailText.trim() || isExecutingForensics}
-                  className="px-5 py-2.5 rounded-xl bg-[#ccff00] hover:bg-[#d8ff1a] disabled:opacity-50 text-black font-bold text-xs tracking-tight transition-all shadow-[0_0_20px_rgba(204,255,0,0.4)] cursor-pointer flex items-center gap-2"
-                >
-                  {isExecutingForensics ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} fill="currentColor" />}
-                  <span>Execute Live Forensics</span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
+                {/* Top Engine Pill */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#ccff00]/10 text-[#ccff00] text-[11px] font-mono font-bold border border-[#ccff00]/25">
+                  <FileSearch size={14} />
+                  <span>LIVE RFC 5322 FORENSIC ENGINE</span>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold text-white tracking-tight">
+                    Inspect Custom Email / EML File
+                  </h3>
+                  <p className="text-xs text-gray-300 mt-1 leading-relaxed">
+                    Upload an authentic <code className="text-[#ccff00]">.eml</code> / <code className="text-[#ccff00]">.msg</code> file, load a sample attack vector, or paste raw RFC 5322 headers. The engine performs multi-hop relay parsing, SPF/DKIM validation, and behavioral analysis in real time.
+                  </p>
+                </div>
+
+                {/* File Upload Zone */}
+                <input
+                  type="file"
+                  ref={emlFileInputRef}
+                  accept=".eml,.msg,.txt,message/rfc822"
+                  onChange={handleEmlFileUpload}
+                  className="hidden"
+                />
+
+                <div className="p-4 rounded-xl bg-white/[0.03] border border-dashed border-white/20 hover:border-[#ccff00]/60 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#ccff00]/15 border border-[#ccff00]/30 flex items-center justify-center text-[#ccff00] shrink-0">
+                      <FileUp size={20} />
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-white">
+                        {uploadedFileName ? (
+                          <span className="text-[#ccff00] font-mono flex items-center gap-1">
+                            <CheckCircle2 size={13} /> {uploadedFileName}
+                          </span>
+                        ) : (
+                          'Upload .EML / .MSG or Raw Header File'
+                        )}
+                      </div>
+                      <div className="text-[11px] text-gray-400 mt-0.5">
+                        Accepts standard RFC 5322 MIME messages from Outlook, Gmail, Apple Mail, Thunderbird
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => emlFileInputRef.current?.click()}
+                      className="w-full sm:w-auto px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold transition-all cursor-pointer border border-white/15 flex items-center justify-center gap-1.5"
+                    >
+                      <UploadCloud size={14} className="text-[#ccff00]" />
+                      <span>{uploadedFileName ? 'Choose Other File' : 'Select .EML File'}</span>
+                    </button>
+                    {uploadedFileName && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUploadedFileName(null);
+                          setCustomEmailText('');
+                        }}
+                        className="px-2.5 py-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 text-xs transition-colors cursor-pointer"
+                        title="Clear file"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sample Presets Shortcuts */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-gray-400">
+                    <span>OR LOAD INSTANT TEST VECTOR:</span>
+                    {customEmailText.trim() && (
+                      <button
+                        onClick={() => { setCustomEmailText(''); setUploadedFileName(null); }}
+                        className="text-gray-400 hover:text-white transition-colors cursor-pointer underline"
+                      >
+                        Clear Text
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => loadSamplePreset('bec')}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <AlertTriangle size={12} className="text-red-400" />
+                      <span>BEC Wire Fraud (High Risk)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadSamplePreset('phish')}
+                      className="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <ShieldAlert size={12} className="text-amber-400" />
+                      <span>Credential Harvest (Phish)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadSamplePreset('clean')}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <ShieldCheck size={12} className="text-emerald-400" />
+                      <span>Legitimate Signed (Safe)</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Raw Email / Headers Textarea */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-gray-400">
+                    <span>RFC 5322 HEADERS & MESSAGE BODY:</span>
+                    <span>{customEmailText.length > 0 ? `${customEmailText.split('\n').length} lines • ${customEmailText.length} bytes` : 'Empty'}</span>
+                  </div>
+                  <textarea
+                    value={customEmailText}
+                    onChange={(e) => setCustomEmailText(e.target.value)}
+                    placeholder={`Paste headers or email body...\n\nFrom: "CEO Office" <ceo@external-board.org>\nReply-To: wire.desk@gmail.com\nSubject: Urgent Settlement\n\nPlease wire $50,000 immediately to account...`}
+                    rows={8}
+                    className="w-full rounded-xl bg-black/70 border border-white/15 p-4 text-xs font-mono text-gray-200 focus:outline-none focus:border-[#ccff00] transition-colors resize-none selection:bg-[#ccff00] selection:text-black leading-relaxed"
+                  />
+                </div>
+
+                {/* Action Buttons Bar */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-white/10">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomInput(false)}
+                      className="px-4 py-2.5 text-xs text-gray-400 hover:text-white cursor-pointer transition-colors"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleOpenInSOCLab}
+                      className="px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-gray-200 hover:text-white text-xs font-semibold border border-white/15 transition-all cursor-pointer flex items-center gap-1.5"
+                      title="Open directly in dedicated SOC Phishing Forensics Suite"
+                    >
+                      <span>Open in SOC Forensic Lab</span>
+                      <ExternalLink size={13} className="text-[#ccff00]" />
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAnalyzeCustomEmail}
+                    disabled={!customEmailText.trim() || isExecutingForensics}
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#ccff00] hover:bg-[#d8ff1a] active:scale-95 disabled:opacity-40 text-black font-bold text-xs tracking-tight transition-all shadow-[0_0_25px_rgba(204,255,0,0.4)] hover:shadow-[0_0_35px_rgba(204,255,0,0.65)] cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    {isExecutingForensics ? (
+                      <Loader2 size={15} className="animate-spin text-black" />
+                    ) : (
+                      <Play size={15} fill="currentColor" />
+                    )}
+                    <span>Execute Live Forensics</span>
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
     </div>
   );
