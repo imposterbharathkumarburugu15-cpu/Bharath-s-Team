@@ -667,204 +667,86 @@ VP Engineering, PartnerCorp`
       <div className="fixed bottom-1/4 left-10 w-[450px] h-[450px] bg-[#36c96c]/[0.025] rounded-full blur-[200px] pointer-events-none" />
 
       {/* =========================================================================
-          1. TOP NAVIGATION (Exact Abnormal Aesthetic)
+          1. TOP NAVIGATION (NeuroShield Brand & Console Actions)
          ========================================================================= */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/90 border-b border-white/[0.06]">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/90 border-b border-white/[0.08]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
-          {/* Left Brand: Abnormal */}
+          {/* NeuroShield Brand & Hexagon Emblem */}
           <div 
             onClick={scrollToTop} 
-            className="flex items-center gap-2 cursor-pointer group select-none"
+            className="flex items-center gap-3 cursor-pointer group select-none"
           >
-            <span className="text-2xl sm:text-[27px] font-black tracking-[-0.03em] text-white flex items-center">
-              <span className="text-white">Λ</span>bnormal
-            </span>
+            {/* Hexagon Cyber Shield Logo */}
+            <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 100 100" className="w-full h-full text-[#CEFD00] drop-shadow-[0_0_10px_rgba(206,253,0,0.8)] fill-current transition-all duration-300 group-hover:scale-105">
+                <polygon points="50 3 93 25 93 75 50 97 7 75 7 25" fill="none" stroke="currentColor" strokeWidth="4" />
+                <polygon points="50 15 80 32 80 68 50 85 20 68 20 32" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="5 5" className="animate-[spin_12s_linear_infinite_reverse]" />
+                <circle cx="50" cy="50" r="12" className="animate-pulse fill-[#CEFD00]/80" />
+              </svg>
+              <div className="absolute inset-0 rounded-full shadow-[0_0_20px_rgba(206,253,0,0.4)] opacity-70 mix-blend-screen pointer-events-none" />
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center">
+                Neuro<span className="text-[#CEFD00]">Shield</span>
+              </span>
+              <span className="text-[9px] font-mono tracking-widest text-[#CEFD00]/80 uppercase leading-none">
+                Behavioral AI Defense
+              </span>
+            </div>
           </div>
 
-          {/* Center Navigation Links with Interactive Dropdowns */}
-          <nav className="hidden lg:flex items-center gap-7 text-[14px] font-medium text-[#d1d5db]">
-            <a href="#why" className="hover:text-white transition-colors">
-              Why Abnormal
+          {/* NeuroShield Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-6 text-[13.5px] font-medium text-[#d1d5db]">
+            <a 
+              href="#paradigms" 
+              className="hover:text-[#CEFD00] transition-colors flex items-center gap-1.5 font-semibold text-white"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#CEFD00] animate-pulse" />
+              <span>3 Paradigms</span>
             </a>
 
-            {/* Platform Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setActiveDropdown('platform')}
-              onMouseLeave={() => setActiveDropdown(null)}
+            <button 
+              onClick={() => navigate('dashboard')}
+              className="hover:text-white transition-colors cursor-pointer"
             >
-              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
-                <span>Platform</span>
-                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'platform' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
-              </button>
+              SOC Console
+            </button>
 
-              <AnimatePresence>
-                {activeDropdown === 'platform' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    className="absolute top-full left-0 w-64 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
-                  >
-                    <a href="#paradigms" className="block px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors">
-                      <div className="font-semibold text-white">Three Paradigms</div>
-                      <div className="text-[11px] text-gray-400">Zero-trust behavioral matrix</div>
-                    </a>
-                    <a href="#ai-approach" className="block px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors">
-                      <div className="font-semibold text-white">AI Forensics Core</div>
-                      <div className="text-[11px] text-gray-400">Deep RFC 5322 header reconstruction</div>
-                    </a>
-                    <button 
-                      onClick={() => navigate('dashboard')}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors"
-                    >
-                      <div className="font-semibold text-white">SOC Control Center</div>
-                      <div className="text-[11px] text-gray-400">Telemetry & active honeypots</div>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Solutions Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setActiveDropdown('solutions')}
-              onMouseLeave={() => setActiveDropdown(null)}
+            <button 
+              onClick={() => navigate('phishing')}
+              className="hover:text-white transition-colors cursor-pointer"
             >
-              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
-                <span>Solutions</span>
-                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'solutions' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
-              </button>
+              Inbox Shield
+            </button>
 
-              <AnimatePresence>
-                {activeDropdown === 'solutions' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    className="absolute top-full left-0 w-64 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
-                  >
-                    <a href="#challenge" className="block px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors">
-                      <div className="font-semibold text-white">Business Email Compromise</div>
-                      <div className="text-[11px] text-gray-400">Stop executive spoofing & wire fraud</div>
-                    </a>
-                    <a href="#bec" className="block px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors">
-                      <div className="font-semibold text-white">Vendor Fraud & Supply Chain</div>
-                      <div className="text-[11px] text-gray-400">Invoice redirection interception</div>
-                    </a>
-                    <button 
-                      onClick={() => navigate('phishing')}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors"
-                    >
-                      <div className="font-semibold text-white">Inbox Shield</div>
-                      <div className="text-[11px] text-gray-400">Autonomous mailbox quarantine</div>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <a href="#challenge" className="hover:text-white transition-colors">
+              Attack Vectors
+            </a>
 
-            {/* Customers Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setActiveDropdown('customers')}
-              onMouseLeave={() => setActiveDropdown(null)}
+            <a href="#ai-approach" className="hover:text-white transition-colors">
+              AI Forensics
+            </a>
+
+            <button
+              onClick={() => {
+                const el = document.getElementById('live-attack-analysis');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="hover:text-[#CEFD00] transition-colors cursor-pointer"
             >
-              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
-                <span>Customers</span>
-                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'customers' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
-              </button>
-
-              <AnimatePresence>
-                {activeDropdown === 'customers' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    className="absolute top-full left-0 w-64 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
-                  >
-                    <div className="px-3 py-2">
-                      <div className="font-semibold text-white text-xs">Fortune 500 Case Studies</div>
-                      <div className="text-[11px] text-gray-400">Over 25% of Global 2000 enterprises</div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Resources Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setActiveDropdown('resources')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
-                <span>Resources</span>
-                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'resources' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
-              </button>
-
-              <AnimatePresence>
-                {activeDropdown === 'resources' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    className="absolute top-full left-0 w-64 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
-                  >
-                    <button 
-                      onClick={() => setShowCustomInput(true)}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 text-xs text-gray-300 hover:text-[#CEFD00] transition-colors"
-                    >
-                      <div className="font-semibold text-white">Live Detonation Lab</div>
-                      <div className="text-[11px] text-gray-400">Analyze raw .EML or RFC 5322 payloads</div>
-                    </button>
-                    <div className="px-3 py-2">
-                      <div className="font-semibold text-white text-xs">SOC2 Compliance Reports</div>
-                      <div className="text-[11px] text-gray-400">Enterprise security certification</div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Company Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setActiveDropdown('company')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-2">
-                <span>Company</span>
-                <ChevronDown size={14} className={`opacity-70 transition-transform ${activeDropdown === 'company' ? 'rotate-180 opacity-100 text-[#CEFD00]' : ''}`} />
-              </button>
-
-              <AnimatePresence>
-                {activeDropdown === 'company' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    className="absolute top-full left-0 w-60 bg-[#0c1014] border border-white/10 rounded-xl shadow-2xl p-2 z-50 backdrop-blur-2xl"
-                  >
-                    <div className="px-3 py-2 text-xs">
-                      <div className="font-semibold text-white">About Behavioral AI</div>
-                      <div className="text-[11px] text-gray-400">Built for the modern AI threat landscape</div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              Threat Detonation
+            </button>
           </nav>
 
-          {/* Right Action Utilities matching screenshot */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          {/* Right Action Utilities according to NeuroShield */}
+          <div className="flex items-center gap-3">
             {/* Search + ⌘ K shortcut badge */}
             <button
               onClick={() => setIsSearchOpen(true)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
-              title="Search (⌘ K)"
+              title="Search NeuroShield (⌘ K)"
             >
               <Search size={16} strokeWidth={2} />
               <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/10 text-[10px] font-mono text-gray-400">
@@ -872,43 +754,23 @@ VP Engineering, PartnerCorp`
               </span>
             </button>
 
-            {/* Language Selector */}
-            <div className="relative">
-              <button
-                onClick={() => setShowLanguageMenu(prev => !prev)}
-                className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-300 hover:text-white transition-colors cursor-pointer select-none px-2 py-1.5 rounded-lg hover:bg-white/[0.06]"
-              >
-                <Globe size={15} />
-                <span>{selectedLanguage}</span>
-                <ChevronDown size={13} className="opacity-70" />
-              </button>
-
-              {showLanguageMenu && (
-                <div className="absolute right-0 top-full mt-1 w-24 bg-[#0c1014] border border-white/15 rounded-lg shadow-xl p-1 z-50">
-                  {(['EN', 'ES', 'DE', 'FR', 'JA'] as const).map(lang => (
-                    <button
-                      key={lang}
-                      onClick={() => {
-                        setSelectedLanguage(lang);
-                        setShowLanguageMenu(false);
-                      }}
-                      className={`w-full text-left px-2.5 py-1.5 text-xs rounded font-medium transition-colors ${
-                        selectedLanguage === lang ? 'bg-[#CEFD00]/20 text-[#CEFD00]' : 'text-gray-300 hover:bg-white/10'
-                      }`}
-                    >
-                      {lang}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Request a Demo CTA Button (Signature Lime Button) */}
+            {/* Test Email / EML Payload Upload */}
             <button
               onClick={() => setShowCustomInput(true)}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.08] hover:bg-[#CEFD00]/15 hover:border-[#CEFD00]/40 text-xs text-gray-200 hover:text-[#CEFD00] border border-white/15 transition-all cursor-pointer font-mono shadow-sm"
+              title="Upload raw .eml file or RFC 5322 headers"
+            >
+              <UploadCloud size={14} className="text-[#CEFD00]" />
+              <span className="font-semibold">Test Email / EML</span>
+            </button>
+
+            {/* Launch SOC Console CTA (Signature Lime Button) */}
+            <button
+              onClick={() => navigate('dashboard')}
               className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#CEFD00] hover:bg-[#d8ff1a] active:scale-95 text-black font-bold text-xs sm:text-sm tracking-tight transition-all shadow-[0_0_20px_rgba(206,253,0,0.35)] hover:shadow-[0_0_30px_rgba(206,253,0,0.6)] cursor-pointer inline-flex items-center gap-1.5"
             >
-              <span>Request a Demo</span>
+              <Activity size={15} className="text-black" />
+              <span>Launch SOC Console</span>
               <ChevronRight size={16} strokeWidth={2.5} />
             </button>
           </div>
@@ -916,7 +778,7 @@ VP Engineering, PartnerCorp`
       </header>
 
       {/* =========================================================================
-          2. HERO SECTION (Exact Match to Reference Screenshot)
+          2. HERO SECTION (NeuroShield Autonomous AI Platform)
          ========================================================================= */}
       <section className="relative min-h-[calc(100vh-80px)] flex flex-col justify-between pt-12 pb-12 lg:pt-20 lg:pb-16 overflow-hidden bg-black">
         {/* 3D Wireframe Perspective Grid Canvas */}
@@ -929,6 +791,16 @@ VP Engineering, PartnerCorp`
             
             {/* Left Hero Content */}
             <div className="lg:col-span-6 space-y-6">
+              {/* Lime Kicker Pill */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#CEFD00]/10 border border-[#CEFD00]/25 text-[#CEFD00] text-xs font-mono font-bold tracking-[0.16em] uppercase"
+              >
+                <Sparkles size={13} />
+                <span>BEHAVIORAL AI EMAIL SECURITY</span>
+              </motion.div>
+
               {/* Massive Main Headline */}
               <motion.h1
                 initial={{ opacity: 0, y: 16 }}
@@ -950,25 +822,60 @@ VP Engineering, PartnerCorp`
                 The Behavioral Security Platform for the AI era.
               </motion.p>
 
-              {/* CTA Button */}
+              {/* NeuroShield Action Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25, duration: 0.5 }}
-                className="pt-2"
+                className="flex flex-wrap items-center gap-3.5 pt-2"
               >
+                {/* Primary Button: Launch SOC Console */}
+                <button
+                  onClick={() => navigate('dashboard')}
+                  className="px-7 py-3.5 sm:px-8 sm:py-4 rounded-xl bg-[#CEFD00] hover:bg-[#d8ff1a] active:scale-95 text-black font-extrabold text-base tracking-tight transition-all shadow-[0_0_35px_rgba(206,253,0,0.45)] hover:shadow-[0_0_55px_rgba(206,253,0,0.7)] cursor-pointer inline-flex items-center gap-2"
+                >
+                  <Activity size={18} className="text-black" />
+                  <span>Launch SOC Console</span>
+                  <ChevronRight size={18} strokeWidth={2.5} />
+                </button>
+
+                {/* Secondary Button: Inbox Shield */}
+                <button
+                  onClick={() => navigate('phishing')}
+                  className="px-6 py-3.5 sm:py-4 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white font-semibold text-sm border border-white/15 hover:border-[#CEFD00]/40 transition-all inline-flex items-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <Mail size={16} className="text-[#CEFD00]" />
+                  <span>Inbox Shield</span>
+                </button>
+
+                {/* Tertiary Button: See Forensics In Action */}
                 <button
                   onClick={() => {
                     const el = document.getElementById('live-attack-analysis');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    else navigate('dashboard');
                   }}
-                  className="px-7 py-3.5 sm:px-8 sm:py-4 rounded-xl bg-[#CEFD00] hover:bg-[#d8ff1a] active:scale-95 text-black font-extrabold text-base tracking-tight transition-all shadow-[0_0_35px_rgba(206,253,0,0.45)] hover:shadow-[0_0_55px_rgba(206,253,0,0.7)] cursor-pointer inline-flex items-center gap-2"
+                  className="px-5 py-3.5 sm:py-4 rounded-xl text-xs font-mono text-gray-300 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>See It In Action</span>
-                  <ChevronRight size={18} strokeWidth={2.5} />
+                  <Terminal size={14} className="text-[#CEFD00]" />
+                  <span>See Live Detonation</span>
                 </button>
               </motion.div>
+
+              {/* Security Badges */}
+              <div className="pt-2 flex flex-wrap items-center gap-6 text-xs text-gray-400">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={15} className="text-[#CEFD00]" />
+                  <span>SOC2 Type II Certified</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={15} className="text-[#CEFD00]" />
+                  <span>Zero MX Record Alteration</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={15} className="text-[#CEFD00]" />
+                  <span>API Deployed in 60s</span>
+                </div>
+              </div>
             </div>
 
             {/* Right Hero Visual: Floating 3D Isometric Cyber Cube directly on the floor grid */}
@@ -991,7 +898,7 @@ VP Engineering, PartnerCorp`
               >
                 <img 
                   src="/abnormal_hero_cube.jpg" 
-                  alt="Abnormal AI Behavioral Security Engine" 
+                  alt="NeuroShield AI Behavioral Security Engine" 
                   className="w-full h-full object-contain pointer-events-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)]" 
                   style={{
                     maskImage: 'radial-gradient(ellipse 92% 92% at 50% 50%, black 65%, transparent 100%)',
@@ -1004,10 +911,10 @@ VP Engineering, PartnerCorp`
           </div>
         </div>
 
-        {/* Peeking Enterprise Headline from Screenshot: "Over 25% of the Fortune 500 Trust Abnormal AI" */}
+        {/* Enterprise Trust Headline: NeuroShield AI */}
         <div className="relative z-10 w-full text-center pt-12 pb-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-black tracking-tight text-[#CEFD00] drop-shadow-[0_0_25px_rgba(206,253,0,0.3)]">
-            Over 25% of the Fortune 500 Trust Abnormal AI
+            Over 25% of the Fortune 500 Trust NeuroShield AI
           </h2>
           {/* Customer Logos Carousel */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-8 sm:gap-14 opacity-65 grayscale hover:grayscale-0 transition-all text-gray-300">
