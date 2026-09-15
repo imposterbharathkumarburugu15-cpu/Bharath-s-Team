@@ -6,7 +6,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../config';
 
-const VALID_SOURCES = ['email', 'sms', 'web', 'qr', 'chat'];
+const VALID_SOURCES = ['email', 'sms', 'web', 'qr', 'chat', 'prompt'];
 
 export function validateScanRequest(req: Request, res: Response, next: NextFunction) {
   const body = req.body;

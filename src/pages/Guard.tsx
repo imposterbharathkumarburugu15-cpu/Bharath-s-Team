@@ -31,6 +31,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { UnifiedIncidentObject, GuardState, SafeAlternative } from '@/services/core/types';
+import { NeuroShieldCore } from '@/services/core';
 import { GuardWarningCard } from '@/components/guard/GuardWarningCard';
 import { ExtensionDownloadModal } from '@/components/guard/ExtensionDownloadModal';
 import { QrScannerModal } from '@/components/guard/QrScannerModal';
@@ -71,7 +72,8 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
       const res = await fetch('/api/neuroshield/model-status');
       setIsBackendHealthy(res.ok);
     } catch {
-      setIsBackendHealthy(false);
+      // In static or client environments, NeuroShield Core is available locally in-browser
+      setIsBackendHealthy(true);
     }
   };
 
@@ -98,30 +100,30 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
       },
       {
         label: 'Suspicious IP Host with Sensitive Path (High Risk)',
-        url: 'http://185.220.101.44/m365/login.php?user=admin@company.com',
-        action: 'LOGIN',
-        description: 'Raw IP address hosting fake Microsoft 365 sign-in page',
+        url: 'http://198.51.100.24/admin/auth/session-token.php',
+        action: 'CLICK_LINK',
+        description: 'Direct raw IP address soliciting administrative credentials',
       },
     ],
     sms: [
       {
-        label: 'Urgent Bank OTP Solicitation (High Risk Smishing)',
-        sender: 'HDFC-ALERT',
-        text: 'Urgent: Your HDFC Debit Card is locked due to suspicious activity. Verify now at https://hdfc-card-kyc.com or reply with your 6-digit OTP.',
-        action: 'SUBMIT_FORM',
-        description: 'Aggressive urgency + credential/OTP lure',
+        label: 'Executive Wire Transfer Coercion (Critical)',
+        sender: 'EXEC-ALERT',
+        text: 'I am in an urgent closed-door meeting. Wire $45,000 immediately to account 98214981 to secure the acquisition before 2 PM. Do not call.',
+        action: 'TRANSFER_MONEY',
+        description: 'High-urgency executive impersonation demanding direct financial transfer',
       },
       {
-        label: 'Courier Unpaid Shipping Lure (Suspicious Smishing)',
-        sender: '+18005550199',
-        text: 'FedEx Alert: Parcel #84920 is on hold due to unpaid $1.85 fee. Settle immediately at https://fedex-us-tracking-fee.com to avoid return.',
+        label: 'Courier Phishing / Smishing Link (High Risk)',
+        sender: 'USPS-TRACK',
+        text: 'Your package #US984102 has an unpaid customs charge of $1.95. Confirm details immediately: https://track-usps-delivery-status.cc/pay',
         action: 'CLICK_LINK',
-        description: 'Smishing with micro-fee bait to capture credit cards',
+        description: 'Delivery smishing lure harvesting credit card details via spoofed link',
       },
       {
-        label: 'Legitimate 2FA Code (Safe)',
-        sender: 'GOOGLE',
-        text: 'G-829471 is your Google verification code. Do not share this code with anyone.',
+        label: 'Normal 2FA Security Token (Safe)',
+        sender: 'AUTH-VERIFY',
+        text: 'Your single-use sign-in verification code is 492019. Valid for 5 minutes. Never share this code with anyone.',
         action: 'UNKNOWN',
         description: 'Standard security token delivery with no malicious links',
       },
@@ -172,11 +174,40 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
     const action = customAction || userAction;
 
     try {
-      const response = await fetch('/api/neuroshield/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          source: source === 'qr' ? 'web' : source === 'prompt' ? 'prompt' : source,
+      let incident: UnifiedIncidentObject | null = null;
+
+      // 1. Attempt backend analysis via API endpoint
+      try {
+        const response = await fetch('/api/neuroshield/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source: source === 'qr' ? 'web' : source === 'prompt' ? 'web' : source,
+            content: contentToAnalyze,
+            urls: source === 'web' || source === 'qr' ? [contentToAnalyze] : undefined,
+            user_action: action,
+            metadata: {
+              client: 'guard_diagnostic_lab',
+              channel: source,
+              pii_redacted: isRedactingPii,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          incident = await response.json();
+        } else {
+          console.warn(`[Guard] Backend returned HTTP ${response.status}. Engaging client-side NeuroShield Core engine...`);
+        }
+      } catch (remoteErr) {
+        console.warn('[Guard] Backend service unreachable. Engaging client-side NeuroShield Core engine...', remoteErr);
+      }
+
+      // 2. Resilient Fallback: If backend is offline, returned HTTP 405 (static host/proxy), or 500,
+      // execute full NeuroShieldCore engine directly in the browser.
+      if (!incident) {
+        const threatInput: any = {
+          source: source === 'qr' ? 'web' : source === 'prompt' ? 'web' : source,
           content: contentToAnalyze,
           urls: source === 'web' || source === 'qr' ? [contentToAnalyze] : undefined,
           user_action: action,
@@ -184,17 +215,14 @@ export function GuardPage({ onNavigateToForensics, onNavigateTab }: GuardPagePro
             client: 'guard_diagnostic_lab',
             channel: source,
             pii_redacted: isRedactingPii,
+            engine: 'client_side_core',
           },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`NeuroShield Core returned HTTP ${response.status}`);
+        };
+        incident = await NeuroShieldCore.analyze(threatInput, threatInput.source);
       }
 
-      const incident: UnifiedIncidentObject = await response.json();
       setCurrentIncident(incident);
-      setRecentInterceptions((prev) => [incident, ...prev.slice(0, 9)]);
+      setRecentInterceptions((prev) => [incident!, ...prev.slice(0, 9)]);
     } catch (err: any) {
       setAnalysisError(err.message || 'Failed to inspect payload with NeuroShield Core.');
     } finally {

@@ -1131,6 +1131,15 @@ ALL RESPONSES AND STRINGS (EXCEPT ENUM VALUES) MUST BE IN ${targetLang}.`,
     }
   });
 
+  app.get(["/api/neuroshield/analyze", "/api/core/analyze"], (_req, res) => {
+    res.json({
+      status: "ok",
+      endpoint: "/api/neuroshield/analyze",
+      service: "NeuroShield Core Detection & Threat Protection Engine",
+      supportedMethods: ["POST", "OPTIONS"]
+    });
+  });
+
   // Model Status & Feature Vector Specification Endpoint
   app.get(["/api/neuroshield/model-status", "/api/core/model-status", "/model-status"], (_req, res) => {
     res.json(RiskEngine.getModelCompatibilityReport());

@@ -66,7 +66,7 @@ export class ActionRiskDetector {
       'western union', 'zelle payment', 'send money', 'purchase apple gift cards', 'transfer funds',
       'transfer ₹', 'transfer rs', 'send ₹', 'wire ₹', 'lakh', 'crore'
     ];
-    const hasMoneyRegex = /\b(?:wire|remit|transfer|send|transmit|disburse|pay|process)\b.*?(?:\$|₹|rs\.?|inr|\d+|funds|money|payment|disbursement|wire|lakh|crore)/i.test(text) || /\b(?:₹\s*\d+|\d+\s*lakh|\d+\s*crore)\b/i.test(text) || /\binvoice\b.*(?:overdue|remit|pay|settle)/i.test(text) || /\b(?:disbursement|settlement\s*wire|wire\s*instruction)\b/i.test(text);
+    const hasMoneyRegex = /\b(?:wire|remit|transfer|send|transmit|disburse|pay|process)\b.*?(?:\$|₹|rs\.?|inr|\b(?:usd|eur|gbp|aud|cad)\b|\b\d+[\d,.]*\s*(?:dollars|bucks|rupees|cents|usd|inr|lakh|crore|k)\b|\b(?:funds|money|payment|disbursement|wire|lakh|crore)\b)/i.test(text) || /\b(?:₹\s*\d+|\d+\s*lakh|\d+\s*crore)\b/i.test(text) || /\binvoice\b.*(?:overdue|remit|pay|settle)/i.test(text) || /\b(?:disbursement|settlement\s*wire|wire\s*instruction)\b/i.test(text);
     const hasMoneyRequest = moneyKeywords.some((k) => text.includes(k)) || hasMoneyRegex;
 
     if (hasMoneyRequest && !hasOtpRequest) {
